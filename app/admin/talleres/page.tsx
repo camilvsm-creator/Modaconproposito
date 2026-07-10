@@ -3,9 +3,21 @@ import Link from "next/link";
 import { AdminPageHeader } from "@/components/admin-page-header";
 import { AdminPagination } from "@/components/admin-pagination";
 import { SectionCard } from "@/components/ui";
+import { DeleteWorkshopButton } from "@/components/delete-workshop-button";
 import { requireWorkshopAdminUser } from "@/lib/auth";
 import { getAdminWorkshopsPage } from "@/lib/workshops";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { deactivateWorkshopAction, reactivateWorkshopAction } from "@/app/admin/talleres/actions";
+
+async function deactivateAction(formData: FormData) {
+  "use server";
+  await deactivateWorkshopAction(formData);
+}
+
+async function reactivateAction(formData: FormData) {
+  "use server";
+  await reactivateWorkshopAction(formData);
+}
 
 const WORKSHOPS_PER_PAGE = 15;
 
@@ -25,6 +37,7 @@ const ACTIVE_STATUS_OPTIONS = [
   { value: "activo", label: "Activo" },
   { value: "pausado", label: "Pausado" },
   { value: "rechazado", label: "Rechazado" },
+  { value: "desactivado", label: "Desactivado" },
 ] as const;
 
 const STATUS_BADGES: Record<string, string> = {
@@ -33,6 +46,7 @@ const STATUS_BADGES: Record<string, string> = {
   pausado: "bg-stone-100 text-stone-600",
   rechazado: "bg-red-100 text-red-700",
   approved_pending_activation: "bg-blue-100 text-blue-700",
+  desactivado: "bg-red-100 text-red-700",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -41,6 +55,7 @@ const STATUS_LABELS: Record<string, string> = {
   activo: "Activo",
   pausado: "Pausado",
   rechazado: "Rechazado",
+  desactivado: "Desactivado",
 };
 
 function getStringParam(params: Record<string, string | string[] | undefined>, key: string) {
@@ -114,6 +129,14 @@ export default async function AdminInicioPage({
         eyebrow="Promoda"
         title="Inicio"
         description="Resumen general de la red de talleres."
+        actions={
+          <Link
+            href="/admin/talleres/crear"
+            className="inline-flex items-center justify-center rounded-full bg-[#F74897] px-5 py-3 text-sm font-semibold text-white hover:bg-[#D6003F] transition"
+          >
+            Crear taller
+          </Link>
+        }
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -207,12 +230,38 @@ export default async function AdminInicioPage({
                     </td>
                     <td className="px-4 py-3 align-top text-stone-600 leading-tight text-sm">{w.city}, {w.state}</td>
                     <td className="px-4 py-3 align-top leading-tight">
-                      <Link
-                        href={`/admin/talleres/listado/${w.id}`}
-                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[#F74897] ring-1 ring-stone-300 hover:bg-stone-50 transition"
+                      <div className="flex flex-wrap gap-1.5">
+                        <Link
+                          href={`/admin/talleres/listado/${w.id}`}
+                          className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[#F74897] ring-1 ring-stone-300 hover:bg-stone-50 transition"
+                        >
+                          Detalle
+                        </Link>
+                  {w.status === "desactivado" ? (
+                    <form action={reactivateAction}>
+                      <input type="hidden" name="id" value={w.id} />
+                      <button
+                        type="submit"
+                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-green-600 ring-1 ring-green-300 hover:bg-green-50 transition"
                       >
-                        Detalle
-                      </Link>
+                        Reactivar
+                      </button>
+                    </form>
+                  ) : w.status === "activo" || w.status === "pausado" ? (
+                    <form action={deactivateAction}>
+                      <input type="hidden" name="id" value={w.id} />
+                      <button
+                        type="submit"
+                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-red-600 ring-1 ring-red-300 hover:bg-red-50 transition"
+                      >
+                        Desactivar
+                      </button>
+                    </form>
+                  ) : null}
+                  {(w.status === "desactivado" || w.status === "rechazado" || w.status === "pendiente" || w.status === "approved_pending_activation") && (
+                    <DeleteWorkshopButton workshopId={w.id} workshopName={w.name} />
+                  )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -231,12 +280,38 @@ export default async function AdminInicioPage({
                 <div className="flex items-center gap-3">
                   <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${STATUS_BADGES[w.status]}`}>{STATUS_LABELS[w.status]}</span>
                 </div>
-                <Link
-                  href={`/admin/talleres/listado/${w.id}`}
-                  className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[#F74897] ring-1 ring-stone-300 hover:bg-stone-50 transition"
-                >
-                  Ver detalle
-                </Link>
+                <div className="flex flex-wrap gap-1.5">
+                  <Link
+                    href={`/admin/talleres/listado/${w.id}`}
+                    className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[#F74897] ring-1 ring-stone-300 hover:bg-stone-50 transition"
+                  >
+                    Ver detalle
+                  </Link>
+                  {w.status === "desactivado" ? (
+                    <form action={reactivateAction}>
+                      <input type="hidden" name="id" value={w.id} />
+                      <button
+                        type="submit"
+                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-green-600 ring-1 ring-green-300 hover:bg-green-50 transition"
+                      >
+                        Reactivar
+                      </button>
+                    </form>
+                  ) : w.status === "activo" || w.status === "pausado" ? (
+                    <form action={deactivateAction}>
+                      <input type="hidden" name="id" value={w.id} />
+                      <button
+                        type="submit"
+                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-red-600 ring-1 ring-red-300 hover:bg-red-50 transition"
+                      >
+                        Desactivar
+                      </button>
+                    </form>
+                  ) : null}
+                  {(w.status === "desactivado" || w.status === "rechazado" || w.status === "pendiente" || w.status === "approved_pending_activation") && (
+                    <DeleteWorkshopButton workshopId={w.id} workshopName={w.name} />
+                  )}
+                </div>
               </div>
             ))}
           </div>

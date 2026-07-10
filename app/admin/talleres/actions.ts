@@ -7,6 +7,7 @@ import { sendWorkshopActivationEmail } from "@/lib/email";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   createWorkshopActivationToken,
+  generateWorkshopSlug,
   getAdminWorkshopById,
 } from "@/lib/workshops";
 
@@ -19,7 +20,7 @@ export async function updateWorkshopStatusAction(formData: FormData): Promise<Re
   const id = String(formData.get("id") || "");
   const status = String(formData.get("status") || "");
 
-  if (!id || !["pendiente", "activo", "pausado", "rechazado"].includes(status)) {
+  if (!id || !["pendiente", "activo", "pausado", "rechazado", "desactivado"].includes(status)) {
     return { error: "Solicitud inválida." };
   }
 
@@ -261,5 +262,158 @@ export async function updateHelpOfferStatusAction(formData: FormData): Promise<R
   const offerWorkshop = offerWorkshopId ? await getAdminWorkshopById(offerWorkshopId) : null;
   revalidatePath("/admin/talleres/ofertas");
   if (offerWorkshop?.slug) revalidatePath(`/${offerWorkshop.slug}`);
+  return {};
+}
+
+export async function deactivateWorkshopAction(formData: FormData): Promise<Result> {
+  await requireWorkshopAdminUser();
+  const admin = createSupabaseAdminClient();
+
+  const id = String(formData.get("id") || "");
+  if (!id) return { error: "ID de taller no válido." };
+
+  const workshop = await getAdminWorkshopById(id);
+  if (!workshop) return { error: "Taller no encontrado." };
+
+  const { error } = await admin
+    .from("workshops")
+    .update({ status: "desactivado" })
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/talleres");
+  if (workshop.slug) revalidatePath(`/${workshop.slug}`);
+  revalidatePath("/ver-talleres");
+  return {};
+}
+
+export async function reactivateWorkshopAction(formData: FormData): Promise<Result> {
+  await requireWorkshopAdminUser();
+  const admin = createSupabaseAdminClient();
+
+  const id = String(formData.get("id") || "");
+  if (!id) return { error: "ID de taller no válido." };
+
+  const workshop = await getAdminWorkshopById(id);
+  if (!workshop) return { error: "Taller no encontrado." };
+
+  const { error } = await admin
+    .from("workshops")
+    .update({ status: "activo" })
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/talleres");
+  if (workshop.slug) revalidatePath(`/${workshop.slug}`);
+  revalidatePath("/ver-talleres");
+  return {};
+}
+
+export async function deleteWorkshopAction(formData: FormData): Promise<Result> {
+  await requireWorkshopAdminUser();
+  const admin = createSupabaseAdminClient();
+
+  const id = String(formData.get("id") || "");
+  if (!id) return { error: "ID de taller no válido." };
+
+  const workshop = await getAdminWorkshopById(id);
+  if (!workshop) return { error: "Taller no encontrado." };
+
+  // Delete related data first (FK constraints)
+  await admin.from("workshop_needs").delete().eq("workshop_id", id);
+  await admin.from("workshop_photos").delete().eq("workshop_id", id);
+  await admin.from("workshop_help_offers").delete().eq("workshop_id", id);
+  await admin.from("workshop_activation_tokens").delete().eq("workshop_id", id);
+
+  // Delete auth user if exists
+  if (workshop.user_id) {
+    await admin.auth.admin.deleteUser(workshop.user_id);
+  }
+
+  // Delete the workshop
+  const { error } = await admin.from("workshops").delete().eq("id", id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/talleres");
+  revalidatePath("/ver-talleres");
+  if (workshop.slug) revalidatePath(`/${workshop.slug}`);
+  return {};
+}
+
+export async function createWorkshopAction(formData: FormData): Promise<Result> {
+  const user = await requireWorkshopAdminUser();
+  const admin = createSupabaseAdminClient();
+
+  const name = String(formData.get("name") || "").trim();
+  const responsibleName = String(formData.get("responsibleName") || "").trim();
+  const email = String(formData.get("email") || "").trim().toLowerCase();
+  const phone = String(formData.get("phone") || "").trim();
+  const whatsapp = String(formData.get("whatsapp") || "").trim();
+  const instagram = String(formData.get("instagram") || "").trim();
+  const state = String(formData.get("state") || "").trim();
+  const city = String(formData.get("city") || "").trim();
+  const municipality = String(formData.get("municipality") || "").trim();
+  const publicLocation = String(formData.get("publicLocation") || "").trim();
+  const whatTheyDo = String(formData.get("whatTheyDo") || "").trim();
+  const description = String(formData.get("description") || "").trim();
+  const publicNameAllowed = formData.get("publicNameAllowed") === "on";
+
+  if (!name) return { error: "El nombre del taller es obligatorio." };
+  if (!responsibleName) return { error: "El nombre del responsable es obligatorio." };
+  if (!email || !email.includes("@")) return { error: "El correo electrónico no es válido." };
+  if (!state) return { error: "El estado es obligatorio." };
+  if (!city) return { error: "La ciudad es obligatoria." };
+  if (!publicLocation) return { error: "La ubicación pública es obligatoria." };
+  if (!whatTheyDo) return { error: "El campo 'Qué hacen' es obligatorio." };
+
+  const slug = await generateWorkshopSlug(name);
+
+  const { data: workshop, error: insertError } = await admin
+    .from("workshops")
+    .insert({
+      name,
+      slug,
+      responsible_name: responsibleName,
+      email,
+      phone: phone || null,
+      whatsapp: whatsapp || null,
+      instagram: instagram || null,
+      state,
+      city,
+      municipality: municipality || null,
+      public_location: publicLocation,
+      what_they_do: whatTheyDo,
+      description: description || null,
+      public_name_allowed: publicNameAllowed,
+      public_location_allowed: formData.get("publicLocationAllowed") === "on",
+      public_instagram_allowed: formData.get("publicInstagramAllowed") === "on",
+      public_whatsapp_allowed: formData.get("publicWhatsappAllowed") === "on",
+      status: "approved_pending_activation",
+      approved_by: user.id,
+      approved_at: new Date().toISOString(),
+    })
+    .select("id")
+    .single();
+
+  if (insertError) return { error: insertError.message };
+  if (!workshop) return { error: "Error al crear el taller." };
+
+  const { activationLink } = await createWorkshopActivationToken(workshop.id, user.id);
+
+  const { error: emailError } = await sendWorkshopActivationEmail(
+    email,
+    responsibleName,
+    activationLink,
+  );
+
+  if (emailError) {
+    revalidatePath("/admin/talleres");
+    return { error: `Taller creado pero error al enviar el correo: ${emailError}`, activationLink };
+  }
+
+  revalidatePath("/admin/talleres");
+  revalidatePath("/ver-talleres");
   return {};
 }
