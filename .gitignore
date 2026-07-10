@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# next.js build
+.next/
+out/
+
+# env files
+.env
+.env.local
+.env.*.local
+
+# typescript cache
+*.tsbuildinfo
+next-env.d.ts
+
+# vercel
+.vercel
+
+# misc
+.DS_Store
+*.pem
+
+# opencode config (contains tokens/secrets)
+opencode.json
+.agents/
