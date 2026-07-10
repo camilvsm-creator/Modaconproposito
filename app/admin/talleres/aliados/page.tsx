@@ -58,12 +58,12 @@ export default function AdminAliadosPage() {
       />
 
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowForm(false)}>
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-ink">Nuevo aliado</h2>
-              <button onClick={() => setShowForm(false)} className="rounded-lg p-1 hover:bg-stone-100"><X className="h-5 w-5 text-stone-500" /></button>
-            </div>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowForm(false)}>
+            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-ink">Nuevo aliado</h2>
+                <button type="button" onClick={() => setShowForm(false)} className="rounded-lg p-1 hover:bg-stone-100"><X className="h-5 w-5 text-stone-500" /></button>
+              </div>
             <div className="mt-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1">Nombre</label>

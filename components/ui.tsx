@@ -48,7 +48,7 @@ const buttonClasses = {
 export function Button({
   className,
   variant = "primary",
-  type,
+  type = "button",
   ...props
 }: ButtonProps) {
   return (

@@ -1,6 +1,7 @@
 "use client";
 
-import { Container, SectionCard } from "@/components/ui";
+import { AdminPageHeader } from "@/components/admin-page-header";
+import { SectionCard } from "@/components/ui";
 import { EmptyState } from "@/components/empty-state";
 import type { Voluntario } from "@/lib/types";
 
@@ -27,42 +28,40 @@ export default function VoluntariosPage() {
   const voluntarios = mockVoluntarios;
 
   return (
-    <Container>
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-xl font-bold text-ink">Voluntarios</h1>
-          <p className="mt-1 text-sm text-stone-500">
-            Voluntarios asignados al taller por el equipo de Promoda.
-          </p>
-        </div>
+    <div className="space-y-6">
+      <AdminPageHeader
+        eyebrow="Panel"
+        title="Voluntarios"
+        description="Voluntarios asignados al taller por el equipo de Promoda."
+        navigation={{ baseHref: "/admin/talleres/panel", baseLabel: "Panel", currentLabel: "Voluntarios" }}
+      />
 
-        {voluntarios.length === 0 ? (
-          <EmptyState
-            title="Sin voluntarios"
-            description="Cuando te asignen voluntarios, aparecerán aquí."
-          />
-        ) : (
-          <div className="space-y-3">
-            {voluntarios.map((v) => {
-              const tone = estadoTones[v.estado] ?? "bg-stone-100 text-stone-700";
-              return (
-                <SectionCard key={v.id} className="p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <h3 className="font-semibold text-ink">{v.nombre}</h3>
-                      <p className="text-sm text-stone-600">{v.especialidad}</p>
-                      <p className="text-xs text-stone-400">Disponibilidad: {v.disponibilidad}</p>
-                    </div>
-                    <span className={"inline-flex shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide " + tone}>
-                      {estadoLabels[v.estado]}
-                    </span>
+      {voluntarios.length === 0 ? (
+        <EmptyState
+          title="Sin voluntarios"
+          description="Cuando te asignen voluntarios, aparecerán aquí."
+        />
+      ) : (
+        <div className="space-y-3">
+          {voluntarios.map((v) => {
+            const tone = estadoTones[v.estado] ?? "bg-stone-100 text-stone-700";
+            return (
+              <SectionCard key={v.id} className="p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <h3 className="font-semibold text-ink">{v.nombre}</h3>
+                    <p className="text-sm text-stone-600">{v.especialidad}</p>
+                    <p className="text-sm text-stone-400">Disponibilidad: {v.disponibilidad}</p>
                   </div>
-                </SectionCard>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </Container>
+                  <span className={"inline-flex shrink-0 rounded-full px-2.5 py-0.5 text-sm font-semibold uppercase tracking-wide " + tone}>
+                    {estadoLabels[v.estado]}
+                  </span>
+                </div>
+              </SectionCard>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ComponentType, type ReactNode, useCallback, useEffect, useState } from "react";
-import { BarChart3, Camera, ClipboardList, Copy, FileText, FolderKanban, GitFork, Globe, HandHeart, LayoutDashboard, LogOut, Menu, MessageCircle, Package, PackageCheck, Scissors, Settings, User, Users, X } from "lucide-react";
+import { BarChart3, ClipboardList, FileText, FolderKanban, GitFork, HandHeart, LayoutDashboard, LogOut, Menu, MessageCircle, Package, PackageCheck, Scissors, User, Users, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -21,25 +21,30 @@ type NavItem = {
 };
 
 const sharedAdminItems: NavItem[] = [
-  { href: "/admin/talleres", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/talleres/talleres", label: "Talleres", icon: Scissors },
+  { href: "/admin/talleres", label: "Inicio", icon: LayoutDashboard },
+  { href: "/admin/talleres/necesidades", label: "Necesidades", icon: HandHeart },
+  { href: "/admin/talleres/producciones", label: "Producciones", icon: FolderKanban },
+  { href: "/admin/talleres/voluntarios", label: "Voluntarios", icon: Users },
+  { href: "/admin/talleres/materiales", label: "Materiales", icon: Package },
+  { href: "/admin/talleres/entregas", label: "Entregas", icon: PackageCheck },
+  { href: "/admin/talleres/mensajes", label: "Mensajes", icon: MessageCircle },
+  { href: "/admin/talleres/reportes", label: "Reporte", icon: BarChart3 },
+  { href: "/admin/talleres/aliados", label: "Aliados", icon: GitFork },
   { href: "/admin/talleres/patrones", label: "Patrones", icon: FileText },
-  { href: "/admin/talleres/cartuchera", label: "Cartuchera", icon: HandHeart },
+  { href: "/admin/talleres/cartuchera", label: "Cartuchera", icon: ClipboardList },
   { href: "/admin/talleres/ofertas", label: "Ofertas", icon: MessageCircle },
-  { href: "/admin/talleres/panel", label: "Panel taller", icon: User },
 ];
 
 const navByRole: Record<string, NavItem[]> = {
   admin: sharedAdminItems,
   admin_talleres: sharedAdminItems,
   taller: [
-    { href: "/admin/talleres/panel", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/talleres/panel/perfil", label: "Perfil", icon: User },
     { href: "/admin/talleres/panel/producciones", label: "Producciones", icon: Scissors },
     { href: "/admin/talleres/panel/materiales", label: "Materiales", icon: Package },
     { href: "/admin/talleres/panel/voluntarios", label: "Voluntarios", icon: Users },
     { href: "/admin/talleres/panel/necesidades", label: "Necesidades", icon: HandHeart },
-    { href: "/admin/talleres/panel/fotos", label: "Fotos", icon: Camera },
+
     { href: "/admin/talleres/panel/entregas", label: "Entregas", icon: PackageCheck },
     { href: "/admin/talleres/panel/mensajes", label: "Mensajes", icon: MessageCircle },
   ],
@@ -59,6 +64,7 @@ export function AdminShell({ role, email, avatarUrl, children }: AdminShellProps
 
   function isActive(href: string) {
     if (href === "/admin") return pathname === "/admin";
+    if (href === "/admin/talleres") return pathname === "/admin/talleres";
     return pathname.startsWith(href);
   }
 
@@ -106,7 +112,7 @@ export function AdminShell({ role, email, avatarUrl, children }: AdminShellProps
             </div>
 
             {/* Nav items */}
-            <nav className="mt-6 flex flex-col gap-2">
+            <nav className="mt-6 flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
               {items.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href);
@@ -134,27 +140,6 @@ export function AdminShell({ role, email, avatarUrl, children }: AdminShellProps
 
             {/* Session footer */}
             <div className="mt-auto">
-              <div className={cn(
-                "mb-3 rounded-lg border px-3 py-3 text-xs",
-                isPromoda
-                  ? "border-[#F74897]/20 bg-[#FFE4EC] text-[#D6003F]"
-                  : "border-stone-300 bg-[#f7f6f4] text-stone-600",
-              )}>
-                <p className={cn("font-semibold uppercase tracking-[0.16em]", isPromoda ? "text-[#D6003F]/70" : "text-stone-500")}>Sesión</p>
-                <div className="mt-2 flex items-center gap-3">
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-black/10" />
-                  ) : (
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-200 ring-1 ring-black/10">
-                      <span className="text-xs font-bold text-stone-500">{email?.charAt(0).toUpperCase() || "?"}</span>
-                    </div>
-                  )}
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-ink">{email || role}</p>
-                    <p className={cn("mt-0.5 uppercase tracking-[0.14em]", isPromoda ? "text-[#D6003F]/70" : "text-stone-500")}>{role}</p>
-                  </div>
-                </div>
-              </div>
               <form action="/admin/logout" method="post">
                 <button
                   type="submit"
@@ -281,27 +266,6 @@ export function AdminShell({ role, email, avatarUrl, children }: AdminShellProps
             </nav>
 
             <div className="mt-auto">
-              <div className={cn(
-                "mb-3 rounded-lg border px-3 py-3 text-xs",
-                isPromoda
-                  ? "border-[#F74897]/20 bg-[#FFE4EC] text-[#D6003F]"
-                  : "border-stone-300 bg-[#f7f6f4] text-stone-600",
-              )}>
-                <p className={cn("font-semibold uppercase tracking-[0.16em]", isPromoda ? "text-[#D6003F]/70" : "text-stone-500")}>Sesión</p>
-                <div className="mt-2 flex items-center gap-3">
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-black/10" />
-                  ) : (
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-200 ring-1 ring-black/10">
-                      <span className="text-xs font-bold text-stone-500">{email?.charAt(0).toUpperCase() || "?"}</span>
-                    </div>
-                  )}
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-ink">{email || role}</p>
-                    <p className={cn("mt-0.5 uppercase tracking-[0.14em]", isPromoda ? "text-[#D6003F]/70" : "text-stone-500")}>{role}</p>
-                  </div>
-                </div>
-              </div>
               <form action="/admin/logout" method="post">
                 <button
                   type="submit"

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AdminPageHeader } from "@/components/admin-page-header";
 import { requireWorkshopUser } from "@/lib/auth";
 import { getWorkshopByUserId, getWorkshopNeeds, getWorkshopPhotos, getAdminWorkshopHelpOffers } from "@/lib/workshops";
 import {
@@ -7,7 +8,7 @@ import {
   WORKSHOP_STATUS_TONES,
 } from "@/lib/constants";
 import { formatDateTime } from "@/lib/utils";
-import { Button, Container, SectionCard } from "@/components/ui";
+import { Button, SectionCard } from "@/components/ui";
 
 export default async function TalleresPanelDashboardPage() {
   const user = await requireWorkshopUser();
@@ -16,11 +17,9 @@ export default async function TalleresPanelDashboardPage() {
   const workshop = role === "taller" ? await getWorkshopByUserId(user.id) : null;
   if (!workshop) {
     return (
-      <Container>
-        <SectionCard className="p-8 text-center">
-          <p className="text-stone-600">No se encontró el taller asociado a tu cuenta.</p>
-        </SectionCard>
-      </Container>
+      <div className="rounded-xl border border-stone-200/80 bg-white/75 p-8 text-center shadow-card">
+        <p className="text-stone-600">No se encontró el taller asociado a tu cuenta.</p>
+      </div>
     );
   }
 
@@ -41,79 +40,75 @@ export default async function TalleresPanelDashboardPage() {
         : "bg-red-500";
 
   return (
-    <Container>
-      <div className="space-y-6">
-        <SectionCard className="space-y-4 p-6">
-          <div className="flex items-center gap-4">
-            <div className={"flex h-12 w-12 shrink-0 items-center justify-center rounded-full " + (workshop.avatar_path ? "" : "bg-[#FFE4EC]")}>
-              {workshop.avatar_path ? (
-                <img
-                  src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/workshop-photos/${workshop.avatar_path}`}
-                  alt={workshop.name}
-                  className="h-12 w-12 rounded-full object-cover"
-                />
-              ) : (
-                <span className="text-xl font-bold text-[#F74897]">{workshop.name.charAt(0)}</span>
-              )}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className={"inline-block h-2.5 w-2.5 shrink-0 rounded-full " + statusDot} />
-                <h1 className="truncate text-xl font-bold text-ink">{workshop.name}</h1>
-              </div>
-              <p className="mt-0.5 text-sm text-stone-500">
-                {workshop.state}{workshop.city ? `, ${workshop.city}` : ""}
-              </p>
-            </div>
-            <span className={statusTone + " shrink-0 inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"}>
-              {statusLabel}
-            </span>
+    <div className="space-y-6">
+      <div className="space-y-4 rounded-xl border border-stone-200/80 bg-white/75 p-5 shadow-card">
+        <div className="flex items-center gap-4">
+          <div className={"flex h-12 w-12 shrink-0 items-center justify-center rounded-full " + (workshop.avatar_path ? "" : "bg-[#FFE4EC]")}>
+            {workshop.avatar_path ? (
+              <img
+                src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/workshop-photos/${workshop.avatar_path}`}
+                alt={workshop.name}
+                className="h-12 w-12 rounded-full object-cover"
+              />
+            ) : (
+              <span className="text-xl font-bold text-[#F74897]">{workshop.name.charAt(0)}</span>
+            )}
           </div>
-        </SectionCard>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <SectionCard className="p-4">
-            <p className="text-3xl font-bold text-ink">{activeNeedsCount}</p>
-            <p className="mt-1 text-sm text-stone-500">Necesidades activas</p>
-          </SectionCard>
-          <SectionCard className="p-4">
-            <p className="text-3xl font-bold text-ink">0</p>
-            <p className="mt-1 text-sm text-stone-500">Producciones activas</p>
-          </SectionCard>
-          <SectionCard className="p-4">
-            <p className="text-3xl font-bold text-ink">0</p>
-            <p className="mt-1 text-sm text-stone-500">Voluntarios asignados</p>
-          </SectionCard>
-          <SectionCard className="p-4">
-            <p className="text-3xl font-bold text-ink">0</p>
-            <p className="mt-1 text-sm text-stone-500">Materiales pendientes</p>
-          </SectionCard>
-          <SectionCard className="p-4">
-            <p className="text-3xl font-bold text-ink">{photosCount}</p>
-            <p className="mt-1 text-sm text-stone-500">Fotos subidas</p>
-          </SectionCard>
-          <SectionCard className="p-4">
-            <p className="text-3xl font-bold text-ink">0</p>
-            <p className="mt-1 text-sm text-stone-500">Productos entregados</p>
-          </SectionCard>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className={"inline-block h-2.5 w-2.5 shrink-0 rounded-full " + statusDot} />
+              <h1 className="truncate text-2xl font-bold sm:text-[2rem] text-ink">{workshop.name}</h1>
+            </div>
+            <p className="mt-0.5 text-sm text-stone-500">
+              {workshop.state}{workshop.city ? `, ${workshop.city}` : ""}
+            </p>
+          </div>
+          <span className={statusTone + " shrink-0 inline-flex rounded-full px-3 py-1 text-sm font-semibold uppercase tracking-wide"}>
+            {statusLabel}
+          </span>
         </div>
-
-        <div className="flex flex-wrap gap-3">
-          <Link href="/admin/talleres/panel/producciones">
-            <Button variant="primary">Reportar avances</Button>
-          </Link>
-          <Link href="/admin/talleres/panel/necesidades">
-            <Button variant="secondary">Gestionar necesidades</Button>
-          </Link>
-          <Link href="/admin/talleres/panel/fotos">
-            <Button variant="secondary">Subir fotos</Button>
-          </Link>
-        </div>
-
-        <p className="text-xs text-stone-400">
-          Última actualización: {formatDateTime(workshop.updated_at)}
-        </p>
       </div>
-    </Container>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <SectionCard className="p-4">
+          <p className="text-3xl font-bold text-ink">{activeNeedsCount}</p>
+          <p className="mt-1 text-sm text-stone-500">Necesidades activas</p>
+        </SectionCard>
+        <SectionCard className="p-4">
+          <p className="text-3xl font-bold text-ink">0</p>
+          <p className="mt-1 text-sm text-stone-500">Producciones activas</p>
+        </SectionCard>
+        <SectionCard className="p-4">
+          <p className="text-3xl font-bold text-ink">0</p>
+          <p className="mt-1 text-sm text-stone-500">Voluntarios asignados</p>
+        </SectionCard>
+        <SectionCard className="p-4">
+          <p className="text-3xl font-bold text-ink">0</p>
+          <p className="mt-1 text-sm text-stone-500">Materiales pendientes</p>
+        </SectionCard>
+        <SectionCard className="p-4">
+          <p className="text-3xl font-bold text-ink">{photosCount}</p>
+          <p className="mt-1 text-sm text-stone-500">Fotos subidas</p>
+        </SectionCard>
+        <SectionCard className="p-4">
+          <p className="text-3xl font-bold text-ink">0</p>
+          <p className="mt-1 text-sm text-stone-500">Productos entregados</p>
+        </SectionCard>
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <Link href="/admin/talleres/panel/producciones">
+          <Button variant="primary">Reportar avances</Button>
+        </Link>
+        <Link href="/admin/talleres/panel/necesidades">
+          <Button variant="secondary">Gestionar necesidades</Button>
+        </Link>
+
+      </div>
+
+      <p className="text-sm text-stone-400">
+        Última actualización: {formatDateTime(workshop.updated_at)}
+      </p>
+    </div>
   );
 }

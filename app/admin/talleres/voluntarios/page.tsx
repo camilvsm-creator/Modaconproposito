@@ -55,12 +55,12 @@ export default function AdminVoluntariosPage() {
       />
 
       {showAsignar && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowAsignar(false)}>
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-ink">Asignar voluntario</h2>
-              <button onClick={() => setShowAsignar(false)} className="rounded-lg p-1 hover:bg-stone-100"><X className="h-5 w-5 text-stone-500" /></button>
-            </div>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowAsignar(false)}>
+            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-ink">Asignar voluntario</h2>
+                <button type="button" onClick={() => setShowAsignar(false)} className="rounded-lg p-1 hover:bg-stone-100"><X className="h-5 w-5 text-stone-500" /></button>
+              </div>
             <div className="mt-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1">Voluntario</label>
@@ -105,7 +105,7 @@ export default function AdminVoluntariosPage() {
                 <td className="px-4 py-3 text-stone-600">{v.disponibilidad}</td>
                 <td className="px-4 py-3">
                   {v.tallerAsignado ? (
-                    <Link href={`/admin/talleres/talleres/${v.tallerId}`} className="text-[#F74897] hover:underline font-medium">{v.tallerAsignado}</Link>
+                    <Link href={`/admin/talleres/listado/${v.tallerId}`} className="text-[#F74897] hover:underline font-medium">{v.tallerAsignado}</Link>
                   ) : (
                     <span className="text-stone-400">Sin asignar</span>
                   )}
@@ -129,7 +129,7 @@ export default function AdminVoluntariosPage() {
             <p className="text-sm text-stone-600">{v.especialidad} · {v.ciudad}</p>
             <p className="text-sm text-stone-500">{v.disponibilidad}</p>
             {v.tallerAsignado ? (
-              <Link href={`/admin/talleres/talleres/${v.tallerId}`} className="text-sm text-[#F74897] hover:underline">Taller: {v.tallerAsignado}</Link>
+              <Link href={`/admin/talleres/listado/${v.tallerId}`} className="text-sm text-[#F74897] hover:underline">Taller: {v.tallerAsignado}</Link>
             ) : (
               <p className="text-sm text-stone-400">Sin asignar</p>
             )}

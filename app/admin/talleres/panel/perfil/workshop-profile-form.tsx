@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient } from "@supabase/supabase-js";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { updateWorkshopProfileAction, uploadWorkshopAvatarAction } from "@/app/admin/talleres/panel/actions";
 import { Button, InputShell, SectionCard, inputClassName } from "@/components/ui";
@@ -36,6 +36,13 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
   const [success, setSuccess] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [avatarPending, setAvatarPending] = useState(false);
+  const avatarLimitMb = Math.max(1, Math.round(MAX_WORKSHOP_AVATAR_BYTES / 1024 / 1024));
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    };
+  }, [avatarPreview]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,6 +65,10 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
   async function handleAvatarUpload(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!avatarFile) return;
+    if (avatarFile.size > MAX_WORKSHOP_AVATAR_BYTES) {
+      setError(`La imagen supera el límite de ${avatarLimitMb} MB.`);
+      return;
+    }
 
     setAvatarPending(true);
     setError(null);
@@ -102,7 +113,8 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
     <div className="space-y-6">
       {/* Avatar section */}
       <SectionCard className="p-6">
-        <h2 className="mb-4 text-lg font-semibold text-ink">Foto de perfil</h2>
+        <h2 className="mb-2 text-lg font-semibold text-ink">Avatar del taller</h2>
+        <p className="mb-4 text-sm text-stone-500">Usa una imagen cuadrada. Formato JPG o PNG, máximo {avatarLimitMb} MB.</p>
         <div className="flex flex-wrap items-center gap-6">
           <div className="shrink-0">
             {avatarPreview || avatarSrc ? (
@@ -135,7 +147,7 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
               }}
             />
             <Button type="submit" disabled={avatarPending || !avatarFile}>
-              {avatarPending ? "Subiendo..." : "Subir foto"}
+              {avatarPending ? "Subiendo..." : "Subir avatar"}
             </Button>
           </form>
         </div>
@@ -176,6 +188,7 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
       </SectionCard>
 
       <SectionCard className="p-6">
+        <h2 className="mb-4 text-lg font-semibold text-ink">Datos del taller</h2>
         <form onSubmit={handleSubmit} className="space-y-5">
           <input type="hidden" name="workshopId" value={workshop.id} />
 

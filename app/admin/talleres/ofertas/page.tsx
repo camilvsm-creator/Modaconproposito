@@ -181,7 +181,7 @@ export default async function AdminWorkshopHelpOffersPage({
                       <td className="px-4 py-3 align-top leading-tight">
                         {offer.workshop ? (
                           <Link
-                            href={`/admin/talleres/${offer.workshop.id}`}
+                            href={`/admin/talleres/listado/${offer.workshop.id}`}
                             className="text-primary hover:underline"
                           >
                             {offer.workshop.name}
@@ -240,7 +240,7 @@ export default async function AdminWorkshopHelpOffersPage({
                   <p className="text-stone-600">{offer.description}</p>
                   {offer.location ? <p className="text-sm text-stone-500">Ubicación: {offer.location}</p> : null}
                   {offer.workshop ? (
-                    <Link href={`/admin/talleres/${offer.workshop.id}`} className="text-primary hover:underline">
+                    <Link href={`/admin/talleres/listado/${offer.workshop.id}`} className="text-primary hover:underline">
                       {offer.workshop.name}
                     </Link>
                   ) : null}

@@ -2,9 +2,9 @@ import Link from "next/link";
 
 import { AdminPageHeader } from "@/components/admin-page-header";
 import { AdminPagination } from "@/components/admin-pagination";
-import { Button } from "@/components/ui";
+import { SectionCard } from "@/components/ui";
 import { requireWorkshopAdminUser } from "@/lib/auth";
-import { mockTalleresExtendidos } from "@/lib/mock-data";
+import { mockNecesidadesUrgentes, mockProduccionesAdmin, mockTalleresExtendidos, mockVoluntariosAdmin } from "@/lib/mock-data";
 
 const WORKSHOPS_PER_PAGE = 15;
 
@@ -62,10 +62,10 @@ function pageHref(params: Record<string, string | string[] | undefined>, page: n
   if (q) search.set("q", q);
   if (page > 1) search.set("page", String(page));
   const query = search.toString();
-  return query ? `/admin/talleres/talleres?${query}` : "/admin/talleres/talleres";
+  return query ? `/admin/talleres?${query}` : "/admin/talleres";
 }
 
-export default async function AdminTalleresListPage({
+export default async function AdminInicioPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -76,11 +76,27 @@ export default async function AdminTalleresListPage({
   const promodaBtnClass = isPromoda ? "bg-[#F74897] hover:bg-[#D6003F] focus-visible:ring-[#F74897]/30" : "";
 
   const params = await searchParams;
-  const tab = getStringParam(params, "tab") || "postulaciones";
+  const tab = getStringParam(params, "tab") || "talleres";
   const status = getStringParam(params, "status") || "all";
   const q = getStringParam(params, "q");
 
+  const totalTalleres = mockTalleresExtendidos.length;
+  const talleresActivos = mockTalleresExtendidos.filter((w) => w.status === "activo").length;
+  const necesidadesAbiertas = mockNecesidadesUrgentes.length;
+  const produccionesActivas = mockProduccionesAdmin.filter((p) => p.estado === "en_produccion").length;
+  const voluntariosAsignados = mockVoluntariosAdmin.filter((v) => v.estado === "confirmado").length;
+
+  const stats = [
+    { label: "Talleres", value: totalTalleres },
+    { label: "Activos", value: talleresActivos },
+    { label: "Necesidades urgentes", value: necesidadesAbiertas },
+    { label: "Producciones activas", value: produccionesActivas },
+    { label: "Voluntarios confirmados", value: voluntariosAsignados },
+  ];
+
   const statusOptions = tab === "talleres" ? ACTIVE_STATUS_OPTIONS : POSTULATION_STATUS_OPTIONS;
+
+  const postulacionesPendientes = mockTalleresExtendidos.filter((w) => w.status === "pendiente" || w.status === "approved_pending_activation").length;
 
   let filtered = mockTalleresExtendidos;
   if (tab === "postulaciones") {
@@ -103,14 +119,22 @@ export default async function AdminTalleresListPage({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-5">
-        <AdminPageHeader
-          eyebrow="Promoda"
-          title="Red de Talleres Voluntarios"
-          meta={`${total} talleres`}
-          navigation={{ baseHref: "/admin/talleres", baseLabel: "Dashboard", currentLabel: "Talleres" }}
-        />
+      <AdminPageHeader
+        eyebrow="Promoda"
+        title="Inicio"
+        description="Resumen general de la red de talleres."
+      />
 
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        {stats.map((stat) => (
+          <SectionCard key={stat.label} className="p-4">
+            <p className="text-3xl font-bold text-ink">{stat.value}</p>
+            <p className="mt-1 text-sm text-stone-500">{stat.label}</p>
+          </SectionCard>
+        ))}
+      </div>
+
+      <div className="space-y-5">
         <div className="flex flex-wrap gap-2 border-b border-stone-200 pb-3">
           {TABS.map((t) => {
             const href = pageHref({ ...params, tab: t.value, status: undefined, page: undefined }, 1);
@@ -124,6 +148,13 @@ export default async function AdminTalleresListPage({
                 }`}
               >
                 {t.label}
+                {t.value === "postulaciones" && postulacionesPendientes > 0 && (
+                  <span className={`ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
+                    isActive ? "bg-white text-[#F74897]" : "bg-[#F74897] text-white"
+                  }`}>
+                    {postulacionesPendientes}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -147,7 +178,7 @@ export default async function AdminTalleresListPage({
               );
             })}
           </div>
-          <form action="/admin/talleres/talleres" method="get" className="flex w-full flex-col gap-3 sm:flex-row lg:max-w-[420px]">
+          <form action="/admin/talleres" method="get" className="flex w-full flex-col gap-3 sm:flex-row lg:max-w-[420px]">
             <input name="q" defaultValue={q ?? ""} placeholder="Buscar por nombre, responsable o ciudad" className="w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm" />
             <input type="hidden" name="page" value="1" />
             <input type="hidden" name="tab" value={tab} />
@@ -176,7 +207,7 @@ export default async function AdminTalleresListPage({
                 {paged.map((w) => (
                   <tr key={w.id} className="hover:bg-stone-50 transition-colors">
                     <td className="px-4 py-3 align-top leading-tight">
-                      <Link href={`/admin/talleres/talleres/${w.id}`} className="font-semibold text-[#F74897] hover:underline">
+                      <Link href={`/admin/talleres/listado/${w.id}`} className="font-semibold text-[#F74897] hover:underline">
                         {w.name}
                       </Link>
                       <p className="text-xs text-stone-400">{w.ciudad}, {w.estado}</p>
@@ -202,7 +233,7 @@ export default async function AdminTalleresListPage({
                     </td>
                     <td className="px-4 py-3 align-top leading-tight">
                       <Link
-                        href={`/admin/talleres/talleres/${w.id}`}
+                        href={`/admin/talleres/listado/${w.id}`}
                         className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[#F74897] ring-1 ring-stone-300 hover:bg-stone-50 transition"
                       >
                         Detalle
@@ -218,7 +249,7 @@ export default async function AdminTalleresListPage({
             {paged.map((w) => (
               <div key={w.id} className="rounded-xl border border-stone-200/80 bg-white/75 p-5 space-y-4">
                 <div className="space-y-1 text-sm text-stone-700">
-                  <Link href={`/admin/talleres/talleres/${w.id}`} className="font-semibold text-[#F74897] hover:underline">{w.name}</Link>
+                  <Link href={`/admin/talleres/listado/${w.id}`} className="font-semibold text-[#F74897] hover:underline">{w.name}</Link>
                   <p className="text-stone-600">{w.responsibleName}</p>
                   <p className="text-stone-400">{w.ciudad}, {w.estado}</p>
                   <p className="text-stone-500">{w.especialidades}</p>
@@ -228,7 +259,7 @@ export default async function AdminTalleresListPage({
                   <span className="text-sm text-stone-500">{w.produccionesActivas} producciones · {w.voluntariosAsignados} voluntarios · {w.necesidadesAbiertas} necesidades</span>
                 </div>
                 <Link
-                  href={`/admin/talleres/talleres/${w.id}`}
+                  href={`/admin/talleres/listado/${w.id}`}
                   className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[#F74897] ring-1 ring-stone-300 hover:bg-stone-50 transition"
                 >
                   Ver detalle

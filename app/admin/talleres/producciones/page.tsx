@@ -89,7 +89,7 @@ export default function AdminProduccionesPage() {
                   <tr key={p.id} className="hover:bg-stone-50">
                     <td className="px-4 py-3 font-medium text-ink">{p.producto}</td>
                     <td className="px-4 py-3">
-                      <Link href={`/admin/talleres/talleres/${p.tallerId}`} className="text-[#F74897] hover:underline font-medium">{p.taller}</Link>
+                      <Link href={`/admin/talleres/listado/${p.tallerId}`} className="text-[#F74897] hover:underline font-medium">{p.taller}</Link>
                     </td>
                     <td className="px-4 py-3 text-stone-700">{p.cantidadSolicitada}</td>
                     <td className="px-4 py-3 text-stone-700">{p.cantidadProducida}</td>
@@ -112,7 +112,7 @@ export default function AdminProduccionesPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="font-semibold text-ink">{p.producto}</p>
-                    <Link href={`/admin/talleres/talleres/${p.tallerId}`} className="text-sm text-[#F74897] hover:underline">{p.taller}</Link>
+                    <Link href={`/admin/talleres/listado/${p.tallerId}`} className="text-sm text-[#F74897] hover:underline">{p.taller}</Link>
                   </div>
                   <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${ESTADO_STYLES[p.estado]}`}>{ESTADO_LABELS[p.estado]}</span>
                 </div>

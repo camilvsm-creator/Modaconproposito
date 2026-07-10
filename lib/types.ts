@@ -906,7 +906,6 @@ export type EntregaAdmin = {
   cantidad: number;
   destino: string;
   estado: "pendiente" | "en_ruta" | "entregado";
-  evidencias: string[];
 };
 
 export type Aliado = {

@@ -72,7 +72,7 @@ export default function AdminNecesidadesPage() {
               {filtered.map((n) => (
                 <tr key={n.id} className="hover:bg-stone-50">
                   <td className="px-4 py-3">
-                    <Link href={`/admin/talleres/talleres/${n.tallerId}`} className="font-semibold text-[#F74897] hover:underline">{n.taller}</Link>
+                    <Link href={`/admin/talleres/listado/${n.tallerId}`} className="font-semibold text-[#F74897] hover:underline">{n.taller}</Link>
                   </td>
                   <td className="px-4 py-3"><span className="rounded bg-[#FFE4EC] px-2 py-0.5 text-xs font-medium text-[#D6003F]">{n.categoria}</span></td>
                   <td className="px-4 py-3"><span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${PRIORITY_STYLES[n.prioridad]}`}>{n.prioridad}</span></td>
@@ -81,9 +81,9 @@ export default function AdminNecesidadesPage() {
                   <td className="px-4 py-3"><span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${STATUS_STYLES[n.status]}`}>{STATUS_LABELS[n.status]}</span></td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1.5">
-                      <button className="rounded-full bg-[#F74897] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#D6003F]">Aprobar</button>
-                      <button className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50">Editar</button>
-                      <button className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50">Cerrar</button>
+                      <button type="button" className="rounded-full bg-[#F74897] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#D6003F]">Aprobar</button>
+                      <button type="button" className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50">Editar</button>
+                      <button type="button" className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50">Cerrar</button>
                     </div>
                   </td>
                 </tr>
@@ -101,7 +101,7 @@ export default function AdminNecesidadesPage() {
         {filtered.map((n) => (
           <div key={n.id} className="rounded-xl border border-stone-200/80 bg-white/75 p-5 space-y-3">
             <div className="flex items-center justify-between">
-              <Link href={`/admin/talleres/talleres/${n.tallerId}`} className="font-semibold text-[#F74897] hover:underline text-sm">{n.taller}</Link>
+              <Link href={`/admin/talleres/listado/${n.tallerId}`} className="font-semibold text-[#F74897] hover:underline text-sm">{n.taller}</Link>
               <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${STATUS_STYLES[n.status]}`}>{STATUS_LABELS[n.status]}</span>
             </div>
             <p className="font-semibold text-ink">{n.descripcion}</p>
@@ -111,9 +111,9 @@ export default function AdminNecesidadesPage() {
             </div>
             <p className="text-xs text-stone-400">{n.fechaPublicacion}</p>
             <div className="flex flex-wrap gap-1.5">
-              <button className="rounded-full bg-[#F74897] px-3 py-1.5 text-xs font-semibold text-white">Aprobar</button>
-              <button className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 ring-1 ring-stone-300">Editar</button>
-              <button className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 ring-1 ring-stone-300">Cerrar</button>
+              <button type="button" className="rounded-full bg-[#F74897] px-3 py-1.5 text-xs font-semibold text-white">Aprobar</button>
+              <button type="button" className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 ring-1 ring-stone-300">Editar</button>
+              <button type="button" className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 ring-1 ring-stone-300">Cerrar</button>
             </div>
           </div>
         ))}

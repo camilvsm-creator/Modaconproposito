@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 
-import { Button, Container, SectionCard } from "@/components/ui";
+import { AdminPageHeader } from "@/components/admin-page-header";
+import { Button, SectionCard } from "@/components/ui";
 import { EmptyState } from "@/components/empty-state";
 import type { Produccion } from "@/lib/types";
 
@@ -102,111 +103,107 @@ export default function ProduccionesPage() {
   }
 
   return (
-    <Container>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-ink">Producciones</h1>
-            <p className="mt-1 text-sm text-stone-500">Gestiona las confecciones activas del taller.</p>
-          </div>
-          <Button onClick={() => setShowForm(!showForm)}>
-            {showForm ? "Cancelar" : "Nueva producción"}
-          </Button>
-        </div>
+    <div className="space-y-6">
+      <AdminPageHeader
+        eyebrow="Panel"
+        title="Producciones"
+        description="Gestiona las confecciones activas del taller."
+        navigation={{ baseHref: "/admin/talleres/panel", baseLabel: "Panel", currentLabel: "Producciones" }}
+        actions={<Button onClick={() => setShowForm(!showForm)}>{showForm ? "Cancelar" : "Nueva producción"}</Button>}
+      />
 
-        {showForm && (
-          <SectionCard className="p-4">
-            <form onSubmit={agregarProduccion} className="flex flex-wrap items-end gap-3">
-              <div className="min-w-0 flex-1">
-                <label className="mb-1 block text-xs font-semibold text-stone-600">Producto</label>
-                <input
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="w-28">
-                <label className="mb-1 block text-xs font-semibold text-stone-600">Cantidad</label>
-                <input
-                  type="number"
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
-                  value={cantidad}
-                  onChange={(e) => setCantidad(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="w-40">
-                <label className="mb-1 block text-xs font-semibold text-stone-600">Fecha límite</label>
-                <input
-                  type="date"
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
-                  value={fechaLimite}
-                  onChange={(e) => setFechaLimite(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit">Crear</Button>
-            </form>
-          </SectionCard>
-        )}
+      {showForm && (
+        <SectionCard className="p-4">
+          <form onSubmit={agregarProduccion} className="flex flex-wrap items-end gap-3">
+            <div className="min-w-0 flex-1">
+              <label className="mb-1 block text-sm font-semibold text-stone-600">Producto</label>
+              <input
+                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                required
+              />
+            </div>
+            <div className="w-28">
+              <label className="mb-1 block text-sm font-semibold text-stone-600">Cantidad</label>
+              <input
+                type="number"
+                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                value={cantidad}
+                onChange={(e) => setCantidad(e.target.value)}
+                required
+              />
+            </div>
+            <div className="w-40">
+              <label className="mb-1 block text-sm font-semibold text-stone-600">Fecha límite</label>
+              <input
+                type="date"
+                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                value={fechaLimite}
+                onChange={(e) => setFechaLimite(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit">Crear</Button>
+          </form>
+        </SectionCard>
+      )}
 
-        {producciones.length === 0 ? (
-          <EmptyState
-            title="Sin producciones"
-            description="Crea tu primera producción para empezar a gestionar las confecciones."
-          />
-        ) : (
-          <div className="space-y-3">
-            {producciones.map((p) => {
-              const pct = p.cantidadSolicitada > 0 ? Math.round((p.cantidadProducida / p.cantidadSolicitada) * 100) : 0;
-              const tone = estadoTones[p.estado] ?? "bg-stone-100 text-stone-700";
-              const barColor = pct >= 100 ? "bg-green-500" : pct > 0 ? "bg-[#F74897]" : "bg-stone-200";
-              return (
-                <SectionCard key={p.id} className="p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1 space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-semibold text-ink">{p.nombre}</h3>
-                        <span className={"inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide " + tone}>
-                          {estadoLabels[p.estado]}
-                        </span>
-                      </div>
-                      <p className="text-sm text-stone-500">
-                        {p.cantidadProducida} / {p.cantidadSolicitada} producidos
-                      </p>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-stone-100">
-                        <div className={"h-full rounded-full transition-all " + barColor} style={{ width: `${pct}%` }} />
-                      </div>
-                      <p className="text-xs text-stone-400">Límite: {p.fechaLimite}</p>
+      {producciones.length === 0 ? (
+        <EmptyState
+          title="Sin producciones"
+          description="Crea tu primera producción para empezar a gestionar las confecciones."
+        />
+      ) : (
+        <div className="space-y-3">
+          {producciones.map((p) => {
+            const pct = p.cantidadSolicitada > 0 ? Math.round((p.cantidadProducida / p.cantidadSolicitada) * 100) : 0;
+            const tone = estadoTones[p.estado] ?? "bg-stone-100 text-stone-700";
+            const barColor = pct >= 100 ? "bg-green-500" : pct > 0 ? "bg-[#F74897]" : "bg-stone-200";
+            return (
+              <SectionCard key={p.id} className="p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-semibold text-ink">{p.nombre}</h3>
+                      <span className={"inline-flex rounded-full px-2.5 py-0.5 text-sm font-semibold uppercase tracking-wide " + tone}>
+                        {estadoLabels[p.estado]}
+                      </span>
                     </div>
-                    <div className="flex shrink-0 flex-col gap-2">
-                      {p.estado !== "entregado" && (
-                        <Button variant="secondary" onClick={() => avanzarEstado(p.id)}>
-                          {p.estado === "pendiente" ? "Iniciar" : p.estado === "en_produccion" ? "Finalizar" : "Entregar"}
-                        </Button>
-                      )}
-                      {p.estado === "en_produccion" && (
-                        <div className="flex items-center gap-1">
-                          <input
-                            type="number"
-                            min={0}
-                            max={p.cantidadSolicitada}
-                            defaultValue={p.cantidadProducida}
-                            className="w-16 rounded border border-stone-300 px-2 py-1 text-xs"
-                            onBlur={(e) => actualizarAvance(p.id, Number(e.target.value))}
-                          />
-                          <span className="text-xs text-stone-400">uds</span>
-                        </div>
-                      )}
+                    <p className="text-sm text-stone-500">
+                      {p.cantidadProducida} / {p.cantidadSolicitada} producidos
+                    </p>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-stone-100">
+                      <div className={"h-full rounded-full transition-all " + barColor} style={{ width: `${pct}%` }} />
                     </div>
+                    <p className="text-sm text-stone-400">Límite: {p.fechaLimite}</p>
                   </div>
-                </SectionCard>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </Container>
+                  <div className="flex shrink-0 flex-col gap-2">
+                    {p.estado !== "entregado" && (
+                      <Button variant="secondary" onClick={() => avanzarEstado(p.id)}>
+                        {p.estado === "pendiente" ? "Iniciar" : p.estado === "en_produccion" ? "Finalizar" : "Entregar"}
+                      </Button>
+                    )}
+                    {p.estado === "en_produccion" && (
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          min={0}
+                          max={p.cantidadSolicitada}
+                          defaultValue={p.cantidadProducida}
+                          className="w-16 rounded border border-stone-300 px-2 py-1 text-sm"
+                          onBlur={(e) => actualizarAvance(p.id, Number(e.target.value))}
+                        />
+                        <span className="text-sm text-stone-400">uds</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </SectionCard>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

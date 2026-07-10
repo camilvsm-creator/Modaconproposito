@@ -31,9 +31,10 @@ export default function NuestraMisionPage() {
               <p>
                 Desde nuestra experiencia dentro del sector moda, identificamos
                 una forma de aportar: unir la capacidad productiva de talleres
-                a nivel nacional para confeccionar artículos textiles necesarios
-                como ropa interior, sábanas, toallas y otros productos esenciales
-                que muchas veces no forman parte de las donaciones tradicionales.
+                e institutos a nivel nacional para confeccionar artículos textiles
+                necesarios como ropa interior, sábanas, toallas y otros productos
+                esenciales que muchas veces no forman parte de las donaciones
+                tradicionales.
               </p>
               <p>
                 A través de esta plataforma creamos una red colaborativa que
@@ -99,11 +100,32 @@ export default function NuestraMisionPage() {
               Tu Cartera, Mi Refugio
             </p>
             <p className="max-w-2xl text-sm leading-6 text-stone-700">
-              Un bolso preparado con cariño que entrega ropa interior nueva,
-              productos de higiene, artículos de cuidado personal y una carta
-              escrita a mano. Podés sumarte donando insumos, materiales,
-              haciendo un aporte económico o participando como voluntario.
+              Un bolso preparado con cariño para personas afectadas por el
+              terremoto. Podés sumarte donando materiales, haciendo un aporte
+              económico o participando como voluntario.
             </p>
+            <div className="max-w-2xl text-left text-sm leading-6 text-stone-700">
+              <p className="font-bold text-ink">¿Qué lleva la cartuchera?</p>
+              <ul className="mt-2 list-disc pl-5">
+                <li>Ropa interior nueva</li>
+                <li>Maquillaje y labiales nuevos</li>
+                <li>Productos de higiene personal</li>
+                <li>Una carta escrita a mano</li>
+              </ul>
+              <p className="mt-4 font-bold text-ink">¿Qué puedes donar?</p>
+              <p className="mt-2 font-bold text-stone-600">Neceseres:</p>
+              <ul className="list-disc pl-5">
+                <li>Tela: Vinil espejo estampado</li>
+                <li>Agujas número 14 punta de bola</li>
+                <li>Cierre de chaqueta de 40cm color rosa</li>
+              </ul>
+              <p className="mt-3 font-bold text-stone-600">Pantis o boxers:</p>
+              <ul className="list-disc pl-5">
+                <li>Sesgo elástico tamaño mediano (blanco o rosa)</li>
+                <li>Elástica ancha para boxer</li>
+                <li>Telas: franela pijamera, microdurazno est, microdurazno heavy</li>
+              </ul>
+            </div>
               <Link
                 href="/adopta-una-cartuchera"
                 className="rounded-full bg-[#F74897] px-6 py-3 text-sm font-bold text-white hover:bg-[#D6003F]"

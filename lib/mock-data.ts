@@ -109,11 +109,11 @@ export const mockMaterialesConsolidados: MaterialConsolidado[] = [
 // ---- Entregas ----
 
 export const mockEntregasAdmin: EntregaAdmin[] = [
-  { id: "e1", fecha: "2026-07-08", taller: "Sinors Atelier", tallerId: "w1", producto: "Mascarillas", cantidad: 500, destino: "Hospital Universitario de Caracas", estado: "entregado", evidencias: [] },
-  { id: "e2", fecha: "2026-07-07", taller: "Tejidos Maracaibo", tallerId: "w3", producto: "Toallas de baño", cantidad: 50, destino: "Albergue San José", estado: "entregado", evidencias: [] },
-  { id: "e3", fecha: "2026-07-06", taller: "Costuras Caracas", tallerId: "w2", producto: "Ropa interior", cantidad: 80, destino: "Centro de acopio Sur", estado: "en_ruta", evidencias: [] },
-  { id: "e4", fecha: "2026-07-05", taller: "Tejidos Maracaibo", tallerId: "w3", producto: "Toallas de mano", cantidad: 80, destino: "Albergue San José", estado: "pendiente", evidencias: [] },
-  { id: "e5", fecha: "2026-07-04", taller: "Sinors Atelier", tallerId: "w1", producto: "Sábanas individuales", cantidad: 20, destino: "Refugio El Valle", estado: "en_ruta", evidencias: [] },
+  { id: "e1", fecha: "2026-07-08", taller: "Sinors Atelier", tallerId: "w1", producto: "Mascarillas", cantidad: 500, destino: "Hospital Universitario de Caracas", estado: "entregado" },
+  { id: "e2", fecha: "2026-07-07", taller: "Tejidos Maracaibo", tallerId: "w3", producto: "Toallas de baño", cantidad: 50, destino: "Albergue San José", estado: "entregado" },
+  { id: "e3", fecha: "2026-07-06", taller: "Costuras Caracas", tallerId: "w2", producto: "Ropa interior", cantidad: 80, destino: "Centro de acopio Sur", estado: "en_ruta" },
+  { id: "e4", fecha: "2026-07-05", taller: "Tejidos Maracaibo", tallerId: "w3", producto: "Toallas de mano", cantidad: 80, destino: "Albergue San José", estado: "pendiente" },
+  { id: "e5", fecha: "2026-07-04", taller: "Sinors Atelier", tallerId: "w1", producto: "Sábanas individuales", cantidad: 20, destino: "Refugio El Valle", estado: "en_ruta" },
 ];
 
 export const mockDestinos = ["Hospital Universitario de Caracas", "Albergue San José", "Centro de acopio Sur", "Refugio El Valle", "Ambulatorio popular El Silencio"];

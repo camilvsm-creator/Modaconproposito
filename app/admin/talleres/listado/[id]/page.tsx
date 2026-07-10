@@ -82,7 +82,7 @@ export default async function AdminTallerDetailPage({
   const tabHref = (tab: string) => {
     const search = new URLSearchParams();
     search.set("tab", tab);
-    return `/admin/talleres/talleres/${id}?${search.toString()}`;
+    return `/admin/talleres/listado/${id}?${search.toString()}`;
   };
 
   return (
@@ -91,7 +91,7 @@ export default async function AdminTallerDetailPage({
         eyebrow="Talleres"
         title={taller.name}
         meta={STATUS_LABELS[taller.status] || taller.status}
-        navigation={{ baseHref: "/admin/talleres/talleres", baseLabel: "Talleres", currentLabel: taller.name }}
+        navigation={{ baseHref: "/admin/talleres", baseLabel: "Inicio", currentLabel: taller.name }}
       />
 
       <div className="flex flex-wrap gap-0.5 border-b border-stone-200">

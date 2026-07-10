@@ -3,8 +3,8 @@
 import { BarChart3, Download, FileSpreadsheet, FileText } from "lucide-react";
 
 import { AdminPageHeader } from "@/components/admin-page-header";
-import { Button } from "@/components/ui";
-import { mockDashboardStats } from "@/lib/mock-data";
+import { Button, SectionCard } from "@/components/ui";
+import { mockDashboardStats, mockProgresoProductos, mockNecesidadesCriticas } from "@/lib/mock-data";
 
 export default function AdminReportesPage() {
   return (
@@ -74,9 +74,9 @@ export default function AdminReportesPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-stone-200/80 bg-white/75 p-5 shadow-none">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">Distribución por tipo de producto</p>
-        <div className="mt-4 space-y-3">
+      <SectionCard className="p-6 space-y-4">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-stone-500">Distribución por tipo de producto</p>
+        <div className="space-y-3">
           {[
             { label: "Ropa interior", pct: 40, color: "bg-[#F74897]" },
             { label: "Sábanas", pct: 25, color: "bg-[#D6003F]" },
@@ -93,7 +93,43 @@ export default function AdminReportesPage() {
             </div>
           ))}
         </div>
-      </div>
+      </SectionCard>
+
+      <SectionCard className="p-6 space-y-5">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-stone-500">Progreso por tipo de producto</p>
+        <div className="space-y-5">
+          {mockProgresoProductos.map((p) => (
+            <div key={p.producto}>
+              <div className="flex items-center justify-between text-sm mb-1.5">
+                <span className="font-medium text-ink">{p.producto}</span>
+                <span className="text-stone-500">{p.totalProducido} / {p.totalRequerido}</span>
+              </div>
+              <div className="h-3 flex-1 overflow-hidden rounded-full bg-stone-200">
+                <div
+                  className={`h-full rounded-full ${p.porcentaje >= 100 ? "bg-green-500" : p.porcentaje >= 50 ? "bg-[#F74897]" : "bg-amber-500"}`}
+                  style={{ width: `${p.porcentaje}%` }}
+                />
+              </div>
+              <p className="mt-0.5 text-xs text-stone-400">{p.talleresActivos} talleres activos</p>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
+
+      <SectionCard className="p-6 space-y-4">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-stone-500">Necesidades críticas del momento</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {mockNecesidadesCriticas.map((nc) => (
+            <div key={nc.recurso} className="rounded-lg border border-red-200 bg-red-50/50 p-4">
+              <p className="font-semibold text-red-800">{nc.recurso}</p>
+              <p className="mt-0.5 text-sm text-red-600">
+                {nc.tipo === "material" ? "Material" : "Voluntarios"} — {nc.talleresQueLoNecesitan} talleres lo necesitan
+              </p>
+              <p className="text-sm text-red-500">Requerido: {nc.cantidadRequerida}</p>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
     </div>
   );
 }

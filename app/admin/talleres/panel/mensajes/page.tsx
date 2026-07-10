@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Send } from "lucide-react";
 
-import { Button, Container, SectionCard } from "@/components/ui";
+import { AdminPageHeader } from "@/components/admin-page-header";
+import { Button, SectionCard } from "@/components/ui";
 import { EmptyState } from "@/components/empty-state";
 import type { Mensaje } from "@/lib/types";
 import { sendMensajeNotification } from "@/lib/email";
@@ -72,74 +73,72 @@ export default function MensajesPage() {
   }
 
   return (
-    <Container>
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-xl font-bold text-ink">Mensajes</h1>
-          <p className="mt-1 text-sm text-stone-500">
-            Centro de comunicación con Promoda. Los mensajes se notifican por correo.
-          </p>
-        </div>
+    <div className="space-y-6">
+      <AdminPageHeader
+        eyebrow="Panel"
+        title="Mensajes"
+        description="Centro de comunicación con Promoda. Los mensajes se notifican por correo."
+        navigation={{ baseHref: "/admin/talleres/panel", baseLabel: "Panel", currentLabel: "Mensajes" }}
+      />
 
-        <SectionCard className="flex flex-col overflow-hidden p-0">
-          {mensajes.length === 0 ? (
-            <div className="p-6">
-              <EmptyState
-                title="Sin mensajes"
-                description="Envía tu primer mensaje al equipo de Promoda."
-              />
-            </div>
-          ) : (
-            <div className="flex max-h-96 flex-col gap-3 overflow-y-auto p-4">
-              {mensajes.map((msg) => (
+      <SectionCard className="flex flex-col overflow-hidden p-0">
+        {mensajes.length === 0 ? (
+          <div className="p-6">
+            <EmptyState
+              title="Sin mensajes"
+              description="Envía tu primer mensaje al equipo de Promoda."
+            />
+          </div>
+        ) : (
+          <div className="flex max-h-96 flex-col gap-3 overflow-y-auto p-4">
+            {mensajes.map((msg) => (
+              <div
+                key={msg.id}
+                className={"flex " + (msg.de === "taller" ? "justify-end" : "justify-start")}
+              >
                 <div
-                  key={msg.id}
-                  className={"flex " + (msg.de === "taller" ? "justify-end" : "justify-start")}
+                  className={
+                    "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm " +
+                    (msg.de === "taller"
+                      ? "bg-[#F74897] text-white"
+                      : "bg-stone-100 text-stone-800")
+                  }
                 >
-                  <div
+                  <p className="whitespace-pre-wrap leading-relaxed">{msg.contenido}</p>
+                  <p
                     className={
-                      "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm " +
-                      (msg.de === "taller"
-                        ? "bg-[#F74897] text-white"
-                        : "bg-stone-100 text-stone-800")
+                      "mt-1 text-sm " +
+                      (msg.de === "taller" ? "text-white/70" : "text-stone-400")
                     }
                   >
-                    <p className="whitespace-pre-wrap leading-relaxed">{msg.contenido}</p>
-                    <p
-                      className={
-                        "mt-1 text-[10px] " +
-                        (msg.de === "taller" ? "text-white/70" : "text-stone-400")
-                      }
-                    >
-                      {msg.fecha}
-                    </p>
-                  </div>
+                    {msg.fecha}
+                  </p>
                 </div>
-              ))}
-              <div ref={bottomRef} />
-            </div>
-          )}
-
-          <div className="border-t border-stone-200 p-4">
-            {envioNotificacion && (
-              <p className="mb-2 text-xs text-stone-500">
-                Notificando al admin por correo...
-              </p>
-            )}
-            <form onSubmit={enviar} className="flex gap-2">
-              <input
-                className="min-w-0 flex-1 rounded-lg border border-stone-300 px-3 py-2 text-sm"
-                placeholder="Escribe un mensaje..."
-                value={nuevoMensaje}
-                onChange={(e) => setNuevoMensaje(e.target.value)}
-              />
-              <Button type="submit" disabled={!nuevoMensaje.trim()}>
-                <Send className="h-4 w-4" />
-              </Button>
-            </form>
+              </div>
+            ))}
+            <div ref={bottomRef} />
           </div>
-        </SectionCard>
-      </div>
-    </Container>
+        )}
+
+        <div className="border-t border-stone-200 p-4">
+          {envioNotificacion && (
+            <p className="mb-2 text-sm text-stone-500">
+              Notificando al admin por correo...
+            </p>
+          )}
+          <form onSubmit={enviar} className="flex gap-2">
+            <input
+              className="min-w-0 flex-1 rounded-lg border border-stone-300 px-3 py-2 text-sm"
+              placeholder="Escribe un mensaje..."
+              value={nuevoMensaje}
+              onChange={(e) => setNuevoMensaje(e.target.value)}
+            />
+            <Button type="submit" disabled={!nuevoMensaje.trim()}>
+              <Send className="h-4 w-4" />
+            </Button>
+          </form>
+        </div>
+      </SectionCard>
+    </div>
   );
 }

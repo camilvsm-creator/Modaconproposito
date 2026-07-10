@@ -72,10 +72,31 @@ export default function AdoptaUnaCartucheraPage() {
               Cartera, Mi Refugio</strong> busca brindar un gesto de cuidado y
               dignidad a mujeres afectadas por la emergencia. A través de un
               bolso preparado con cariño, entregamos un kit con ropa interior
-              nueva confeccionada por voluntarias, productos de higiene
-              personal, artículos de cuidado personal y una carta escrita a mano
-              con un mensaje de apoyo.
+              nueva, productos de higiene personal, artículos de cuidado personal
+              y una carta escrita a mano con un mensaje de apoyo.
             </p>
+            <div className="text-sm leading-6 text-stone-700">
+              <p className="font-bold text-ink">¿Qué lleva la cartuchera?</p>
+              <ul className="mt-2 list-disc pl-5">
+                <li>Ropa interior nueva</li>
+                <li>Maquillaje y labiales nuevos</li>
+                <li>Productos de higiene personal</li>
+                <li>Una carta escrita a mano</li>
+              </ul>
+              <p className="mt-4 font-bold text-ink">¿Qué puedes donar?</p>
+              <p className="mt-2 font-bold text-stone-600">Neceseres:</p>
+              <ul className="list-disc pl-5">
+                <li>Tela: Vinil espejo estampado</li>
+                <li>Agujas número 14 punta de bola</li>
+                <li>Cierre de chaqueta de 40cm color rosa</li>
+              </ul>
+              <p className="mt-3 font-bold text-stone-600">Pantis o boxers:</p>
+              <ul className="list-disc pl-5">
+                <li>Sesgo elástico tamaño mediano (blanco o rosa)</li>
+                <li>Elástica ancha para boxer</li>
+                <li>Telas: franela pijamera, microdurazno est, microdurazno heavy</li>
+              </ul>
+            </div>
             <p className="text-sm leading-6 text-stone-700">
               Creemos que, además de cubrir necesidades básicas, también es
               importante acompañar, cuidar y recordar que nadie está sola.

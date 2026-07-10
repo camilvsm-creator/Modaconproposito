@@ -43,23 +43,20 @@ Protegido por middleware (solo `/admin/:path*`) + guards en layouts con `lib/aut
 | `/admin` | Login o redirect segun rol | Auth |
 | `/admin/logout` | Cerrar sesion (POST) | Auth |
 | `/admin/activar-taller` | Activacion por token | DB real |
-| `/admin/talleres/talleres` | Lista de talleres | Mock |
-| `/admin/talleres/talleres/[id]` | Detalle de taller | Mock |
+| `/admin/talleres` | Inicio: resumen + listado de talleres | Mock |
+| `/admin/talleres/listado/[id]` | Detalle de taller | Mock |
 | `/admin/talleres/necesidades` | Gestion de necesidades | Mock |
 | `/admin/talleres/ofertas` | Ofertas de ayuda | DB real |
-| `/admin/talleres/fotos` → `/evidencias` | Redirect a evidencias | Redirect |
-| `/admin/talleres/evidencias` | Galeria de evidencias | Mock |
+| `/admin/talleres/reportes` | Reporte (estadisticas, progreso, necesidades criticas) | Mock |
 | `/admin/talleres/cartuchera` | Donaciones cartuchera | DB real |
 | `/admin/talleres/patrones` | Gestion de patrones | DB real |
 | `/admin/talleres/aliados` | Aliados | Mock |
-| `/admin/talleres/configuracion` | Configuracion | Mock |
 | `/admin/talleres/entregas` | Entregas | Mock |
 | `/admin/talleres/materiales` | Materiales consolidados | Mock |
 | `/admin/talleres/mensajes` | Anuncios/mensajes | Mock |
 | `/admin/talleres/producciones` | Seguimiento produccion | Mock |
 | `/admin/talleres/reportes` | Estadisticas | Mock |
 | `/admin/talleres/voluntarios` | Voluntarios | Mock |
-| `/admin/talleres/vista-nacional` | Vista nacional con progreso | Mock |
 
 #### Panel del taller (`/admin/talleres/panel/*`)
 
@@ -71,7 +68,6 @@ Layout: `app/admin/talleres/panel/layout.tsx` con `WorkshopProvider` (React cont
 | `/admin/talleres/panel` | Dashboard del taller | DB real |
 | `/admin/talleres/panel/perfil` | Editar perfil | DB real |
 | `/admin/talleres/panel/necesidades` | Necesidades del taller | DB real |
-| `/admin/talleres/panel/fotos` | Fotos del taller | DB real |
 | `/admin/talleres/panel/producciones` | Producciones | Mock |
 | `/admin/talleres/panel/materiales` | Materiales | Mock |
 | `/admin/talleres/panel/voluntarios` | Voluntarios | Mock |
