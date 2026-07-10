@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { EmptyState } from "@/components/empty-state";
 import { LinkButton, SectionCard } from "@/components/ui";
@@ -6,6 +7,10 @@ import { getPublicNeedsPage } from "@/lib/workshops";
 import { formatDate } from "@/lib/utils";
 
 export const revalidate = 300;
+
+export const metadata: Metadata = {
+  title: "Necesidades — Promoda",
+};
 
 const NEEDS_PER_PAGE = 20;
 

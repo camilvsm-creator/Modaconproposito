@@ -1,6 +1,11 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { SectionCard } from "@/components/ui";
+
+export const metadata: Metadata = {
+  title: "Promoda — Red de Aliados Verificados",
+};
 
 export default function NuestraMisionPage() {
   return (

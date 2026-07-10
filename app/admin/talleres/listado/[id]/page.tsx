@@ -5,7 +5,7 @@ import { AdminPageHeader } from "@/components/admin-page-header";
 import { SectionCard, InputShell } from "@/components/ui";
 import { requireWorkshopAdminUser } from "@/lib/auth";
 import { formatDateTime } from "@/lib/utils";
-import { mockTalleresExtendidos, mockProduccionesAdmin, mockVoluntariosAdmin, mockNecesidadesUrgentes } from "@/lib/mock-data";
+import { getAdminWorkshopById, getAdminWorkshopNeeds, getAdminWorkshopPhotos } from "@/lib/workshops";
 
 const STATUS_BADGES: Record<string, string> = {
   activo: "bg-green-100 text-green-700",
@@ -35,18 +35,6 @@ function TabButton({ href, active, label }: { href: string; active: boolean; lab
   );
 }
 
-function ProgressBar({ current, max }: { current: number; max: number }) {
-  const pct = max > 0 ? Math.round((current / max) * 100) : 0;
-  return (
-    <div className="flex items-center gap-3">
-      <div className="h-2 flex-1 overflow-hidden rounded-full bg-stone-200">
-        <div className="h-full rounded-full bg-[#F74897] transition-all" style={{ width: `${pct}%` }} />
-      </div>
-      <span className="text-xs font-semibold text-stone-500 w-10 text-right">{pct}%</span>
-    </div>
-  );
-}
-
 function getStringParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
@@ -64,19 +52,16 @@ export default async function AdminTallerDetailPage({
   const sp = await searchParams;
   const activeTab = getStringParam(sp, "tab") || "general";
 
-  const taller = mockTalleresExtendidos.find((w) => w.id === id);
+  const taller = await getAdminWorkshopById(id);
   if (!taller) notFound();
 
-  const producciones = mockProduccionesAdmin.filter((p) => p.tallerId === id);
-  const voluntarios = mockVoluntariosAdmin.filter((v) => v.tallerId === id);
-  const necesidades = mockNecesidadesUrgentes.filter((n) => n.tallerId === id);
+  const necesidades = await getAdminWorkshopNeeds(id);
+  const fotos = await getAdminWorkshopPhotos(id);
 
   const tabs = [
     { key: "general", label: "Información general" },
-    { key: "producciones", label: `Producciones (${producciones.length})` },
     { key: "necesidades", label: `Necesidades (${necesidades.length})` },
-    { key: "voluntarios", label: `Voluntarios (${voluntarios.length})` },
-    { key: "historial", label: "Historial" },
+    { key: "fotos", label: `Fotos (${fotos.length})` },
   ];
 
   const tabHref = (tab: string) => {
@@ -103,59 +88,24 @@ export default async function AdminTallerDetailPage({
       {activeTab === "general" && (
         <SectionCard className="p-6 space-y-6">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <InputShell label="Responsable"><p className="text-sm text-stone-700">{taller.responsibleName}</p></InputShell>
+            <InputShell label="Responsable"><p className="text-sm text-stone-700">{taller.responsible_name}</p></InputShell>
             <InputShell label="Estado"><span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${STATUS_BADGES[taller.status]}`}>{STATUS_LABELS[taller.status]}</span></InputShell>
-            <InputShell label="Ubicación"><p className="text-sm text-stone-700">{taller.ciudad}, {taller.estado}</p></InputShell>
-            <InputShell label="Especialidades"><p className="text-sm text-stone-700">{taller.especialidades}</p></InputShell>
-            <InputShell label="Email"><p className="text-sm text-stone-700">contacto@{taller.name.toLowerCase().replace(/\s+/g, "")}.com</p></InputShell>
-            <InputShell label="WhatsApp"><p className="text-sm text-stone-700">+58 412 123 4567</p></InputShell>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-lg border border-stone-200 bg-stone-50/50 p-4 text-center">
-              <p className="text-2xl font-bold text-[#F74897]">{taller.produccionesActivas}</p>
-              <p className="mt-1 text-sm text-stone-500">Producciones activas</p>
-            </div>
-            <div className="rounded-lg border border-stone-200 bg-stone-50/50 p-4 text-center">
-              <p className="text-2xl font-bold text-[#F74897]">{taller.voluntariosAsignados}</p>
-              <p className="mt-1 text-sm text-stone-500">Voluntarios asignados</p>
-            </div>
-            <div className="rounded-lg border border-stone-200 bg-stone-50/50 p-4 text-center">
-              <p className="text-2xl font-bold text-[#F74897]">{taller.necesidadesAbiertas}</p>
-              <p className="mt-1 text-sm text-stone-500">Necesidades abiertas</p>
-            </div>
+            <InputShell label="Ubicación"><p className="text-sm text-stone-700">{taller.city}, {taller.state}</p></InputShell>
+            <InputShell label="Email"><p className="text-sm text-stone-700">{taller.email}</p></InputShell>
+            <InputShell label="WhatsApp"><p className="text-sm text-stone-700">{taller.whatsapp || "—"}</p></InputShell>
+            <InputShell label="Instagram"><p className="text-sm text-stone-700">{taller.instagram || "—"}</p></InputShell>
           </div>
           <div>
-            <InputShell label="Notas internas">
-              <p className="text-sm text-stone-500 italic">Sin notas registradas.</p>
+            <InputShell label="Descripción">
+              <p className="text-sm text-stone-700">{taller.description || "Sin descripción."}</p>
+            </InputShell>
+          </div>
+          <div>
+            <InputShell label="Qué hacen">
+              <p className="text-sm text-stone-700">{taller.what_they_do || "—"}</p>
             </InputShell>
           </div>
         </SectionCard>
-      )}
-
-      {activeTab === "producciones" && (
-        <div className="space-y-4">
-          {producciones.length ? producciones.map((p) => (
-            <SectionCard key={p.id} className="p-5 space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-ink">{p.producto}</p>
-                  <p className="text-sm text-stone-500">Límite: {p.fechaLimite}</p>
-                </div>
-                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
-                  p.estado === "finalizado" || p.estado === "entregado" ? "bg-green-100 text-green-700" : p.estado === "en_produccion" ? "bg-blue-100 text-blue-700" : "bg-stone-100 text-stone-600"
-                }`}>{p.estado.replace("_", " ")}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-stone-600">{p.cantidadProducida} / {p.cantidadSolicitada} unidades</span>
-              </div>
-              <ProgressBar current={p.cantidadProducida} max={p.cantidadSolicitada} />
-            </SectionCard>
-          )) : (
-            <div className="rounded-xl border border-stone-200/80 bg-white/75 p-8 text-center">
-              <p className="text-stone-500">Este taller no tiene producciones registradas.</p>
-            </div>
-          )}
-        </div>
       )}
 
       {activeTab === "necesidades" && (
@@ -163,80 +113,40 @@ export default async function AdminTallerDetailPage({
           {necesidades.length ? necesidades.map((n) => (
             <SectionCard key={n.id} className="p-5 space-y-3">
               <div className="flex flex-wrap items-center gap-3">
-                <span className={`inline-block h-2.5 w-2.5 shrink-0 rounded-full ${n.prioridad === "alta" ? "bg-red-500" : n.prioridad === "media" ? "bg-amber-500" : "bg-green-500"}`} />
-                <p className="font-semibold text-ink">{n.categoria}</p>
-                <span className="rounded bg-[#FFE4EC] px-2 py-0.5 text-[11px] font-semibold text-[#D6003F]">{n.prioridad}</span>
+                <p className="font-semibold text-ink">{n.title}</p>
+                <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
+                  n.status === "publicada" ? "bg-green-100 text-green-700" : n.status === "pendiente" ? "bg-amber-100 text-amber-700" : "bg-stone-100 text-stone-600"
+                }`}>{n.status}</span>
               </div>
-              <p className="text-sm text-stone-600">{n.descripcion}</p>
-              <p className="text-xs text-stone-400">Publicada: {n.fechaPublicacion}</p>
+              {n.description ? <p className="text-sm text-stone-600">{n.description}</p> : null}
+              {n.requested_items ? <p className="text-sm text-stone-500">Artículos solicitados: {n.requested_items}</p> : null}
             </SectionCard>
           )) : (
             <div className="rounded-xl border border-stone-200/80 bg-white/75 p-8 text-center">
-              <p className="text-stone-500">Este taller no tiene necesidades abiertas.</p>
+              <p className="text-stone-500">Este taller no tiene necesidades registradas.</p>
             </div>
           )}
         </div>
       )}
 
-      {activeTab === "voluntarios" && (
+      {activeTab === "fotos" && (
         <div className="space-y-4">
-          {voluntarios.length ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-[600px] w-full text-left text-sm">
-                <thead className="border-b border-stone-200 bg-stone-50/80 text-sm font-semibold text-stone-600">
-                  <tr>
-                    <th className="px-4 py-3">Nombre</th>
-                    <th className="px-4 py-3">Especialidad</th>
-                    <th className="px-4 py-3">Disponibilidad</th>
-                    <th className="px-4 py-3">Estado</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-200">
-                  {voluntarios.map((v) => (
-                    <tr key={v.id} className="hover:bg-stone-50">
-                      <td className="px-4 py-3 font-medium text-ink">{v.nombre}</td>
-                      <td className="px-4 py-3 text-stone-600">{v.especialidad}</td>
-                      <td className="px-4 py-3 text-stone-600">{v.disponibilidad}</td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${
-                          v.estado === "confirmado" ? "bg-green-100 text-green-700" : v.estado === "pendiente" ? "bg-amber-100 text-amber-700" : "bg-stone-100 text-stone-600"
-                        }`}>{v.estado}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
+          {fotos.length ? fotos.map((f) => (
+            <SectionCard key={f.id} className="p-5 space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="font-semibold text-ink">{f.title || "Sin título"}</p>
+                <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
+                  f.status === "aprobada" ? "bg-green-100 text-green-700" : f.status === "pendiente" ? "bg-amber-100 text-amber-700" : "bg-stone-100 text-stone-600"
+                }`}>{f.status}</span>
+              </div>
+              {f.description ? <p className="text-sm text-stone-600">{f.description}</p> : null}
+            </SectionCard>
+          )) : (
             <div className="rounded-xl border border-stone-200/80 bg-white/75 p-8 text-center">
-              <p className="text-stone-500">Este taller no tiene voluntarios asignados.</p>
-              <p className="mt-1 text-sm text-stone-400">Puedes asignar voluntarios desde la sección <Link href="/admin/talleres/voluntarios" className="text-[#F74897] hover:underline">Voluntarios</Link>.</p>
+              <p className="text-stone-500">Este taller no tiene fotos registradas.</p>
             </div>
           )}
         </div>
-      )}
-
-      {activeTab === "historial" && (
-        <SectionCard className="p-6 space-y-4">
-          <p className="text-ink font-semibold">Actividad del taller</p>
-          <div className="space-y-3">
-            {[
-              { fecha: "2026-07-08 09:30", evento: "Actualizó su perfil" },
-              { fecha: "2026-07-05 14:00", evento: "Publicó necesidad: Tela blanca" },
-              { fecha: "2026-07-01 11:00", evento: "Inició producción: Sábanas individuales" },
-              { fecha: "2026-06-28 16:30", evento: "Se le asignó voluntario: María González" },
-              { fecha: "2026-06-20 10:00", evento: "Taller aprobado y activado" },
-              { fecha: "2026-06-15 08:00", evento: "Taller registrado en la plataforma" },
-            ].map((h, i) => (
-              <div key={i} className="flex items-start gap-4 border-l-2 border-[#FFE4EC] pl-4">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm text-stone-700">{h.evento}</p>
-                  <p className="text-xs text-stone-400">{h.fecha}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
       )}
     </div>
   );

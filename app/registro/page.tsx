@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
+
 import { WorkshopRegistrationForm } from "@/components/workshop-registration-form";
 import { SectionCard } from "@/components/ui";
+
+export const metadata: Metadata = {
+  title: "Registrar mi taller — Promoda",
+};
 
 export default function TallerRegistroPage() {
   return (

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { EmptyState } from "@/components/empty-state";
 import { WorkshopCard } from "@/components/workshop-card";
@@ -6,6 +7,10 @@ import { LinkButton, SectionCard } from "@/components/ui";
 import { getPublicWorkshopsPage } from "@/lib/workshops";
 
 export const revalidate = 300;
+
+export const metadata: Metadata = {
+  title: "Aliados — Promoda",
+};
 
 const WORKSHOPS_PER_PAGE = 12;
 

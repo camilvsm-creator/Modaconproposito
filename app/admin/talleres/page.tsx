@@ -4,7 +4,8 @@ import { AdminPageHeader } from "@/components/admin-page-header";
 import { AdminPagination } from "@/components/admin-pagination";
 import { SectionCard } from "@/components/ui";
 import { requireWorkshopAdminUser } from "@/lib/auth";
-import { mockNecesidadesUrgentes, mockProduccionesAdmin, mockTalleresExtendidos, mockVoluntariosAdmin } from "@/lib/mock-data";
+import { getAdminWorkshopsPage } from "@/lib/workshops";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const WORKSHOPS_PER_PAGE = 15;
 
@@ -73,49 +74,39 @@ export default async function AdminInicioPage({
   const user = await requireWorkshopAdminUser();
   const isPromoda = user.app_metadata?.role === "admin_talleres";
   const activeBg = isPromoda ? "bg-[#F74897]" : "bg-primary";
-  const promodaBtnClass = isPromoda ? "bg-[#F74897] hover:bg-[#D6003F] focus-visible:ring-[#F74897]/30" : "";
 
   const params = await searchParams;
   const tab = getStringParam(params, "tab") || "talleres";
   const status = getStringParam(params, "status") || "all";
   const q = getStringParam(params, "q");
 
-  const totalTalleres = mockTalleresExtendidos.length;
-  const talleresActivos = mockTalleresExtendidos.filter((w) => w.status === "activo").length;
-  const necesidadesAbiertas = mockNecesidadesUrgentes.length;
-  const produccionesActivas = mockProduccionesAdmin.filter((p) => p.estado === "en_produccion").length;
-  const voluntariosAsignados = mockVoluntariosAdmin.filter((v) => v.estado === "confirmado").length;
+  const result = await getAdminWorkshopsPage({
+    page: getPageParam(params),
+    limit: WORKSHOPS_PER_PAGE,
+    tab: tab as "postulaciones" | "talleres",
+    status: status === "all" ? undefined : status,
+    q: q || undefined,
+  });
+
+  const allWorkshops = await getAdminWorkshopsPage({ limit: 1000 });
+  const totalTalleres = allWorkshops.total;
+  const talleresActivos = allWorkshops.items.filter((w) => w.status === "activo").length;
+  const postulacionesPendientes = allWorkshops.items.filter((w) => w.status === "pendiente" || w.status === "approved_pending_activation").length;
+
+  const admin = createSupabaseAdminClient();
+  const { count: necesidadesCount } = await admin
+    .from("workshop_needs")
+    .select("id", { count: "exact", head: true })
+    .in("status", ["pendiente", "publicada"]);
 
   const stats = [
     { label: "Talleres", value: totalTalleres },
     { label: "Activos", value: talleresActivos },
-    { label: "Necesidades urgentes", value: necesidadesAbiertas },
-    { label: "Producciones activas", value: produccionesActivas },
-    { label: "Voluntarios confirmados", value: voluntariosAsignados },
+    { label: "Necesidades urgentes", value: necesidadesCount ?? 0 },
+    { label: "Postulaciones pendientes", value: postulacionesPendientes },
   ];
 
   const statusOptions = tab === "talleres" ? ACTIVE_STATUS_OPTIONS : POSTULATION_STATUS_OPTIONS;
-
-  const postulacionesPendientes = mockTalleresExtendidos.filter((w) => w.status === "pendiente" || w.status === "approved_pending_activation").length;
-
-  let filtered = mockTalleresExtendidos;
-  if (tab === "postulaciones") {
-    filtered = filtered.filter((w) => w.status === "pendiente" || w.status === "approved_pending_activation");
-  } else if (tab === "talleres") {
-    filtered = filtered.filter((w) => ["activo", "pausado", "rechazado"].includes(w.status));
-  }
-  if (status !== "all") {
-    filtered = filtered.filter((w) => w.status === status);
-  }
-  if (q) {
-    const ql = q.toLowerCase();
-    filtered = filtered.filter((w) => w.name.toLowerCase().includes(ql) || w.responsibleName.toLowerCase().includes(ql) || w.ciudad.toLowerCase().includes(ql));
-  }
-
-  const total = filtered.length;
-  const page = getPageParam(params);
-  const pageCount = Math.max(Math.ceil(total / WORKSHOPS_PER_PAGE), 1);
-  const paged = filtered.slice((page - 1) * WORKSHOPS_PER_PAGE, page * WORKSHOPS_PER_PAGE);
 
   return (
     <div className="space-y-6">
@@ -125,7 +116,7 @@ export default async function AdminInicioPage({
         description="Resumen general de la red de talleres."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
           <SectionCard key={stat.label} className="p-4">
             <p className="text-3xl font-bold text-ink">{stat.value}</p>
@@ -187,50 +178,34 @@ export default async function AdminInicioPage({
         </div>
       </div>
 
-      {paged.length ? (
+      {result.items.length ? (
         <div className="space-y-4">
           <div className="hidden overflow-x-auto md:block">
-            <table className="min-w-[1280px] w-full text-left text-sm">
+            <table className="min-w-[900px] w-full text-left text-sm">
               <thead className="border-b border-stone-200 bg-stone-50/80 text-sm font-semibold text-stone-600">
                 <tr>
                   <th className="px-4 py-3">Nombre</th>
                   <th className="px-4 py-3">Responsable</th>
                   <th className="px-4 py-3">Estado</th>
-                  <th className="px-4 py-3">Especialidades</th>
-                  <th className="px-4 py-3">Producciones</th>
-                  <th className="px-4 py-3">Voluntarios</th>
-                  <th className="px-4 py-3">Necesidades</th>
+                  <th className="px-4 py-3">Ubicación</th>
                   <th className="px-4 py-3">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-200">
-                {paged.map((w) => (
+                {result.items.map((w) => (
                   <tr key={w.id} className="hover:bg-stone-50 transition-colors">
                     <td className="px-4 py-3 align-top leading-tight">
                       <Link href={`/admin/talleres/listado/${w.id}`} className="font-semibold text-[#F74897] hover:underline">
                         {w.name}
                       </Link>
-                      <p className="text-xs text-stone-400">{w.ciudad}, {w.estado}</p>
                     </td>
-                    <td className="px-4 py-3 align-top text-stone-700 leading-tight">{w.responsibleName}</td>
+                    <td className="px-4 py-3 align-top text-stone-700 leading-tight">{w.responsible_name}</td>
                     <td className="px-4 py-3 align-top leading-tight">
                       <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${STATUS_BADGES[w.status] || "bg-stone-100 text-stone-600"}`}>
                         {STATUS_LABELS[w.status] || w.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 align-top text-stone-600 leading-tight text-sm">{w.especialidades}</td>
-                    <td className="px-4 py-3 align-top leading-tight">
-                      <span className="font-semibold text-ink">{w.produccionesActivas}</span>
-                      <span className="text-stone-400 ml-1">activas</span>
-                    </td>
-                    <td className="px-4 py-3 align-top leading-tight">
-                      <span className="font-semibold text-ink">{w.voluntariosAsignados}</span>
-                      <span className="text-stone-400 ml-1">asignados</span>
-                    </td>
-                    <td className="px-4 py-3 align-top leading-tight">
-                      <span className="font-semibold text-ink">{w.necesidadesAbiertas}</span>
-                      <span className="text-stone-400 ml-1">abiertas</span>
-                    </td>
+                    <td className="px-4 py-3 align-top text-stone-600 leading-tight text-sm">{w.city}, {w.state}</td>
                     <td className="px-4 py-3 align-top leading-tight">
                       <Link
                         href={`/admin/talleres/listado/${w.id}`}
@@ -246,17 +221,15 @@ export default async function AdminInicioPage({
           </div>
 
           <div className="grid gap-3 md:hidden">
-            {paged.map((w) => (
+            {result.items.map((w) => (
               <div key={w.id} className="rounded-xl border border-stone-200/80 bg-white/75 p-5 space-y-4">
                 <div className="space-y-1 text-sm text-stone-700">
                   <Link href={`/admin/talleres/listado/${w.id}`} className="font-semibold text-[#F74897] hover:underline">{w.name}</Link>
-                  <p className="text-stone-600">{w.responsibleName}</p>
-                  <p className="text-stone-400">{w.ciudad}, {w.estado}</p>
-                  <p className="text-stone-500">{w.especialidades}</p>
+                  <p className="text-stone-600">{w.responsible_name}</p>
+                  <p className="text-stone-400">{w.city}, {w.state}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${STATUS_BADGES[w.status]}`}>{STATUS_LABELS[w.status]}</span>
-                  <span className="text-sm text-stone-500">{w.produccionesActivas} producciones · {w.voluntariosAsignados} voluntarios · {w.necesidadesAbiertas} necesidades</span>
                 </div>
                 <Link
                   href={`/admin/talleres/listado/${w.id}`}
@@ -269,10 +242,10 @@ export default async function AdminInicioPage({
           </div>
 
           <AdminPagination
-            page={page}
-            pageCount={pageCount}
-            total={total}
-            limit={WORKSHOPS_PER_PAGE}
+            page={result.page}
+            pageCount={result.pageCount}
+            total={result.total}
+            limit={result.limit}
             hrefForPage={(p) => pageHref(params, p)}
           />
         </div>

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type { SewingPattern } from "@/lib/types";
 import {
   getPatternDownloadUrl,
@@ -7,6 +8,10 @@ import {
 import { EmptyState } from "@/components/empty-state";
 import { SectionCard } from "@/components/ui";
 import { Download, Scissors } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Patrones — Promoda",
+};
 
 function pageHref(category?: string) {
   const params = new URLSearchParams();
