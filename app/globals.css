@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .full-bleed {
+    width: 100%;
+    margin-left: calc(-50% + 50vw);
+  }
+}
+
+:root {
+  color-scheme: light;
+  --color-primary: 180 35 24;
+  --color-primary-dark: 143 29 22;
+  --color-primary-soft: 254 228 226;
+}
+
+[data-theme="promoda"] {
+  --color-primary: 255 11 85;
+  --color-primary-dark: 214 0 63;
+  --color-primary-soft: 255 228 236;
+}
+
+body {
+  @apply bg-canvas text-ink antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  @apply transition-colors;
+}
+
+input,
+textarea,
+select {
+  @apply outline-none;
+}
+
+::selection {
+  @apply bg-primary text-white;
+}
