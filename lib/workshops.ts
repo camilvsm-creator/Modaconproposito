@@ -71,7 +71,7 @@ export async function getAdminWorkshopsPage({
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  const activeStatuses = ["activo", "pausado", "rechazado"];
+  const activeStatuses = ["activo", "pausado", "rechazado", "desactivado"];
   const postulationStatuses = ["pendiente", "approved_pending_activation"];
 
   if (tab === "postulaciones") {

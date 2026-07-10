@@ -358,7 +358,7 @@ export const WORKSHOP_PHOTO_BUCKET = "workshop-photos";
 export const MAX_WORKSHOP_PHOTOS = 6;
 export const MAX_WORKSHOP_AVATAR_BYTES = 2 * 1024 * 1024;
 
-export const WORKSHOP_STATUSES = ["pendiente", "activo", "pausado", "rechazado"] as const;
+export const WORKSHOP_STATUSES = ["pendiente", "activo", "pausado", "rechazado", "desactivado"] as const;
 export const WORKSHOP_NEED_STATUSES = ["pendiente", "publicada", "cubierta", "cerrada"] as const;
 export const WORKSHOP_PHOTO_STATUSES = ["pendiente", "aprobada", "rechazada"] as const;
 export const WORKSHOP_HELP_STATUSES = ["recibida", "gestionada", "cerrada"] as const;
@@ -368,6 +368,7 @@ export const WORKSHOP_STATUS_LABELS: Record<string, string> = {
   activo: "Activo",
   pausado: "Pausado",
   rechazado: "Rechazado",
+  desactivado: "Desactivado",
 };
 
 export const WORKSHOP_STATUS_TONES: Record<string, string> = {
@@ -375,6 +376,7 @@ export const WORKSHOP_STATUS_TONES: Record<string, string> = {
   activo: "bg-success-soft text-success",
   pausado: "bg-stone-200 text-stone-600",
   rechazado: "bg-danger-soft text-danger",
+  desactivado: "bg-red-100 text-red-700",
 };
 
 export const WORKSHOP_NEED_STATUS_LABELS: Record<string, string> = {

@@ -87,16 +87,16 @@ export function AdminShell({ role, email, avatarUrl, children }: AdminShellProps
   }, [drawerOpen, closeDrawer]);
 
   return (
-    <div className={cn("min-h-screen text-ink", isPromoda ? "bg-[#FFE4EC]/30" : "bg-stone-50")}>
-      <div className="flex min-h-screen flex-col lg:flex-row">
+    <div className={cn("h-screen overflow-hidden text-ink", isPromoda ? "bg-[#FFE4EC]/30" : "bg-stone-50")}>
+      <div className="flex h-full">
         {/* Desktop sidebar */}
         <aside className={cn(
-          "hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:w-[250px] lg:flex-col lg:border-r text-stone-700",
+          "hidden lg:flex lg:w-[250px] lg:flex-col lg:border-r text-stone-700 shrink-0",
           isPromoda ? "border-[#F74897]/10 bg-white" : "border-stone-300 bg-stone-50",
         )}>
           <div className="flex h-full flex-col px-4 py-5">
             {/* Sidebar header */}
-            <div className={cn("border-b pb-4", isPromoda ? "border-[#F74897]/10" : "border-stone-300")}>
+            <div className={cn("border-b pb-4 shrink-0", isPromoda ? "border-[#F74897]/10" : "border-stone-300")}>
               {isPromoda ? (
                 <Link href="/admin/talleres" className="flex items-center gap-2">
                   <img src="/promoda-logo.svg" alt="Promoda" className="h-7 w-auto" />
@@ -139,7 +139,7 @@ export function AdminShell({ role, email, avatarUrl, children }: AdminShellProps
             </nav>
 
             {/* Session footer */}
-            <div className="mt-auto">
+            <div className="mt-auto shrink-0 pt-4">
               <form action="/admin/logout" method="post">
                 <button
                   type="submit"
@@ -159,8 +159,8 @@ export function AdminShell({ role, email, avatarUrl, children }: AdminShellProps
         </aside>
 
         {/* Main content */}
-        <div className="min-w-0 flex-1 bg-white pb-[72px] lg:pb-0">
-          <main className="w-full px-4 py-5 sm:px-6 lg:px-10 xl:px-12 lg:py-8">
+        <div className="flex-1 min-w-0 flex flex-col h-full bg-white">
+          <main className="flex-1 min-h-0 overflow-y-auto px-4 py-5 sm:px-6 lg:px-10 xl:px-12 lg:py-8 pb-[72px] lg:pb-8">
             {children}
           </main>
         </div>

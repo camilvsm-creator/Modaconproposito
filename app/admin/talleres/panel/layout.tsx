@@ -28,5 +28,21 @@ export default async function TalleresPanelLayout({ children }: { children: Reac
     );
   }
 
+  if (workshop.status === "desactivado") {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-8 text-center shadow-card">
+          <h1 className="text-xl font-semibold text-red-800">Taller desactivado</h1>
+          <p className="mt-2 text-sm text-red-600">
+            Tu taller ha sido desactivado. No puedes acceder al panel en este momento.
+          </p>
+          <p className="mt-2 text-sm text-red-600">
+            Contacta al equipo de Promoda para más información.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return <WorkshopProvider workshop={workshop}>{children}</WorkshopProvider>;
 }
