@@ -19,6 +19,13 @@ export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: "Promoda",
   description: "Red de talleres voluntarios y patrones estandarizados.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+    ],
+  },
 };
 
 export default async function RootLayout({
@@ -42,7 +49,7 @@ export default async function RootLayout({
                     Nuestra misión
                   </Link>
                   <Link href="/ver-talleres" className="text-sm font-semibold text-stone-600 hover:text-[#F74897]">
-                    Ver talleres
+                    Aliados
                   </Link>
                   <Link href="/necesidades" className="text-sm font-semibold text-stone-600 hover:text-[#F74897]">
                     Necesidades
@@ -69,7 +76,7 @@ export default async function RootLayout({
                 <img src="/promoda-logo.svg" alt="Promoda" className="h-7 w-auto" />
               </div>
               <div>
-                <p className="text-sm font-bold text-stone-700">Red de Talleres Verificados</p>
+                <p className="text-sm font-bold text-stone-700">Aliados Verificados</p>
                 <p className="text-sm text-stone-400">Patrones estandarizados y coordinación de talleres de confección y apoyo textil.</p>
               </div>
             </div>
