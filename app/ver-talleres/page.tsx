@@ -9,7 +9,7 @@ import { getPublicWorkshopsPage } from "@/lib/workshops";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Ayuda — Promoda",
+  title: "Aliados — Promoda",
 };
 
 const WORKSHOPS_PER_PAGE = 12;
@@ -70,10 +70,10 @@ export default async function WorkshopsPage({
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="max-w-3xl space-y-4">
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F74897]">
-              RED DE AYUDA
+              RED DE ALIADOS VERIFICADOS
             </p>
             <h1 className="text-3xl font-black leading-[1.05] tracking-[-0.03em] text-ink sm:text-4xl">
-              RED DE AYUDA
+              RED DE ALIADOS VERIFICADOS
             </h1>
             <p className="text-base leading-7 text-stone-700">
               Espacio para registrar talleres, publicar necesidades de

@@ -6,7 +6,7 @@ import { Menu, X } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/", label: "Nuestra misión" },
-  { href: "/ver-talleres", label: "Ayuda" },
+  { href: "/ver-talleres", label: "Aliados" },
   { href: "/necesidades", label: "Necesidades" },
   { href: "/patrones", label: "Patrones" },
   { href: "/adopta-una-cartuchera", label: "Adopta una cartuchera" },

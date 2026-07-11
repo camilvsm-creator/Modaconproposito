@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { SectionCard } from "@/components/ui";
 
 export const metadata: Metadata = {
-  title: "Promoda — Red de Ayuda",
+  title: "Promoda — Red de Aliados Verificados",
 };
 
 export default function NuestraMisionPage() {
@@ -14,7 +14,7 @@ export default function NuestraMisionPage() {
         <div className="mx-auto max-w-4xl space-y-12">
           <div className="space-y-2">
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F74897]">
-              Red de Ayuda
+              Aliados Verificados
             </p>
             <h1 className="text-2xl font-black tracking-[-0.03em] text-ink sm:text-4xl">
               Nuestra misión

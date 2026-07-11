@@ -14,7 +14,7 @@ export default function TallerRegistroPage() {
         <div className="mx-auto max-w-3xl space-y-6">
           <div className="space-y-2">
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F74897]">
-              RED DE AYUDA
+              RED DE ALIADOS VERIFICADOS
             </p>
             <h1 className="text-3xl font-black tracking-[-0.03em] text-ink sm:text-4xl">
               Registrar mi taller
