@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 
 import { AdminPageHeader } from "@/components/admin-page-header";
 import { SectionCard, InputShell } from "@/components/ui";
+import { GenerateAccessButton } from "@/components/generate-access-button";
 import { requireWorkshopAdminUser } from "@/lib/auth";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { formatDateTime } from "@/lib/utils";
 import { getAdminWorkshopById, getAdminWorkshopNeeds, getAdminWorkshopPhotos } from "@/lib/workshops";
 
@@ -55,13 +57,23 @@ export default async function AdminTallerDetailPage({
   const taller = await getAdminWorkshopById(id);
   if (!taller) notFound();
 
-  const necesidades = await getAdminWorkshopNeeds(id);
-  const fotos = await getAdminWorkshopPhotos(id);
+  const admin = createSupabaseAdminClient();
+
+  const [
+    { count: needsCount },
+    { count: photosCount },
+  ] = await Promise.all([
+    admin.from("workshop_needs").select("id", { count: "exact", head: true }).eq("workshop_id", id),
+    admin.from("workshop_photos").select("id", { count: "exact", head: true }).eq("workshop_id", id),
+  ]);
+
+  const necesidades = activeTab === "necesidades" ? await getAdminWorkshopNeeds(id) : [];
+  const fotos = activeTab === "fotos" ? await getAdminWorkshopPhotos(id) : [];
 
   const tabs = [
     { key: "general", label: "Información general" },
-    { key: "necesidades", label: `Necesidades (${necesidades.length})` },
-    { key: "fotos", label: `Fotos (${fotos.length})` },
+    { key: "necesidades", label: `Necesidades (${needsCount ?? 0})` },
+    { key: "fotos", label: `Fotos (${photosCount ?? 0})` },
   ];
 
   const tabHref = (tab: string) => {
@@ -76,6 +88,11 @@ export default async function AdminTallerDetailPage({
         eyebrow="Talleres"
         title={taller.name}
         meta={STATUS_LABELS[taller.status] || taller.status}
+        actions={
+          !taller.user_id && taller.status !== "rechazado" && taller.status !== "desactivado" && taller.status !== "pendiente" ? (
+            <GenerateAccessButton workshopId={taller.id} workshopName={taller.name} />
+          ) : null
+        }
         navigation={{ baseHref: "/admin/talleres", baseLabel: "Inicio", currentLabel: taller.name }}
       />
 

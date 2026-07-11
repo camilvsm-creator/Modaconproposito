@@ -34,7 +34,7 @@ export async function updateWorkshopStatusAction(formData: FormData): Promise<Re
 
   const workshop = await getAdminWorkshopById(id);
   revalidatePath("/admin/talleres");
-  revalidatePath(`/admin/talleres/${id}`);
+  revalidatePath(`/admin/talleres/listado/${id}`);
   if (workshop?.slug) revalidatePath(`/${workshop.slug}`);
   revalidatePath("/ver-talleres");
   return {};
@@ -65,7 +65,7 @@ export async function approveWorkshopAction(formData: FormData): Promise<Result>
   const { activationLink } = await createWorkshopActivationToken(id, user.id);
 
   revalidatePath("/admin/talleres");
-  revalidatePath(`/admin/talleres/${id}`);
+  revalidatePath(`/admin/talleres/listado/${id}`);
   return { activationLink };
 }
 
@@ -94,7 +94,7 @@ export async function sendWorkshopActivationEmailAction(formData: FormData): Pro
 
   if (error) return { error: `Error al enviar el correo: ${error}` };
 
-  revalidatePath(`/admin/talleres/${workshopId}`);
+  revalidatePath(`/admin/talleres/listado/${workshopId}`);
   return {};
 }
 
@@ -111,7 +111,31 @@ export async function generateWorkshopActivationLinkAction(formData: FormData): 
 
   const { activationLink } = await createWorkshopActivationToken(workshopId, user.id);
 
-  revalidatePath(`/admin/talleres/${workshopId}`);
+  revalidatePath(`/admin/talleres/listado/${workshopId}`);
+  return { activationLink };
+}
+
+export async function generateAccessLinkAction(formData: FormData): Promise<Result> {
+  const user = await requireWorkshopAdminUser();
+  const workshopId = String(formData.get("workshopId") || "");
+
+  if (!workshopId) return { error: "ID de taller no válido.", activationLink: null };
+
+  const workshop = await getAdminWorkshopById(workshopId);
+  if (!workshop) return { error: "Taller no encontrado.", activationLink: null };
+
+  if (workshop.user_id) {
+    return { error: "Este taller ya tiene un usuario vinculado.", activationLink: null };
+  }
+
+  if (workshop.status === "rechazado" || workshop.status === "desactivado" || workshop.status === "pendiente") {
+    return { error: "No puedes generar acceso para un taller en este estado.", activationLink: null };
+  }
+
+  const { activationLink } = await createWorkshopActivationToken(workshopId, user.id);
+
+  revalidatePath("/admin/talleres");
+  revalidatePath(`/admin/talleres/listado/${workshopId}`);
   return { activationLink };
 }
 
@@ -166,7 +190,7 @@ export async function updateWorkshopAction(formData: FormData): Promise<Result> 
   if (error) return { error: error.message };
 
   revalidatePath("/admin/talleres");
-  revalidatePath(`/admin/talleres/${id}`);
+  revalidatePath(`/admin/talleres/listado/${id}`);
   if (workshop.slug) revalidatePath(`/${workshop.slug}`);
   revalidatePath("/ver-talleres");
   return {};
@@ -193,7 +217,6 @@ export async function updateNeedStatusAction(formData: FormData): Promise<Result
   const needWorkshopId = (await admin.from("workshop_needs").select("workshop_id").eq("id", id).maybeSingle()).data?.workshop_id;
   const needWorkshop = needWorkshopId ? await getAdminWorkshopById(needWorkshopId) : null;
   revalidatePath("/admin/talleres/necesidades");
-  revalidatePath("/admin/talleres");
   revalidatePath("/necesidades");
   if (needWorkshop?.slug) revalidatePath(`/${needWorkshop.slug}`);
   return {};
@@ -235,7 +258,6 @@ export async function updatePhotoStatusAction(formData: FormData): Promise<Resul
 
   const photoWorkshopId = (await admin.from("workshop_photos").select("workshop_id").eq("id", id).maybeSingle()).data?.workshop_id;
   const photoWorkshop = photoWorkshopId ? await getAdminWorkshopById(photoWorkshopId) : null;
-  revalidatePath("/admin/talleres/fotos");
   if (photoWorkshop?.slug) revalidatePath(`/${photoWorkshop.slug}`);
   return {};
 }
@@ -283,6 +305,7 @@ export async function deactivateWorkshopAction(formData: FormData): Promise<Resu
   if (error) return { error: error.message };
 
   revalidatePath("/admin/talleres");
+  revalidatePath(`/admin/talleres/listado/${id}`);
   if (workshop.slug) revalidatePath(`/${workshop.slug}`);
   revalidatePath("/ver-talleres");
   return {};
@@ -306,6 +329,7 @@ export async function reactivateWorkshopAction(formData: FormData): Promise<Resu
   if (error) return { error: error.message };
 
   revalidatePath("/admin/talleres");
+  revalidatePath(`/admin/talleres/listado/${id}`);
   if (workshop.slug) revalidatePath(`/${workshop.slug}`);
   revalidatePath("/ver-talleres");
   return {};
@@ -337,6 +361,7 @@ export async function deleteWorkshopAction(formData: FormData): Promise<Result> 
   if (error) return { error: error.message };
 
   revalidatePath("/admin/talleres");
+  revalidatePath(`/admin/talleres/listado/${id}`);
   revalidatePath("/ver-talleres");
   if (workshop.slug) revalidatePath(`/${workshop.slug}`);
   return {};

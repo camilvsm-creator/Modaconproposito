@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { AdminPageHeader } from "@/components/admin-page-header";
 import { requireWorkshopUser } from "@/lib/auth";
-import { getWorkshopByUserId, getWorkshopNeeds, getWorkshopPhotos, getAdminWorkshopHelpOffers } from "@/lib/workshops";
+import { getWorkshopByUserId, getWorkshopNeeds, getWorkshopPhotos } from "@/lib/workshops";
 import {
   WORKSHOP_STATUS_LABELS,
   WORKSHOP_STATUS_TONES,

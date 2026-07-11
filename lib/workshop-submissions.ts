@@ -64,7 +64,6 @@ export async function submitWorkshopRegistration(formData: FormData): Promise<Re
     return { success: false, error: "No pudimos registrar el taller. Intenta nuevamente." };
   }
 
-  revalidatePath("/");
   revalidatePath("/admin/talleres");
   return { success: true };
 }
