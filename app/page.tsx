@@ -147,12 +147,20 @@ export default function NuestraMisionPage() {
               Si eres taller, voluntario, empresa o profesional del sector
               moda, puedes formar parte de esta iniciativa.
             </p>
+            <div className="flex flex-wrap justify-center gap-3">
               <Link
                 href="/registro"
                 className="rounded-full bg-[#F74897] px-6 py-3 text-sm font-bold text-white hover:bg-[#D6003F]"
               >
                 Ofrecer mi taller
               </Link>
+              <Link
+                href="/voluntarios"
+                className="rounded-full bg-white px-6 py-3 text-sm font-bold text-[#F74897] ring-1 ring-[#F74897] hover:bg-[#FFE4EC]"
+              >
+                Postularme como voluntario
+              </Link>
+            </div>
           </SectionCard>
         </div>
       </div>
