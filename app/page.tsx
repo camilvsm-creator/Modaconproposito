@@ -27,7 +27,7 @@ export default function NuestraMisionPage() {
             </h2>
             <div className="space-y-4 text-sm leading-6 text-stone-700">
               <p>
-                Esta iniciativa nace para conectar a talleres de confección,
+                Esta iniciativa nace para conectar a talleres, escuelas y academias de confección,
                 costureros, diseñadores, patronistas, docentes, estudiantes y
                 voluntarios con un propósito común: apoyar a las comunidades
                 afectadas por el terremoto ocurrido en Venezuela el 24 de junio
@@ -60,7 +60,7 @@ export default function NuestraMisionPage() {
               <SectionCard className="flex flex-col p-5">
                 <h3 className="font-black text-[#F74897]">Talleres verificados</h3>
                 <p className="mt-2 text-sm leading-6 text-stone-600">
-                  Los talleres pueden registrarse para formar parte de la red,
+                  Los talleres, escuelas y academias pueden registrarse para formar parte de la red,
                   compartir su capacidad de producción y participar en la
                   confección de productos textiles destinados a apoyar a las
                   comunidades afectadas.
