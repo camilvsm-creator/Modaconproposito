@@ -16,7 +16,7 @@ export default function NuestraMisionPage() {
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F74897]">
               Aliados Verificados
             </p>
-            <h1 className="text-3xl font-black tracking-[-0.03em] text-ink sm:text-4xl">
+            <h1 className="text-2xl font-black tracking-[-0.03em] text-ink sm:text-4xl">
               Nuestra misión
             </h1>
           </div>
