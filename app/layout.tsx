@@ -49,7 +49,7 @@ export default async function RootLayout({
                 <img src="/promoda-logo.svg" alt="Promoda" className="h-7 w-auto" />
               </div>
               <div className="text-center sm:text-left">
-                <p className="text-sm font-bold text-stone-700">Aliados Verificados</p>
+                <p className="text-sm font-bold text-stone-700">Red de Ayuda</p>
                 <p className="text-sm text-stone-400">Patrones estandarizados y coordinación de talleres de confección y apoyo textil.</p>
               </div>
             </div>

@@ -29,7 +29,7 @@ const sharedAdminItems: NavItem[] = [
   { href: "/admin/talleres/entregas", label: "Entregas", icon: PackageCheck },
   { href: "/admin/talleres/mensajes", label: "Mensajes", icon: MessageCircle },
   { href: "/admin/talleres/reportes", label: "Reporte", icon: BarChart3 },
-  { href: "/admin/talleres/aliados", label: "Aliados", icon: GitFork },
+  { href: "/admin/talleres/aliados", label: "Ayuda", icon: GitFork },
   { href: "/admin/talleres/patrones", label: "Patrones", icon: FileText },
   { href: "/admin/talleres/cartuchera", label: "Cartuchera", icon: ClipboardList },
   { href: "/admin/talleres/ofertas", label: "Ofertas", icon: MessageCircle },
