@@ -87,12 +87,15 @@ export default async function WorkshopsPage({
               por parte de AfectadosTerremoto.
             </p>
             <div className="flex flex-wrap gap-3 pt-2">
-                <LinkButton
+              <LinkButton
                 href="/registro"
                 className="bg-[#F74897] text-white hover:bg-[#D6003F]"
               >
                 Ofrecer mi taller como voluntario
               </LinkButton>
+              <Link href="/voluntarios" className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#F74897] ring-1 ring-stone-300 hover:bg-[#FFE4EC] transition">
+                Postularme como voluntario
+              </Link>
               <LinkButton href="/necesidades" variant="secondary">
                 Ver necesidades
               </LinkButton>
