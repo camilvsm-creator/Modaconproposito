@@ -13,6 +13,7 @@ export async function activateWorkshopFromTokenAction(formData: FormData): Promi
   const token = String(formData.get("token") || "");
   const password = String(formData.get("password") || "");
   const confirmPassword = String(formData.get("confirmPassword") || "");
+  const customEmail = String(formData.get("email") || "").trim().toLowerCase();
 
   if (!token) return { error: "El enlace de activación no es válido." };
   if (!password || password.length < 6) {
@@ -36,24 +37,37 @@ export async function activateWorkshopFromTokenAction(formData: FormData): Promi
   }
 
   const workshop = activationToken.workshop;
-  if (!workshop || workshop.status !== "approved_pending_activation") {
+  if (!workshop) {
     return { error: "Este taller ya no está disponible para activación." };
+  }
+
+  const isApprovedPending = workshop.status === "approved_pending_activation";
+  const isActiveWithoutUser = workshop.status === "activo" && !workshop.user_id;
+
+  if (!isApprovedPending && !isActiveWithoutUser) {
+    return { error: "Este taller ya no está disponible para activación." };
+  }
+
+  const email = workshop.email || customEmail;
+
+  if (!email || !email.includes("@")) {
+    return { error: "Se requiere un correo electrónico válido para crear la cuenta." };
   }
 
   const { data: existingUsers } = await admin.auth.admin.listUsers();
   const emailAlreadyExists = existingUsers?.users.some(
-    (u) => (u.email ?? "").toLowerCase() === workshop.email.toLowerCase(),
+    (u) => (u.email ?? "").toLowerCase() === email.toLowerCase(),
   );
   if (emailAlreadyExists) {
     return { error: "Ya existe un usuario registrado con ese correo." };
   }
 
   const { data: createdUser, error: createError } = await admin.auth.admin.createUser({
-    email: workshop.email,
+    email,
     password,
     email_confirm: true,
     user_metadata: {
-      full_name: workshop.responsible_name,
+      full_name: workshop.responsible_name || workshop.name,
       workshop_name: workshop.name,
     },
     app_metadata: { role: "taller" },
@@ -65,22 +79,36 @@ export async function activateWorkshopFromTokenAction(formData: FormData): Promi
 
   const now = new Date().toISOString();
 
+  const workshopUpdates: Record<string, unknown> = {
+    user_id: createdUser.user.id,
+  };
+
+  if (isApprovedPending) {
+    workshopUpdates.status = "activo";
+    workshopUpdates.approved_at = workshop.approved_at ?? now;
+  }
+
+  if (!workshop.email && customEmail) {
+    workshopUpdates.email = customEmail;
+  }
+
+  const { error: updateError } = await admin
+    .from("workshops")
+    .update(workshopUpdates)
+    .eq("id", workshop.id);
+
+  if (updateError) {
+    return { error: "Cuenta creada pero no se pudo vincular al taller. Contacta al equipo." };
+  }
+
   await admin
     .from("workshop_activation_tokens")
     .update({ used_at: now })
     .eq("id", activationToken.id);
 
-  await admin
-    .from("workshops")
-    .update({
-      status: "activo",
-      user_id: createdUser.user.id,
-      approved_at: workshop.approved_at ?? now,
-    })
-    .eq("id", workshop.id);
-
   revalidatePath("/admin/talleres");
-  revalidatePath(`/admin/talleres/${workshop.id}`);
+  revalidatePath(`/admin/talleres/listado/${workshop.id}`);
   revalidatePath(`/${workshop.slug}`);
+  revalidatePath("/ver-talleres");
   return {};
 }

@@ -86,9 +86,10 @@ export async function getPublicPatternsGrouped(): Promise<GroupedPatterns> {
   const supabase = createSupabasePublicClient();
   const { data } = await supabase
     .from("sewing_patterns")
-    .select("*")
+    .select("id, title, description, category, subgroup, difficulty, file_path, image_path, file_size_bytes, status")
     .eq("status", "publicado")
-    .order("title", { ascending: true });
+    .order("title", { ascending: true })
+    .limit(500);
 
   const all = (data ?? []) as SewingPattern[];
   const byCategory = new Map<string, Map<string, SewingPattern[]>>();

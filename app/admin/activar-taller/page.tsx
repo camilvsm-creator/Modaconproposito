@@ -23,7 +23,9 @@ export default async function AdminActivarTallerPage({
   const activationToken = await findWorkshopActivationToken(token);
   const workshop = activationToken?.workshop ?? null;
   const isExpired = activationToken ? new Date(activationToken.expires_at).getTime() < Date.now() : true;
-  const isValid = Boolean(activationToken && workshop && !activationToken.used_at && !isExpired && workshop.status === "approved_pending_activation");
+  const isApprovedPending = workshop?.status === "approved_pending_activation";
+  const isActiveWithoutUser = workshop?.status === "activo" && !workshop?.user_id;
+  const isValid = Boolean(activationToken && workshop && !activationToken.used_at && !isExpired && (isApprovedPending || isActiveWithoutUser));
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
@@ -37,7 +39,7 @@ export default async function AdminActivarTallerPage({
       ) : (
         <WorkshopActivationForm
           token={token}
-          responsibleName={workshop.responsible_name}
+          responsibleName={workshop.responsible_name || workshop.name}
           email={workshop.email}
           workshopName={workshop.name}
         />

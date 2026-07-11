@@ -4,6 +4,7 @@ import { AdminPageHeader } from "@/components/admin-page-header";
 import { AdminPagination } from "@/components/admin-pagination";
 import { SectionCard } from "@/components/ui";
 import { DeleteWorkshopButton } from "@/components/delete-workshop-button";
+import { GenerateAccessButton } from "@/components/generate-access-button";
 import { requireWorkshopAdminUser } from "@/lib/auth";
 import { getAdminWorkshopsPage } from "@/lib/workshops";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -103,22 +104,25 @@ export default async function AdminInicioPage({
     q: q || undefined,
   });
 
-  const allWorkshops = await getAdminWorkshopsPage({ limit: 1000 });
-  const totalTalleres = allWorkshops.total;
-  const talleresActivos = allWorkshops.items.filter((w) => w.status === "activo").length;
-  const postulacionesPendientes = allWorkshops.items.filter((w) => w.status === "pendiente" || w.status === "approved_pending_activation").length;
-
   const admin = createSupabaseAdminClient();
-  const { count: necesidadesCount } = await admin
-    .from("workshop_needs")
-    .select("id", { count: "exact", head: true })
-    .in("status", ["pendiente", "publicada"]);
+
+  const [
+    { count: totalTalleres },
+    { count: talleresActivos },
+    { count: postulacionesPendientes },
+    { count: necesidadesCount },
+  ] = await Promise.all([
+    admin.from("workshops").select("id", { count: "exact", head: true }),
+    admin.from("workshops").select("id", { count: "exact", head: true }).eq("status", "activo"),
+    admin.from("workshops").select("id", { count: "exact", head: true }).in("status", ["pendiente", "approved_pending_activation"]),
+    admin.from("workshop_needs").select("id", { count: "exact", head: true }).in("status", ["pendiente", "publicada"]),
+  ]);
 
   const stats = [
-    { label: "Talleres", value: totalTalleres },
-    { label: "Activos", value: talleresActivos },
+    { label: "Talleres", value: totalTalleres ?? 0 },
+    { label: "Activos", value: talleresActivos ?? 0 },
     { label: "Necesidades urgentes", value: necesidadesCount ?? 0 },
-    { label: "Postulaciones pendientes", value: postulacionesPendientes },
+    { label: "Postulaciones pendientes", value: postulacionesPendientes ?? 0 },
   ];
 
   const statusOptions = tab === "talleres" ? ACTIVE_STATUS_OPTIONS : POSTULATION_STATUS_OPTIONS;
@@ -162,7 +166,7 @@ export default async function AdminInicioPage({
                 }`}
               >
                 {t.label}
-                {t.value === "postulaciones" && postulacionesPendientes > 0 && (
+                {t.value === "postulaciones" && (postulacionesPendientes ?? 0) > 0 && (
                   <span className={`ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
                     isActive ? "bg-white text-[#F74897]" : "bg-[#F74897] text-white"
                   }`}>
@@ -237,6 +241,9 @@ export default async function AdminInicioPage({
                         >
                           Detalle
                         </Link>
+                        {!w.user_id && w.status !== "rechazado" && w.status !== "desactivado" && w.status !== "pendiente" && (
+                          <GenerateAccessButton workshopId={w.id} workshopName={w.name} />
+                        )}
                   {w.status === "desactivado" ? (
                     <form action={reactivateAction}>
                       <input type="hidden" name="id" value={w.id} />
@@ -287,6 +294,9 @@ export default async function AdminInicioPage({
                   >
                     Ver detalle
                   </Link>
+                  {!w.user_id && w.status !== "rechazado" && w.status !== "desactivado" && (
+                    <GenerateAccessButton workshopId={w.id} workshopName={w.name} />
+                  )}
                   {w.status === "desactivado" ? (
                     <form action={reactivateAction}>
                       <input type="hidden" name="id" value={w.id} />

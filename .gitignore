@@ -24,3 +24,4 @@ next-env.d.ts
 # opencode config (contains tokens/secrets)
 opencode.json
 .agents/
+tsconfig.tsbuildinfo

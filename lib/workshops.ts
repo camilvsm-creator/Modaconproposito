@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { cache } from "react";
 
 import type {
   CartucheraDonation,
@@ -31,18 +32,17 @@ export async function generateWorkshopSlug(name: string): Promise<string> {
     .trim() || "taller";
 
   const admin = createSupabaseAdminClient();
-  let slug = base;
+  const { data } = await admin
+    .from("workshops")
+    .select("slug")
+    .like("slug", `${base}%`);
+
+  const existing = new Set(data?.map((r) => r.slug) ?? []);
+  if (!existing.has(base)) return base;
+
   let counter = 1;
-  while (true) {
-    const { data } = await admin
-      .from("workshops")
-      .select("id")
-      .eq("slug", slug)
-      .maybeSingle();
-    if (!data) return slug;
-    slug = `${base}-${counter}`;
-    counter++;
-  }
+  while (existing.has(`${base}-${counter}`)) counter++;
+  return `${base}-${counter}`;
 }
 
 // ---- Admin queries ----
@@ -67,7 +67,7 @@ export async function getAdminWorkshopsPage({
 
   let query = admin
     .from("workshops")
-    .select("*", { count: "exact" })
+    .select("id, user_id, name, responsible_name, city, state, status, created_at", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -129,18 +129,6 @@ export async function getAdminWorkshopPhotos(
   return (data ?? []) as WorkshopPhoto[];
 }
 
-export async function getAdminWorkshopHelpOffers(
-  workshopId: string,
-): Promise<WorkshopHelpOffer[]> {
-  const admin = createSupabaseAdminClient();
-  const { data } = await admin
-    .from("workshop_help_offers")
-    .select("*")
-    .eq("workshop_id", workshopId)
-    .order("created_at", { ascending: false });
-  return (data ?? []) as WorkshopHelpOffer[];
-}
-
 export async function getAdminNeedsPage({
   page = 1,
   limit = 20,
@@ -158,7 +146,7 @@ export async function getAdminNeedsPage({
 
   let query = admin
     .from("workshop_needs")
-    .select("*, workshop:workshops(*)")
+    .select("*, workshop:workshops(id, name)", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -171,43 +159,6 @@ export async function getAdminNeedsPage({
 
   return {
     items: (data ?? []) as (WorkshopNeed & { workshop?: Workshop })[],
-    total,
-    page,
-    limit,
-    pageCount: Math.max(Math.ceil(total / limit), 1),
-  };
-}
-
-export async function getAdminPhotosPage({
-  page = 1,
-  limit = 20,
-  status,
-}: {
-  page?: number;
-  limit?: number;
-  status?: string;
-} = {}): Promise<PagedResult<WorkshopPhoto & { workshop?: Workshop }>> {
-  const admin = createSupabaseAdminClient();
-  page = Math.max(page, 1);
-  limit = Math.min(Math.max(limit, 1), 100);
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
-
-  let query = admin
-    .from("workshop_photos")
-    .select("*, workshop:workshops(*)")
-    .order("created_at", { ascending: false })
-    .range(from, to);
-
-  if (status && status !== "all") {
-    query = query.eq("status", status);
-  }
-
-  const { data, count } = await query;
-  const total = count ?? 0;
-
-  return {
-    items: (data ?? []) as (WorkshopPhoto & { workshop?: Workshop })[],
     total,
     page,
     limit,
@@ -234,7 +185,7 @@ export async function getAdminHelpOffersPage({
 
   let query = admin
     .from("workshop_help_offers")
-    .select("*, workshop:workshops(id, name, slug), need:workshop_needs(id, title)")
+    .select("*, workshop:workshops(id, name, slug), need:workshop_needs(id, title)", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -348,10 +299,11 @@ export async function getPublicWorkshopNeeds(
   const supabase = createSupabasePublicClient();
   const { data } = await supabase
     .from("workshop_needs")
-    .select("*")
+    .select("id, title, description, requested_items, urgency, status, created_at")
     .eq("workshop_id", workshopId)
     .eq("status", "publicada")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(50);
   return (data ?? []) as WorkshopNeed[];
 }
 
@@ -361,10 +313,11 @@ export async function getPublicWorkshopPhotos(
   const supabase = createSupabasePublicClient();
   const { data } = await supabase
     .from("workshop_photos")
-    .select("*")
+    .select("id, title, description, storage_path, status, created_at")
     .eq("workshop_id", workshopId)
     .eq("status", "aprobada")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(50);
   return (data ?? []) as WorkshopPhoto[];
 }
 
@@ -383,7 +336,7 @@ export async function getPublicNeedsPage({
 
   const { data, count } = await supabase
     .from("workshop_needs")
-    .select("*, workshop:workshops!inner(*)")
+    .select("*, workshop:workshops!inner(id, name, status)", { count: "exact" })
     .eq("status", "publicada")
     .eq("workshop.status", "activo")
     .order("created_at", { ascending: false })
@@ -401,7 +354,7 @@ export async function getPublicNeedsPage({
 }
 
 // ---- Panel queries (by user_id) ----
-export async function getWorkshopByUserId(userId: string) {
+export const getWorkshopByUserId = cache(async (userId: string) => {
   const admin = createSupabaseAdminClient();
   const { data } = await admin
     .from("workshops")
@@ -409,7 +362,17 @@ export async function getWorkshopByUserId(userId: string) {
     .eq("user_id", userId)
     .maybeSingle();
   return (data ?? null) as Workshop | null;
-}
+});
+
+export const getWorkshopAvatarPath = cache(async (userId: string) => {
+  const admin = createSupabaseAdminClient();
+  const { data } = await admin
+    .from("workshops")
+    .select("avatar_path")
+    .eq("user_id", userId)
+    .maybeSingle();
+  return data?.avatar_path ?? null;
+});
 
 export async function getWorkshopNeeds(workshopId: string): Promise<WorkshopNeed[]> {
   const admin = createSupabaseAdminClient();
@@ -474,18 +437,6 @@ export async function findWorkshopActivationToken(rawToken: string) {
     .maybeSingle();
 
   return (data ?? null) as (WorkshopActivationToken & { workshop?: Workshop }) | null;
-}
-
-export async function getWorkshopActivationWorkshop(rawToken: string) {
-  const token = await findWorkshopActivationToken(rawToken);
-  if (!token) return null;
-  const admin = createSupabaseAdminClient();
-  const { data } = await admin
-    .from("workshops")
-    .select("*")
-    .eq("id", token.workshop_id)
-    .maybeSingle();
-  return (data ?? null) as Workshop | null;
 }
 
 export async function getAdminCartucheraDonationsPage({

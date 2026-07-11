@@ -11,7 +11,7 @@ export default function NuestraMisionPage() {
   return (
     <div className="full-bleed border-t border-stone-200 bg-stone-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl space-y-12">
+        <div className="space-y-12">
           <div className="space-y-2">
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F74897]">
               Aliados Verificados

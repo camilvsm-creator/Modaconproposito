@@ -55,8 +55,8 @@ export default function AdoptaUnaCartucheraPage() {
 
   return (
     <div className="full-bleed border-t border-stone-200 bg-stone-50">
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl space-y-10">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="space-y-6">
           <div className="space-y-2">
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F74897]">
               RED DE ALIADOS VERIFICADOS
@@ -68,12 +68,13 @@ export default function AdoptaUnaCartucheraPage() {
 
           <section className="space-y-4">
             <p className="text-sm leading-6 text-stone-700">
-              Inspirada en una iniciativa nacida en Chile, <strong>Tu
-              Cartera, Mi Refugio</strong> busca brindar un gesto de cuidado y
-              dignidad a mujeres afectadas por la emergencia. A través de un
-              bolso preparado con cariño, entregamos un kit con ropa interior
-              nueva, productos de higiene personal, artículos de cuidado personal
-              y una carta escrita a mano con un mensaje de apoyo.
+              Inspirada en una iniciativa nacida en Chile,{" "}
+              <strong>Tu Cartera, Mi Refugio</strong> busca brindar un gesto de
+              cuidado y dignidad a mujeres afectadas por la emergencia. A través
+              de un bolso preparado con cariño, entregamos un kit con ropa
+              interior nueva, productos de higiene personal, artículos de
+              cuidado personal y una carta escrita a mano con un mensaje de
+              apoyo.
             </p>
             <div className="text-sm leading-6 text-stone-700">
               <p className="font-bold text-ink">¿Qué lleva la cartuchera?</p>
@@ -94,7 +95,9 @@ export default function AdoptaUnaCartucheraPage() {
               <ul className="list-disc pl-5">
                 <li>Sesgo elástico tamaño mediano (blanco o rosa)</li>
                 <li>Elástica ancha para boxer</li>
-                <li>Telas: franela pijamera, microdurazno est, microdurazno heavy</li>
+                <li>
+                  Telas: franela pijamera, microdurazno est, microdurazno heavy
+                </li>
               </ul>
             </div>
             <p className="text-sm leading-6 text-stone-700">
@@ -120,9 +123,7 @@ export default function AdoptaUnaCartucheraPage() {
               </SectionCard>
               <SectionCard className="flex flex-col items-center gap-3 p-6 text-center">
                 <span className="text-3xl">💰</span>
-                <h3 className="font-black text-[#F74897]">
-                  Aporte económico
-                </h3>
+                <h3 className="font-black text-[#F74897]">Aporte económico</h3>
                 <p className="text-sm leading-6 text-stone-600">
                   Tu aporte se utiliza para comprar insumos y cubrir los costos
                   de producción de cada kit.
@@ -130,9 +131,7 @@ export default function AdoptaUnaCartucheraPage() {
               </SectionCard>
               <SectionCard className="flex flex-col items-center gap-3 p-6 text-center">
                 <span className="text-3xl">🤝</span>
-                <h3 className="font-black text-[#F74897]">
-                  Voluntariado
-                </h3>
+                <h3 className="font-black text-[#F74897]">Voluntariado</h3>
                 <p className="text-sm leading-6 text-stone-600">
                   Sumate como voluntario para la confección de los kits, la
                   organización de insumos o la logística de entrega.
@@ -191,11 +190,7 @@ export default function AdoptaUnaCartucheraPage() {
                   <label className="mb-1 block text-sm font-semibold text-stone-700">
                     Nombre *
                   </label>
-                  <input
-                    className={inputClassName}
-                    name="donorName"
-                    required
-                  />
+                  <input className={inputClassName} name="donorName" required />
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-stone-700">
