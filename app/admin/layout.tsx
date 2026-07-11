@@ -14,8 +14,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const user = data.user;
 
   if (!user) {
-    if (pathname !== "/admin") redirect("/admin");
-    return <div data-theme="promoda">{children}</div>;
+    if (pathname !== "/admin" && !pathname.startsWith("/admin/activar-taller")) redirect("/admin");
+    return <>{children}</>;
   }
 
   const role = user.app_metadata?.role ?? "admin";
