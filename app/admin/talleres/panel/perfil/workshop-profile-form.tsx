@@ -16,11 +16,11 @@ function avatarUrl(storagePath: string | null) {
 
 export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
   const [name, setName] = useState(workshop.name);
-  const [responsibleName, setResponsibleName] = useState(workshop.responsible_name);
+  const [responsibleName, setResponsibleName] = useState(workshop.responsible_name ?? "");
   const [whatsapp, setWhatsapp] = useState(workshop.whatsapp ?? "");
   const [instagram, setInstagram] = useState(workshop.instagram ?? "");
   const [state, setState] = useState(workshop.state);
-  const [city, setCity] = useState(workshop.city);
+  const [city, setCity] = useState(workshop.city ?? "");
   const [municipality, setMunicipality] = useState(workshop.municipality ?? "");
   const [publicLocation, setPublicLocation] = useState(workshop.public_location ?? "");
   const [description, setDescription] = useState(workshop.description ?? "");

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui";
 import { WorkshopStatusBadge } from "@/components/workshop-status-badge";
 import { requireWorkshopAdminUser } from "@/lib/auth";
 import { HELP_AVAILABILITY_LABELS, HELP_TYPE_GROUPS } from "@/lib/constants";
-import type { WorkshopHelpOffer } from "@/lib/types";
+import type { WorkshopHelpOfferWithRelations } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { getAdminHelpOffersPage } from "@/lib/workshops";
 import Link from "next/link";
@@ -140,7 +140,7 @@ export default async function AdminWorkshopHelpOffersPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-200">
-                {(result.items as (WorkshopHelpOffer & { workshop?: { id: string; name: string; slug: string }; need?: { id: string; title: string } })[]).map((offer) => {
+                {result.items.map((offer: WorkshopHelpOfferWithRelations) => {
                   const formId = `help-offer-${offer.id}`;
 
                   return (
@@ -228,7 +228,7 @@ export default async function AdminWorkshopHelpOffersPage({
           </div>
 
           <div className="grid gap-3 md:hidden">
-            {(result.items as (WorkshopHelpOffer & { workshop?: { id: string; name: string; slug: string }; need?: { id: string; title: string } })[]).map((offer) => (
+            {result.items.map((offer: WorkshopHelpOfferWithRelations) => (
               <form key={offer.id} action={handleUpdateHelpOfferStatus} className="rounded-xl border border-stone-200/80 bg-white/75 p-5 space-y-4">
                 <input type="hidden" name="id" value={offer.id} />
                 <div className="space-y-1 text-sm text-stone-700">
