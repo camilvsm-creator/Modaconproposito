@@ -226,13 +226,13 @@ export default async function AdminInicioPage({
                         {w.name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 align-top text-stone-700 leading-tight">{w.responsible_name}</td>
+                    <td className="px-4 py-3 align-top text-stone-700 leading-tight">{w.responsible_name ?? "—"}</td>
                     <td className="px-4 py-3 align-top leading-tight">
                       <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${STATUS_BADGES[w.status] || "bg-stone-100 text-stone-600"}`}>
                         {STATUS_LABELS[w.status] || w.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 align-top text-stone-600 leading-tight text-sm">{w.city}, {w.state}</td>
+                    <td className="px-4 py-3 align-top text-stone-600 leading-tight text-sm">{w.city ?? "—"}, {w.state}</td>
                     <td className="px-4 py-3 align-top leading-tight">
                       <div className="flex flex-wrap gap-1.5">
                         <Link
@@ -281,8 +281,8 @@ export default async function AdminInicioPage({
               <div key={w.id} className="rounded-xl border border-stone-200/80 bg-white/75 p-5 space-y-4">
                 <div className="space-y-1 text-sm text-stone-700">
                   <Link href={`/admin/talleres/listado/${w.id}`} className="font-semibold text-[#F74897] hover:underline">{w.name}</Link>
-                  <p className="text-stone-600">{w.responsible_name}</p>
-                  <p className="text-stone-400">{w.city}, {w.state}</p>
+                  <p className="text-stone-600">{w.responsible_name ?? "—"}</p>
+                  <p className="text-stone-400">{w.city ?? "—"}, {w.state}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${STATUS_BADGES[w.status]}`}>{STATUS_LABELS[w.status]}</span>
@@ -294,7 +294,7 @@ export default async function AdminInicioPage({
                   >
                     Ver detalle
                   </Link>
-                  {!w.user_id && w.status !== "rechazado" && w.status !== "desactivado" && (
+                  {!w.user_id && w.status !== "rechazado" && w.status !== "desactivado" && w.status !== "pendiente" && (
                     <GenerateAccessButton workshopId={w.id} workshopName={w.name} />
                   )}
                   {w.status === "desactivado" ? (

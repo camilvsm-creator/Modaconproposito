@@ -39,11 +39,11 @@ export default async function AdminNecesidadesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-200">
-              {result.items.map((n) => (
-                <tr key={n.id} className="hover:bg-stone-50">
+                {result.items.map((n) => (
+                  <tr key={n.id} className="hover:bg-stone-50">
                   <td className="px-4 py-3">
-                    {n.workshop ? (
-                      <Link href={`/admin/talleres/listado/${n.workshop_id}`} className="font-semibold text-[#F74897] hover:underline">{n.workshop.name}</Link>
+                      {n.workshop ? (
+                        <Link href={`/admin/talleres/listado/${n.workshop_id}`} className="font-semibold text-[#F74897] hover:underline">{n.workshop.name}</Link>
                     ) : (
                       <span className="text-stone-400">—</span>
                     )}

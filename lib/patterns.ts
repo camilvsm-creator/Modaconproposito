@@ -14,6 +14,12 @@ type PagedResult<T> = {
   pageCount: number;
 };
 
+function assertQueryOk(error: { message: string } | null, context: string) {
+  if (error) {
+    throw new Error(`${context}: ${error.message}`);
+  }
+}
+
 // ---- Admin queries ----
 
 export async function getAdminPatternsPage({
@@ -41,7 +47,8 @@ export async function getAdminPatternsPage({
     query = query.eq("status", status);
   }
 
-  const { data, count } = await query;
+  const { data, count, error } = await query;
+  assertQueryOk(error, "No se pudieron cargar los patrones");
   const total = count ?? 0;
 
   return {
@@ -57,11 +64,12 @@ export async function getAdminPatternById(
   id: string,
 ): Promise<SewingPattern | null> {
   const admin = createSupabaseAdminClient();
-  const { data } = await admin
+  const { data, error } = await admin
     .from("sewing_patterns")
     .select("*")
     .eq("id", id)
     .maybeSingle();
+  assertQueryOk(error, "No se pudo cargar el patrón");
   return (data ?? null) as SewingPattern | null;
 }
 
@@ -84,12 +92,13 @@ export type GroupedPatterns = {
 
 export async function getPublicPatternsGrouped(): Promise<GroupedPatterns> {
   const supabase = createSupabasePublicClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("sewing_patterns")
     .select("id, title, description, category, subgroup, difficulty, file_path, image_path, file_size_bytes, status")
     .eq("status", "publicado")
     .order("title", { ascending: true })
     .limit(500);
+  assertQueryOk(error, "No se pudieron cargar los patrones públicos");
 
   const all = (data ?? []) as SewingPattern[];
   const byCategory = new Map<string, Map<string, SewingPattern[]>>();

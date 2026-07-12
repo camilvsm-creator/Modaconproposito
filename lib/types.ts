@@ -665,15 +665,15 @@ export type Workshop = {
   user_id: string | null;
   name: string;
   slug: string;
-  responsible_name: string;
-  email: string;
+  responsible_name: string | null;
+  email: string | null;
   phone: string | null;
   whatsapp: string | null;
   instagram: string | null;
   state: string;
-  city: string;
+  city: string | null;
   municipality: string | null;
-  public_location: string;
+  public_location: string | null;
   description: string | null;
   what_they_do: string;
   initial_photo_path: string | null;
@@ -690,6 +690,30 @@ export type Workshop = {
   rejected_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type WorkshopListItem = Pick<
+  Workshop,
+  "id" | "user_id" | "name" | "responsible_name" | "city" | "state" | "status" | "created_at"
+>;
+
+export type WorkshopNeedWithWorkshopName = WorkshopNeed & {
+  workshop?: {
+    id: string;
+    name: string;
+  } | null;
+};
+
+export type WorkshopHelpOfferWithRelations = WorkshopHelpOffer & {
+  workshop?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  need?: {
+    id: string;
+    title: string;
+  } | null;
 };
 
 export type WorkshopNeed = {
@@ -792,5 +816,4 @@ export type DuplicateCandidate = {
   report: DuplicateCandidateReport | null;
   original_report: DuplicateCandidateReport | null;
 };
-
 

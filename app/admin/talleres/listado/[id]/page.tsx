@@ -105,10 +105,10 @@ export default async function AdminTallerDetailPage({
       {activeTab === "general" && (
         <SectionCard className="p-6 space-y-6">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <InputShell label="Responsable"><p className="text-sm text-stone-700">{taller.responsible_name}</p></InputShell>
+            <InputShell label="Responsable"><p className="text-sm text-stone-700">{taller.responsible_name ?? "—"}</p></InputShell>
             <InputShell label="Estado"><span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${STATUS_BADGES[taller.status]}`}>{STATUS_LABELS[taller.status]}</span></InputShell>
-            <InputShell label="Ubicación"><p className="text-sm text-stone-700">{taller.city}, {taller.state}</p></InputShell>
-            <InputShell label="Email"><p className="text-sm text-stone-700">{taller.email}</p></InputShell>
+            <InputShell label="Ubicación"><p className="text-sm text-stone-700">{taller.city ?? "—"}, {taller.state}</p></InputShell>
+            <InputShell label="Email"><p className="text-sm text-stone-700">{taller.email ?? "—"}</p></InputShell>
             <InputShell label="WhatsApp"><p className="text-sm text-stone-700">{taller.whatsapp || "—"}</p></InputShell>
             <InputShell label="Instagram"><p className="text-sm text-stone-700">{taller.instagram || "—"}</p></InputShell>
           </div>
