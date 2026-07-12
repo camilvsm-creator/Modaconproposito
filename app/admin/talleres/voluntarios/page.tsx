@@ -4,7 +4,8 @@ import { AdminPageHeader } from "@/components/admin-page-header";
 import { AdminPagination } from "@/components/admin-pagination";
 import { EmptyState } from "@/components/empty-state";
 import { requireWorkshopAdminUser } from "@/lib/auth";
-import { getAdminVolunteersPage } from "@/lib/workshops";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getAdminVolunteersPageFromClient } from "@/lib/workshops";
 import { formatPublicPhone } from "@/lib/utils";
 
 const VOLUNTEERS_PER_PAGE = 20;
@@ -47,7 +48,8 @@ export default async function AdminVoluntariosPage({
   const params = await searchParams;
   const q = getStringParam(params, "q");
 
-  const result = await getAdminVolunteersPage({
+  const supabase = await createSupabaseServerClient();
+  const result = await getAdminVolunteersPageFromClient(supabase, {
     page: getPageParam(params),
     limit: VOLUNTEERS_PER_PAGE,
     q: q || undefined,

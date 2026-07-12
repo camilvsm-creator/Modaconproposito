@@ -1,6 +1,8 @@
 import crypto from "crypto";
 import { cache } from "react";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import type {
   CartucheraDonation,
   Workshop,
@@ -246,6 +248,46 @@ export async function getAdminVolunteersPage({
   const to = from + limit - 1;
 
   let query = admin
+    .from("workshop_volunteers")
+    .select("*", { count: "exact" })
+    .order("name", { ascending: true })
+    .range(from, to);
+
+  if (q) {
+    query = query.ilike("name", `%${q}%`);
+  }
+
+  const { data, count, error } = await query;
+  assertQueryOk(error, "No se pudieron cargar los voluntarios");
+  const total = count ?? 0;
+
+  return {
+    items: (data ?? []) as WorkshopVolunteer[],
+    total,
+    page,
+    limit,
+    pageCount: Math.max(Math.ceil(total / limit), 1),
+  };
+}
+
+export async function getAdminVolunteersPageFromClient(
+  client: SupabaseClient,
+  {
+    page = 1,
+    limit = 20,
+    q,
+  }: {
+    page?: number;
+    limit?: number;
+    q?: string;
+  } = {},
+): Promise<PagedResult<WorkshopVolunteer>> {
+  page = Math.max(page, 1);
+  limit = Math.min(Math.max(limit, 1), 100);
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  let query = client
     .from("workshop_volunteers")
     .select("*", { count: "exact" })
     .order("name", { ascending: true })
