@@ -69,7 +69,7 @@ export async function getAdminWorkshopsPage({
   tab?: "postulaciones" | "talleres";
   q?: string;
 } = {}): Promise<PagedResult<WorkshopListItem>> {
-  const admin = createSupabaseAdminClient();
+  const admin = await createSupabaseServerClient();
   page = Math.max(page, 1);
   limit = Math.min(Math.max(limit, 1), 100);
   const from = (page - 1) * limit;
@@ -94,7 +94,7 @@ export async function getAdminWorkshopsPage({
     query = query.eq("status", status);
   }
   if (q) {
-    query = query.or(`name.ilike.%${q}%,responsible_name.ilike.%${q}%,email.ilike.%${q}%,city.ilike.%${q}%`);
+    query = query.or(`name.ilike.%${q}%,responsible_name.ilike.%${q}%,city.ilike.%${q}%`);
   }
 
   const { data, count, error } = await query;
@@ -357,7 +357,7 @@ export async function getPublicNeedsPage({
 
   const { data, count, error } = await supabase
     .from("workshop_needs")
-    .select("*, workshop:workshops!inner(id, name, status)", { count: "exact" })
+    .select("*, workshop:workshops!inner(id, name, slug, status)", { count: "exact" })
     .eq("status", "publicada")
     .eq("workshop.status", "activo")
     .order("created_at", { ascending: false })
@@ -425,7 +425,7 @@ export async function createWorkshopActivationToken(
   workshopId: string,
   createdByUserId?: string | null,
 ) {
-  const admin = await createSupabaseServerClient();
+  const admin = createSupabaseAdminClient();
   const token = crypto.randomBytes(24).toString("hex");
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
   const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
@@ -473,7 +473,7 @@ export async function getAdminCartucheraDonationsPage({
   page?: number;
   limit?: number;
 } = {}): Promise<PagedResult<CartucheraDonation>> {
-  const admin = createSupabaseAdminClient();
+  const admin = await createSupabaseServerClient();
   page = Math.max(page, 1);
   limit = Math.min(Math.max(limit, 1), 100);
   const from = (page - 1) * limit;

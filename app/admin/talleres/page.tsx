@@ -6,8 +6,8 @@ import { SectionCard } from "@/components/ui";
 import { DeleteWorkshopButton } from "@/components/delete-workshop-button";
 import { GenerateAccessButton } from "@/components/generate-access-button";
 import { requireWorkshopAdminUser } from "@/lib/auth";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAdminWorkshopsPage } from "@/lib/workshops";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { deactivateWorkshopAction, reactivateWorkshopAction } from "@/app/admin/talleres/actions";
 
 async function deactivateAction(formData: FormData) {
@@ -104,7 +104,7 @@ export default async function AdminInicioPage({
     q: q || undefined,
   });
 
-  const admin = createSupabaseAdminClient();
+  const admin = await createSupabaseServerClient();
 
   const [
     { count: totalTalleres },

@@ -2,8 +2,8 @@ import {
   PATTERN_BUCKET,
   PATTERN_CATEGORIES,
 } from "@/lib/constants";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { SewingPattern } from "@/lib/types";
 
 type PagedResult<T> = {
@@ -31,7 +31,7 @@ export async function getAdminPatternsPage({
   limit?: number;
   status?: string;
 } = {}): Promise<PagedResult<SewingPattern>> {
-  const admin = createSupabaseAdminClient();
+  const admin = await createSupabaseServerClient();
   page = Math.max(page, 1);
   limit = Math.min(Math.max(limit, 1), 100);
   const from = (page - 1) * limit;
@@ -63,7 +63,7 @@ export async function getAdminPatternsPage({
 export async function getAdminPatternById(
   id: string,
 ): Promise<SewingPattern | null> {
-  const admin = createSupabaseAdminClient();
+  const admin = await createSupabaseServerClient();
   const { data, error } = await admin
     .from("sewing_patterns")
     .select("*")

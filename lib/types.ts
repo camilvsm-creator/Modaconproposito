@@ -701,6 +701,8 @@ export type WorkshopNeedWithWorkshopName = WorkshopNeed & {
   workshop?: {
     id: string;
     name: string;
+    slug?: string;
+    status?: string;
   } | null;
 };
 
@@ -816,4 +818,3 @@ export type DuplicateCandidate = {
   report: DuplicateCandidateReport | null;
   original_report: DuplicateCandidateReport | null;
 };
-

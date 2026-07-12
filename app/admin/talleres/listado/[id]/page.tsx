@@ -5,7 +5,7 @@ import { AdminPageHeader } from "@/components/admin-page-header";
 import { SectionCard, InputShell } from "@/components/ui";
 import { GenerateAccessButton } from "@/components/generate-access-button";
 import { requireWorkshopAdminUser } from "@/lib/auth";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatDateTime } from "@/lib/utils";
 import { getAdminWorkshopById, getAdminWorkshopNeeds, getAdminWorkshopPhotos } from "@/lib/workshops";
 
@@ -57,7 +57,7 @@ export default async function AdminTallerDetailPage({
   const taller = await getAdminWorkshopById(id);
   if (!taller) notFound();
 
-  const admin = createSupabaseAdminClient();
+  const admin = await createSupabaseServerClient();
 
   const [
     { count: needsCount },

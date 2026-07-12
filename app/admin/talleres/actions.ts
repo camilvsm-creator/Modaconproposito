@@ -88,7 +88,7 @@ export async function sendWorkshopActivationEmailAction(formData: FormData): Pro
 
   const { error } = await sendWorkshopActivationEmail(
     workshop.email,
-    workshop.responsible_name,
+    workshop.responsible_name ?? workshop.name,
     activationLink,
   );
 
