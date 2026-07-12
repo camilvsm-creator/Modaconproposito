@@ -105,8 +105,15 @@ export async function generateWorkshopActivationLinkAction(formData: FormData): 
   if (!workshopId) return { error: "ID de taller no válido.", activationLink: null };
 
   const workshop = await getAdminWorkshopById(workshopId);
-  if (!workshop || workshop.status === "rechazado") {
-    return { error: "No puedes generar un link para este taller.", activationLink: null };
+  if (!workshop) return { error: "Taller no encontrado.", activationLink: null };
+
+  if (workshop.user_id) {
+    return { error: "Este taller ya tiene un usuario vinculado.", activationLink: null };
+  }
+
+  const blockedStatuses = ["pendiente", "rechazado", "desactivado"];
+  if (blockedStatuses.includes(workshop.status)) {
+    return { error: "No puedes generar un link para un taller en este estado.", activationLink: null };
   }
 
   const { activationLink } = await createWorkshopActivationToken(workshopId, user.id);
@@ -128,7 +135,8 @@ export async function generateAccessLinkAction(formData: FormData): Promise<Resu
     return { error: "Este taller ya tiene un usuario vinculado.", activationLink: null };
   }
 
-  if (workshop.status === "rechazado" || workshop.status === "desactivado" || workshop.status === "pendiente") {
+  const blockedStatuses = ["pendiente", "rechazado", "desactivado"];
+  if (blockedStatuses.includes(workshop.status)) {
     return { error: "No puedes generar acceso para un taller en este estado.", activationLink: null };
   }
 

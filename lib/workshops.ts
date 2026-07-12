@@ -11,6 +11,7 @@ import type {
   WorkshopNeed,
   WorkshopNeedWithWorkshopName,
   WorkshopPhoto,
+  WorkshopVolunteer,
 } from "@/lib/types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
@@ -228,6 +229,45 @@ export async function getAdminHelpOffersPage({
   };
 }
 
+// ---- Admin volunteers ----
+export async function getAdminVolunteersPage({
+  page = 1,
+  limit = 20,
+  q,
+}: {
+  page?: number;
+  limit?: number;
+  q?: string;
+} = {}): Promise<PagedResult<WorkshopVolunteer>> {
+  const admin = createSupabaseAdminClient();
+  page = Math.max(page, 1);
+  limit = Math.min(Math.max(limit, 1), 100);
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  let query = admin
+    .from("workshop_volunteers")
+    .select("*", { count: "exact" })
+    .order("name", { ascending: true })
+    .range(from, to);
+
+  if (q) {
+    query = query.ilike("name", `%${q}%`);
+  }
+
+  const { data, count, error } = await query;
+  assertQueryOk(error, "No se pudieron cargar los voluntarios");
+  const total = count ?? 0;
+
+  return {
+    items: (data ?? []) as WorkshopVolunteer[],
+    total,
+    page,
+    limit,
+    pageCount: Math.max(Math.ceil(total / limit), 1),
+  };
+}
+
 // ---- Public queries ----
 export async function getPublicWorkshopsPage({
   page = 1,
@@ -429,12 +469,6 @@ export async function createWorkshopActivationToken(
   const token = crypto.randomBytes(24).toString("hex");
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
   const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
-
-  await admin
-    .from("workshop_activation_tokens")
-    .update({ used_at: new Date().toISOString() })
-    .eq("workshop_id", workshopId)
-    .is("used_at", null);
 
   const { error } = await admin.from("workshop_activation_tokens").insert({
     workshop_id: workshopId,

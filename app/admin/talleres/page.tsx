@@ -59,6 +59,12 @@ const STATUS_LABELS: Record<string, string> = {
   desactivado: "Desactivado",
 };
 
+const ACTIVATION_BLOCKED_STATUSES = ["pendiente", "rechazado", "desactivado"];
+
+function canGenerateAccessLink(workshop: { user_id: string | null; status: string }) {
+  return !workshop.user_id && !ACTIVATION_BLOCKED_STATUSES.includes(workshop.status);
+}
+
 function getStringParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
@@ -241,7 +247,7 @@ export default async function AdminInicioPage({
                         >
                           Detalle
                         </Link>
-                        {!w.user_id && w.status !== "rechazado" && w.status !== "desactivado" && w.status !== "pendiente" && (
+                        {canGenerateAccessLink(w) && (
                           <GenerateAccessButton workshopId={w.id} workshopName={w.name} />
                         )}
                   {w.status === "desactivado" ? (
@@ -294,7 +300,7 @@ export default async function AdminInicioPage({
                   >
                     Ver detalle
                   </Link>
-                  {!w.user_id && w.status !== "rechazado" && w.status !== "desactivado" && w.status !== "pendiente" && (
+                  {canGenerateAccessLink(w) && (
                     <GenerateAccessButton workshopId={w.id} workshopName={w.name} />
                   )}
                   {w.status === "desactivado" ? (

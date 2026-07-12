@@ -24,6 +24,8 @@ const STATUS_LABELS: Record<string, string> = {
   rechazado: "Rechazado",
 };
 
+const ACTIVATION_BLOCKED_STATUSES = ["pendiente", "rechazado", "desactivado"];
+
 function TabButton({ href, active, label }: { href: string; active: boolean; label: string }) {
   return (
     <Link
@@ -89,7 +91,7 @@ export default async function AdminTallerDetailPage({
         title={taller.name}
         meta={STATUS_LABELS[taller.status] || taller.status}
         actions={
-          !taller.user_id && taller.status !== "rechazado" && taller.status !== "desactivado" && taller.status !== "pendiente" ? (
+          !taller.user_id && !ACTIVATION_BLOCKED_STATUSES.includes(taller.status) ? (
             <GenerateAccessButton workshopId={taller.id} workshopName={taller.name} />
           ) : null
         }

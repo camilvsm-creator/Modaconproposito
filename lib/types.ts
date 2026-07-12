@@ -803,6 +803,16 @@ export type SewingPattern = {
   updated_at: string;
 };
 
+export type WorkshopVolunteer = {
+  id: string;
+  workshop_id: string | null;
+  name: string;
+  role: string | null;
+  phone: string | null;
+  instagram: string | null;
+  created_at: string | null;
+};
+
 export type DuplicateCandidate = {
   id: string;
   report_id: string;
