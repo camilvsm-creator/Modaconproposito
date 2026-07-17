@@ -25,12 +25,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const workshop = await getPublicWorkshopBySlug(slug);
 
   if (!workshop) {
-    return { title: "Taller no encontrado" };
+    return { title: "Aliado no encontrado" };
   }
 
   return {
-    title: workshop.public_name_allowed ? workshop.name : "Taller voluntario",
-    description: workshop.what_they_do?.slice(0, 160) ?? "Taller voluntario de confección y apoyo textil.",
+    title: workshop.public_name_allowed ? workshop.name : "Aliado Promoda",
+    description: workshop.what_they_do?.slice(0, 160) ?? "Aliado de confección y apoyo textil.",
   };
 }
 
@@ -42,18 +42,18 @@ export default async function WorkshopDetailPage({ params }: Props) {
 
   const needs = await getPublicWorkshopNeeds(workshop.id);
   const photos = await getPublicWorkshopPhotos(workshop.id);
-  const name = workshop.public_name_allowed ? workshop.name : "Taller voluntario";
+  const name = workshop.public_name_allowed ? workshop.name : "Aliado Promoda";
 
   return (
     <div className="full-bleed border-t border-stone-200 bg-stone-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl space-y-6">
           <Link
-            href="/ver-talleres"
+            href="/aliados"
             className="inline-flex items-center gap-2 text-sm font-bold text-[#F74897] hover:underline"
           >
             <ArrowLeft className="h-4 w-4" />
-            Volver a talleres
+            Volver a aliados
           </Link>
 
           <SectionCard className="space-y-0 overflow-hidden p-0">
@@ -73,7 +73,7 @@ export default async function WorkshopDetailPage({ params }: Props) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1">
                     <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F74897]">
-                      Taller voluntario
+                      Aliado Promoda
                     </p>
                     <h1 className="text-2xl font-black tracking-[-0.03em] text-ink sm:text-3xl">
                       {name}
@@ -126,7 +126,7 @@ export default async function WorkshopDetailPage({ params }: Props) {
             {workshop.what_they_do ? (
               <div className="border-t border-stone-100 px-6 py-5 sm:px-8">
                 <h2 className="text-sm font-black uppercase tracking-[0.18em] text-stone-500">
-                  ¿Qué hace el taller?
+                  ¿Qué hace el aliado?
                 </h2>
                 <p className="mt-2 leading-7 text-stone-700">
                   {workshop.what_they_do}
@@ -216,7 +216,7 @@ export default async function WorkshopDetailPage({ params }: Props) {
             <h2 className="text-xl font-black text-ink">Quiero ayudar</h2>
             <p className="mt-2 text-sm text-stone-600">
               Si puedes aportar insumos, materiales, tiempo o cualquier otro
-              tipo de apoyo a este taller, completa el formulario y te
+              tipo de apoyo a este aliado, completa el formulario y te
               contactaremos.
             </p>
             <div className="mt-4">

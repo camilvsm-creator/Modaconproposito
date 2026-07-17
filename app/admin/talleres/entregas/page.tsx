@@ -11,7 +11,7 @@ export default async function AdminEntregasPage() {
         eyebrow="Promoda"
         title="Entregas"
         description="Registro de entregas realizadas a los beneficiarios."
-        navigation={{ baseHref: "/admin/talleres", baseLabel: "Inicio", currentLabel: "Entregas" }}
+        navigation={{ baseHref: "/admin/aliados", baseLabel: "Aliados", currentLabel: "Entregas" }}
       />
       <EmptyState
         title="Entregas próximamente"

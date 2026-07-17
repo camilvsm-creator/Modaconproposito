@@ -10,8 +10,8 @@ export default async function AdminMensajesPage() {
       <AdminPageHeader
         eyebrow="Promoda"
         title="Mensajes"
-        description="Centro de comunicación con talleres y voluntarios."
-        navigation={{ baseHref: "/admin/talleres", baseLabel: "Inicio", currentLabel: "Mensajes" }}
+        description="Centro de comunicación con aliados y voluntarios."
+        navigation={{ baseHref: "/admin/aliados", baseLabel: "Aliados", currentLabel: "Mensajes" }}
       />
       <EmptyState
         title="Mensajes próximamente"

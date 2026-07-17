@@ -6,7 +6,7 @@ import { Menu, X } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/", label: "Nuestra misión" },
-  { href: "/ver-talleres", label: "Aliados" },
+  { href: "/aliados", label: "Aliados" },
   { href: "/necesidades", label: "Necesidades" },
   { href: "/patrones", label: "Patrones" },
   { href: "/adopta-una-cartuchera", label: "Adopta una cartuchera" },
@@ -37,7 +37,7 @@ export function PublicHeader() {
             href="/registro"
             className="rounded-full bg-[#F74897] px-4 py-2 text-sm font-bold text-white hover:bg-[#D6003F]"
           >
-            Ofrecer mi taller
+            Registrar aliado
           </Link>
         </div>
 
@@ -71,7 +71,7 @@ export function PublicHeader() {
               className="mt-2 rounded-full bg-[#F74897] px-4 py-3 text-center text-sm font-bold text-white hover:bg-[#D6003F]"
               onClick={() => setOpen(false)}
             >
-              Ofrecer mi taller
+              Registrar aliado
             </Link>
           </div>
         </div>

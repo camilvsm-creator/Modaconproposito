@@ -38,14 +38,14 @@ export async function activateWorkshopFromTokenAction(formData: FormData): Promi
 
   const workshop = activationToken.workshop;
   if (!workshop) {
-    return { error: "Este taller ya no está disponible para activación." };
+    return { error: "Este aliado ya no está disponible para activación." };
   }
 
   const isApprovedPending = workshop.status === "approved_pending_activation";
   const isActiveWithoutUser = workshop.status === "activo" && !workshop.user_id;
 
   if (!isApprovedPending && !isActiveWithoutUser) {
-    return { error: "Este taller ya no está disponible para activación." };
+    return { error: "Este aliado ya no está disponible para activación." };
   }
 
   const email = workshop.email || customEmail;
@@ -93,7 +93,7 @@ export async function activateWorkshopFromTokenAction(formData: FormData): Promi
   }
 
   const { error: updateError } = await admin
-    .from("workshops")
+    .from("allies")
     .update(workshopUpdates)
     .eq("id", workshop.id);
 
@@ -101,20 +101,24 @@ export async function activateWorkshopFromTokenAction(formData: FormData): Promi
     return { error: "Cuenta creada pero no se pudo vincular al taller. Contacta al equipo." };
   }
 
-  await admin.from("user_workshops").insert({
+  await admin.from("user_allies").insert({
     user_id: createdUser.user.id,
-    workshop_id: workshop.id,
-    workshop_role: "owner",
+    ally_id: workshop.id,
+    ally_role: "owner",
   });
 
   await admin
-    .from("workshop_activation_tokens")
+    .from("ally_activation_tokens")
     .update({ used_at: now })
     .eq("id", activationToken.id);
 
   revalidatePath("/admin/talleres");
+  revalidatePath("/admin/aliados");
   revalidatePath(`/admin/talleres/listado/${workshop.id}`);
+  revalidatePath(`/admin/aliados/${workshop.id}`);
   revalidatePath(`/${workshop.slug}`);
+  revalidatePath(`/aliados/${workshop.slug}`);
   revalidatePath("/ver-talleres");
+  revalidatePath("/aliados");
   return {};
 }

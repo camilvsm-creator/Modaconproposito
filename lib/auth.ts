@@ -25,30 +25,10 @@ export async function requireAdminUser() {
   return requireUserRoles(["admin"]);
 }
 
-export async function requireVolunteerManagerUser() {
-  return requireUserRoles(["admin", "volunteers_editor"]);
-}
-
-export async function requireInspectionManagerUser() {
-  return requireUserRoles(["admin", "inspector", "admin_inspector"]);
-}
-
-export async function requireUserManagerUser() {
-  return requireUserRoles(["admin", "admin_inspector"]);
-}
-
-export async function requireVerdictManagerUser() {
-  return requireUserRoles(["admin", "admin_inspector"]);
-}
-
-export async function requireReportManagerUser() {
-  return requireUserRoles(["admin", "admin_inspector"]);
-}
-
 export async function requireWorkshopAdminUser() {
-  return requireUserRoles(["admin", "admin_talleres"]);
+  return requireUserRoles(["admin"]);
 }
 
 export async function requireWorkshopUser() {
-  return requireUserRoles(["admin", "admin_talleres", "aliado"]);
+  return requireUserRoles(["admin", "aliado"]);
 }

@@ -57,7 +57,7 @@ export function WorkshopRegistrationForm() {
     return (
       <SectionCard className="p-8 text-center">
         <h2 className="text-2xl font-black text-ink">
-          Taller registrado exitosamente
+          Aliado registrado exitosamente
         </h2>
         <p className="mx-auto mt-3 max-w-lg text-stone-600">
           Recibirás un correo cuando sea aprobado.
@@ -69,16 +69,24 @@ export function WorkshopRegistrationForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <FieldGroup
-        title="Datos del taller"
-        description="Información básica del taller voluntario."
+        title="Datos del aliado"
+        description="Información básica de la academia, taller, escuela u otro aliado."
       >
         <div className="grid gap-4 md:grid-cols-2">
-          <InputShell label="Nombre del taller *">
+          <InputShell label="Nombre del aliado *">
             <input
               className={inputClassName}
               name="name"
               required
             />
+          </InputShell>
+          <InputShell label="Categoría *">
+            <select className={inputClassName} name="category" defaultValue="taller" required>
+              <option value="academia">Academia</option>
+              <option value="taller">Taller</option>
+              <option value="escuela">Escuela</option>
+              <option value="otro">Otro</option>
+            </select>
           </InputShell>
           <InputShell label="Nombre del responsable *">
             <input
@@ -135,7 +143,7 @@ export function WorkshopRegistrationForm() {
             required
           />
         </InputShell>
-        <InputShell label="¿Qué hace o puede aportar el taller? *">
+        <InputShell label="¿Qué hace o puede aportar el aliado? *">
           <textarea
             className={inputClassName}
             name="whatTheyDo"
@@ -147,11 +155,11 @@ export function WorkshopRegistrationForm() {
 
       <FieldGroup
         title="Autorizaciones de publicación"
-        description="Selecciona qué información del taller puede mostrarse públicamente."
+        description="Selecciona qué información del aliado puede mostrarse públicamente."
       >
         <div className="flex flex-wrap gap-2">
           <CheckboxPill
-            label="Mostrar nombre del taller"
+            label="Mostrar nombre del aliado"
             checked={publicNameAllowed}
             onClick={() => {
               setPublicNameAllowed(!publicNameAllowed);
@@ -197,7 +205,7 @@ export function WorkshopRegistrationForm() {
 
       <FieldGroup
         title="Foto inicial (opcional)"
-        description="Una foto representativa del taller."
+        description="Una foto representativa del aliado."
       >
         <input
           type="file"
@@ -218,7 +226,7 @@ export function WorkshopRegistrationForm() {
       ) : null}
 
       <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Enviando..." : "Registrar taller"}
+        {isSubmitting ? "Enviando..." : "Registrar aliado"}
       </Button>
     </form>
   );

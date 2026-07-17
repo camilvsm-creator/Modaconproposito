@@ -11,7 +11,7 @@ import {
   getAdminWorkshopById,
 } from "@/lib/workshops";
 
-type Result = { error?: string; activationLink?: string | null };
+type Result = { error?: string; activationLink?: string | null; allyId?: string };
 
 export async function updateWorkshopStatusAction(formData: FormData): Promise<Result> {
   await requireWorkshopAdminUser();
@@ -29,14 +29,18 @@ export async function updateWorkshopStatusAction(formData: FormData): Promise<Re
     updates.rejected_at = new Date().toISOString();
   }
 
-  const { error } = await admin.from("workshops").update(updates).eq("id", id);
+  const { error } = await admin.from("allies").update(updates).eq("id", id);
   if (error) return { error: error.message };
 
   const workshop = await getAdminWorkshopById(id);
   revalidatePath("/admin/talleres");
+  revalidatePath("/admin/aliados");
   revalidatePath(`/admin/talleres/listado/${id}`);
+  revalidatePath(`/admin/aliados/${id}`);
   if (workshop?.slug) revalidatePath(`/${workshop.slug}`);
+  if (workshop?.slug) revalidatePath(`/aliados/${workshop.slug}`);
   revalidatePath("/ver-talleres");
+  revalidatePath("/aliados");
   return {};
 }
 
@@ -46,13 +50,13 @@ export async function approveWorkshopAction(formData: FormData): Promise<Result>
 
   const id = String(formData.get("id") || "");
 
-  if (!id) return { error: "ID de taller no válido." };
+  if (!id) return { error: "ID de aliado no válido." };
 
   const workshop = await getAdminWorkshopById(id);
-  if (!workshop) return { error: "Taller no encontrado." };
+  if (!workshop) return { error: "Aliado no encontrado." };
 
   const { error } = await admin
-    .from("workshops")
+    .from("allies")
     .update({
       status: "approved_pending_activation",
       approved_by: user.id,
@@ -65,7 +69,9 @@ export async function approveWorkshopAction(formData: FormData): Promise<Result>
   const { activationLink } = await createWorkshopActivationToken(id, user.id);
 
   revalidatePath("/admin/talleres");
+  revalidatePath("/admin/aliados");
   revalidatePath(`/admin/talleres/listado/${id}`);
+  revalidatePath(`/admin/aliados/${id}`);
   return { activationLink };
 }
 
@@ -76,14 +82,14 @@ export async function sendWorkshopActivationEmailAction(formData: FormData): Pro
   const activationLink = String(formData.get("activationLink") || "");
 
   if (!workshopId || !activationLink) {
-    return { error: "Falta el ID del taller o el link de activación." };
+    return { error: "Falta el ID del aliado o el link de activación." };
   }
 
   const workshop = await getAdminWorkshopById(workshopId);
-  if (!workshop) return { error: "Taller no encontrado." };
+  if (!workshop) return { error: "Aliado no encontrado." };
 
   if (!workshop.email) {
-    return { error: "Este taller no tiene correo electrónico registrado." };
+    return { error: "Este aliado no tiene correo electrónico registrado." };
   }
 
   const { error } = await sendWorkshopActivationEmail(
@@ -95,6 +101,7 @@ export async function sendWorkshopActivationEmailAction(formData: FormData): Pro
   if (error) return { error: `Error al enviar el correo: ${error}` };
 
   revalidatePath(`/admin/talleres/listado/${workshopId}`);
+  revalidatePath(`/admin/aliados/${workshopId}`);
   return {};
 }
 
@@ -102,23 +109,24 @@ export async function generateWorkshopActivationLinkAction(formData: FormData): 
   const user = await requireWorkshopAdminUser();
   const workshopId = String(formData.get("workshopId") || "");
 
-  if (!workshopId) return { error: "ID de taller no válido.", activationLink: null };
+  if (!workshopId) return { error: "ID de aliado no válido.", activationLink: null };
 
   const workshop = await getAdminWorkshopById(workshopId);
-  if (!workshop) return { error: "Taller no encontrado.", activationLink: null };
+  if (!workshop) return { error: "Aliado no encontrado.", activationLink: null };
 
   if (workshop.user_id) {
-    return { error: "Este taller ya tiene un usuario vinculado.", activationLink: null };
+    return { error: "Este aliado ya tiene un usuario vinculado.", activationLink: null };
   }
 
   const blockedStatuses = ["pendiente", "rechazado", "desactivado"];
   if (blockedStatuses.includes(workshop.status)) {
-    return { error: "No puedes generar un link para un taller en este estado.", activationLink: null };
+    return { error: "No puedes generar un link para un aliado en este estado.", activationLink: null };
   }
 
   const { activationLink } = await createWorkshopActivationToken(workshopId, user.id);
 
   revalidatePath(`/admin/talleres/listado/${workshopId}`);
+  revalidatePath(`/admin/aliados/${workshopId}`);
   return { activationLink };
 }
 
@@ -126,24 +134,26 @@ export async function generateAccessLinkAction(formData: FormData): Promise<Resu
   const user = await requireWorkshopAdminUser();
   const workshopId = String(formData.get("workshopId") || "");
 
-  if (!workshopId) return { error: "ID de taller no válido.", activationLink: null };
+  if (!workshopId) return { error: "ID de aliado no válido.", activationLink: null };
 
   const workshop = await getAdminWorkshopById(workshopId);
-  if (!workshop) return { error: "Taller no encontrado.", activationLink: null };
+  if (!workshop) return { error: "Aliado no encontrado.", activationLink: null };
 
   if (workshop.user_id) {
-    return { error: "Este taller ya tiene un usuario vinculado.", activationLink: null };
+    return { error: "Este aliado ya tiene un usuario vinculado.", activationLink: null };
   }
 
   const blockedStatuses = ["pendiente", "rechazado", "desactivado"];
   if (blockedStatuses.includes(workshop.status)) {
-    return { error: "No puedes generar acceso para un taller en este estado.", activationLink: null };
+    return { error: "No puedes generar acceso para un aliado en este estado.", activationLink: null };
   }
 
   const { activationLink } = await createWorkshopActivationToken(workshopId, user.id);
 
   revalidatePath("/admin/talleres");
+  revalidatePath("/admin/aliados");
   revalidatePath(`/admin/talleres/listado/${workshopId}`);
+  revalidatePath(`/admin/aliados/${workshopId}`);
   return { activationLink };
 }
 
@@ -154,14 +164,15 @@ export async function updateWorkshopAction(formData: FormData): Promise<Result> 
   const id = String(formData.get("id") || "");
   const adminNotes = String(formData.get("adminNotes") || "").trim();
 
-  if (!id) return { error: "ID de taller no válido." };
+  if (!id) return { error: "ID de aliado no válido." };
 
   const workshop = await getAdminWorkshopById(id);
-  if (!workshop) return { error: "Taller no encontrado." };
+  if (!workshop) return { error: "Aliado no encontrado." };
 
   const updates: Record<string, unknown> = {};
 
   const name = String(formData.get("name") || "").trim();
+  const category = String(formData.get("category") || "taller").trim();
   const responsibleName = String(formData.get("responsibleName") || "").trim();
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const phone = String(formData.get("phone") || "").trim();
@@ -174,7 +185,16 @@ export async function updateWorkshopAction(formData: FormData): Promise<Result> 
   const whatTheyDo = String(formData.get("whatTheyDo") || "").trim();
   const description = String(formData.get("description") || "").trim();
 
+  if (!name) return { error: "El nombre del aliado es obligatorio." };
+  if (category && !["academia", "taller", "escuela", "otro"].includes(category)) return { error: "La categoría del aliado no es válida." };
+  if (!responsibleName) return { error: "El nombre del responsable es obligatorio." };
+  if (!email || !email.includes("@")) return { error: "El correo electrónico no es válido." };
+  if (!state) return { error: "El estado es obligatorio." };
+  if (!city) return { error: "La ciudad es obligatoria." };
+  if (!whatTheyDo) return { error: "El campo 'Qué hace o aporta' es obligatorio." };
+
   if (name) updates.name = name;
+  if (category) updates.category = category;
   if (responsibleName) updates.responsible_name = responsibleName;
   if (email) updates.email = email;
   updates.phone = phone || null;
@@ -184,7 +204,7 @@ export async function updateWorkshopAction(formData: FormData): Promise<Result> 
   if (city) updates.city = city;
   updates.municipality = municipality || null;
   updates.public_location = publicLocation || null;
-  updates.what_they_do = whatTheyDo || null;
+  updates.what_they_do = whatTheyDo;
   updates.description = description || null;
   updates.public_name_allowed = formData.get("publicNameAllowed") === "on";
   updates.public_location_allowed = formData.get("publicLocationAllowed") === "on";
@@ -194,13 +214,17 @@ export async function updateWorkshopAction(formData: FormData): Promise<Result> 
 
   if (Object.keys(updates).length === 0) return { error: "No hay campos para actualizar." };
 
-  const { error } = await admin.from("workshops").update(updates).eq("id", id);
+  const { error } = await admin.from("allies").update(updates).eq("id", id);
   if (error) return { error: error.message };
 
   revalidatePath("/admin/talleres");
+  revalidatePath("/admin/aliados");
   revalidatePath(`/admin/talleres/listado/${id}`);
+  revalidatePath(`/admin/aliados/${id}`);
   if (workshop.slug) revalidatePath(`/${workshop.slug}`);
+  if (workshop.slug) revalidatePath(`/aliados/${workshop.slug}`);
   revalidatePath("/ver-talleres");
+  revalidatePath("/aliados");
   return {};
 }
 
@@ -219,10 +243,10 @@ export async function updateNeedStatusAction(formData: FormData): Promise<Result
   if (status === "publicada") updates.published_at = new Date().toISOString();
   if (status === "cerrada") updates.closed_at = new Date().toISOString();
 
-  const { error } = await admin.from("workshop_needs").update(updates).eq("id", id);
+  const { error } = await admin.from("assigned_tasks").update(updates).eq("id", id);
   if (error) return { error: error.message };
 
-  const needWorkshopId = (await admin.from("workshop_needs").select("workshop_id").eq("id", id).maybeSingle()).data?.workshop_id;
+  const needWorkshopId = (await admin.from("assigned_tasks").select("ally_id").eq("id", id).maybeSingle()).data?.ally_id;
   const needWorkshop = needWorkshopId ? await getAdminWorkshopById(needWorkshopId) : null;
   revalidatePath("/admin/talleres/necesidades");
   revalidatePath("/necesidades");
@@ -239,7 +263,7 @@ export async function updateNeedAdminNotesAction(formData: FormData): Promise<Re
 
   if (!id) return { error: "ID de necesidad no válido." };
 
-  const { error } = await admin.from("workshop_needs").update({ admin_notes: adminNotes || null }).eq("id", id);
+  const { error } = await admin.from("assigned_tasks").update({ admin_notes: adminNotes || null }).eq("id", id);
   if (error) return { error: error.message };
 
   revalidatePath("/admin/talleres/necesidades");
@@ -258,13 +282,13 @@ export async function updatePhotoStatusAction(formData: FormData): Promise<Resul
   }
 
   const { error } = await admin
-    .from("workshop_photos")
+    .from("ally_photos")
     .update({ status, reviewed_at: new Date().toISOString() })
     .eq("id", id);
 
   if (error) return { error: error.message };
 
-  const photoWorkshopId = (await admin.from("workshop_photos").select("workshop_id").eq("id", id).maybeSingle()).data?.workshop_id;
+  const photoWorkshopId = (await admin.from("ally_photos").select("ally_id").eq("id", id).maybeSingle()).data?.ally_id;
   const photoWorkshop = photoWorkshopId ? await getAdminWorkshopById(photoWorkshopId) : null;
   if (photoWorkshop?.slug) revalidatePath(`/${photoWorkshop.slug}`);
   return {};
@@ -285,10 +309,10 @@ export async function updateHelpOfferStatusAction(formData: FormData): Promise<R
   const updates: Record<string, string | null> = { status };
   if (adminNotes) updates.admin_notes = adminNotes;
 
-  const { error } = await admin.from("workshop_help_offers").update(updates).eq("id", id);
+  const { error } = await admin.from("collaborator_offers").update(updates).eq("id", id);
   if (error) return { error: error.message };
 
-  const offerWorkshopId = (await admin.from("workshop_help_offers").select("workshop_id").eq("id", id).maybeSingle()).data?.workshop_id;
+  const offerWorkshopId = (await admin.from("collaborator_offers").select("ally_id").eq("id", id).maybeSingle()).data?.ally_id;
   const offerWorkshop = offerWorkshopId ? await getAdminWorkshopById(offerWorkshopId) : null;
   revalidatePath("/admin/talleres/ofertas");
   if (offerWorkshop?.slug) revalidatePath(`/${offerWorkshop.slug}`);
@@ -300,22 +324,26 @@ export async function deactivateWorkshopAction(formData: FormData): Promise<Resu
   const admin = createSupabaseAdminClient();
 
   const id = String(formData.get("id") || "");
-  if (!id) return { error: "ID de taller no válido." };
+  if (!id) return { error: "ID de aliado no válido." };
 
   const workshop = await getAdminWorkshopById(id);
-  if (!workshop) return { error: "Taller no encontrado." };
+  if (!workshop) return { error: "Aliado no encontrado." };
 
   const { error } = await admin
-    .from("workshops")
+    .from("allies")
     .update({ status: "desactivado" })
     .eq("id", id);
 
   if (error) return { error: error.message };
 
   revalidatePath("/admin/talleres");
+  revalidatePath("/admin/aliados");
   revalidatePath(`/admin/talleres/listado/${id}`);
+  revalidatePath(`/admin/aliados/${id}`);
   if (workshop.slug) revalidatePath(`/${workshop.slug}`);
+  if (workshop.slug) revalidatePath(`/aliados/${workshop.slug}`);
   revalidatePath("/ver-talleres");
+  revalidatePath("/aliados");
   return {};
 }
 
@@ -324,55 +352,31 @@ export async function reactivateWorkshopAction(formData: FormData): Promise<Resu
   const admin = createSupabaseAdminClient();
 
   const id = String(formData.get("id") || "");
-  if (!id) return { error: "ID de taller no válido." };
+  if (!id) return { error: "ID de aliado no válido." };
 
   const workshop = await getAdminWorkshopById(id);
-  if (!workshop) return { error: "Taller no encontrado." };
+  if (!workshop) return { error: "Aliado no encontrado." };
 
   const { error } = await admin
-    .from("workshops")
+    .from("allies")
     .update({ status: "activo" })
     .eq("id", id);
 
   if (error) return { error: error.message };
 
   revalidatePath("/admin/talleres");
+  revalidatePath("/admin/aliados");
   revalidatePath(`/admin/talleres/listado/${id}`);
+  revalidatePath(`/admin/aliados/${id}`);
   if (workshop.slug) revalidatePath(`/${workshop.slug}`);
+  if (workshop.slug) revalidatePath(`/aliados/${workshop.slug}`);
   revalidatePath("/ver-talleres");
+  revalidatePath("/aliados");
   return {};
 }
 
 export async function deleteWorkshopAction(formData: FormData): Promise<Result> {
-  await requireWorkshopAdminUser();
-  const admin = createSupabaseAdminClient();
-
-  const id = String(formData.get("id") || "");
-  if (!id) return { error: "ID de taller no válido." };
-
-  const workshop = await getAdminWorkshopById(id);
-  if (!workshop) return { error: "Taller no encontrado." };
-
-  // Delete related data first (FK constraints)
-  await admin.from("workshop_needs").delete().eq("workshop_id", id);
-  await admin.from("workshop_photos").delete().eq("workshop_id", id);
-  await admin.from("workshop_help_offers").delete().eq("workshop_id", id);
-  await admin.from("workshop_activation_tokens").delete().eq("workshop_id", id);
-
-  // Delete auth user if exists
-  if (workshop.user_id) {
-    await admin.auth.admin.deleteUser(workshop.user_id);
-  }
-
-  // Delete the workshop
-  const { error } = await admin.from("workshops").delete().eq("id", id);
-  if (error) return { error: error.message };
-
-  revalidatePath("/admin/talleres");
-  revalidatePath(`/admin/talleres/listado/${id}`);
-  revalidatePath("/ver-talleres");
-  if (workshop.slug) revalidatePath(`/${workshop.slug}`);
-  return {};
+  return deactivateWorkshopAction(formData);
 }
 
 export async function createWorkshopAction(formData: FormData): Promise<Result> {
@@ -380,6 +384,7 @@ export async function createWorkshopAction(formData: FormData): Promise<Result> 
   const admin = createSupabaseAdminClient();
 
   const name = String(formData.get("name") || "").trim();
+  const category = String(formData.get("category") || "taller").trim();
   const responsibleName = String(formData.get("responsibleName") || "").trim();
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const phone = String(formData.get("phone") || "").trim();
@@ -393,7 +398,8 @@ export async function createWorkshopAction(formData: FormData): Promise<Result> 
   const description = String(formData.get("description") || "").trim();
   const publicNameAllowed = formData.get("publicNameAllowed") === "on";
 
-  if (!name) return { error: "El nombre del taller es obligatorio." };
+  if (!name) return { error: "El nombre del aliado es obligatorio." };
+  if (!["academia", "taller", "escuela", "otro"].includes(category)) return { error: "La categoría del aliado no es válida." };
   if (!responsibleName) return { error: "El nombre del responsable es obligatorio." };
   if (!email || !email.includes("@")) return { error: "El correo electrónico no es válido." };
   if (!state) return { error: "El estado es obligatorio." };
@@ -404,9 +410,10 @@ export async function createWorkshopAction(formData: FormData): Promise<Result> 
   const slug = await generateWorkshopSlug(name);
 
   const { data: workshop, error: insertError } = await admin
-    .from("workshops")
+    .from("allies")
     .insert({
       name,
+      category,
       slug,
       responsible_name: responsibleName,
       email,
@@ -431,7 +438,7 @@ export async function createWorkshopAction(formData: FormData): Promise<Result> 
     .single();
 
   if (insertError) return { error: insertError.message };
-  if (!workshop) return { error: "Error al crear el taller." };
+  if (!workshop) return { error: "Error al crear el aliado." };
 
   const { activationLink } = await createWorkshopActivationToken(workshop.id, user.id);
 
@@ -443,10 +450,13 @@ export async function createWorkshopAction(formData: FormData): Promise<Result> 
 
   if (emailError) {
     revalidatePath("/admin/talleres");
-    return { error: `Taller creado pero error al enviar el correo: ${emailError}`, activationLink };
+    revalidatePath("/admin/aliados");
+    return { error: `Aliado creado, pero no se pudo enviar el correo: ${emailError}`, activationLink, allyId: workshop.id };
   }
 
   revalidatePath("/admin/talleres");
+  revalidatePath("/admin/aliados");
   revalidatePath("/ver-talleres");
-  return {};
+  revalidatePath("/aliados");
+  return { activationLink, allyId: workshop.id };
 }

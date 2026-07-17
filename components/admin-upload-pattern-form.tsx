@@ -132,7 +132,7 @@ export function UploadPatternForm() {
           <input
             type="file"
             accept=".pdf,image/*"
-            className={inputClassName + " file:mr-3 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"}
+            className={inputClassName + " file:mr-3 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white"}
             onChange={(e) => setPatternFile(e.target.files?.[0] ?? null)}
             required
           />
@@ -142,7 +142,7 @@ export function UploadPatternForm() {
           <input
             type="file"
             accept="image/*"
-            className={inputClassName + " file:mr-3 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"}
+            className={inputClassName + " file:mr-3 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white"}
             onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
           />
         </InputShell>

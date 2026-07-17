@@ -144,7 +144,7 @@ async function main() {
 
   // Check existing slugs
   const existingSlugs = new Set<string>();
-  const { data: existingWorkshops } = await admin.from("workshops").select("slug");
+  const { data: existingWorkshops } = await admin.from("allies").select("slug");
   if (existingWorkshops) {
     for (const w of existingWorkshops) existingSlugs.add(w.slug);
   }
@@ -168,7 +168,7 @@ async function main() {
   for (const w of workshops) {
     const slug = makeUniqueSlug(w.name);
     const { data, error } = await admin
-      .from("workshops")
+      .from("allies")
       .insert({
         name: w.name,
         slug,
@@ -215,8 +215,8 @@ async function main() {
       ? workshopIds.get(v.workshopName.trim().toLowerCase()) ?? null
       : null;
 
-    const { error } = await admin.from("workshop_volunteers").insert({
-      workshop_id: workshopId,
+    const { error } = await admin.from("ally_volunteer_assignments").insert({
+      ally_id: workshopId,
       name: v.name,
       role: v.role || null,
       phone: v.phone || null,

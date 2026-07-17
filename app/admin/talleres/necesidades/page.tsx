@@ -20,10 +20,10 @@ export default async function AdminNecesidadesPage() {
     <div className="space-y-6">
       <AdminPageHeader
         eyebrow="Promoda"
-        title="Necesidades"
-        description="Administra las necesidades de los talleres."
-        meta={`${result.total} necesidades`}
-        navigation={{ baseHref: "/admin/talleres", baseLabel: "Inicio", currentLabel: "Necesidades" }}
+        title="Tareas"
+        description="Administra tareas asignadas a aliados."
+        meta={`${result.total} tareas`}
+        navigation={{ baseHref: "/admin/aliados", baseLabel: "Aliados", currentLabel: "Tareas" }}
       />
 
       {result.items.length ? (
@@ -31,7 +31,7 @@ export default async function AdminNecesidadesPage() {
           <table className="min-w-[900px] w-full text-left text-sm">
             <thead className="border-b border-stone-200 bg-stone-50/80 text-sm font-semibold text-stone-600">
               <tr>
-                <th className="px-4 py-3">Taller</th>
+                <th className="px-4 py-3">Aliado</th>
                 <th className="px-4 py-3">Título</th>
                 <th className="px-4 py-3">Urgencia</th>
                 <th className="px-4 py-3">Descripción</th>
@@ -43,7 +43,7 @@ export default async function AdminNecesidadesPage() {
                   <tr key={n.id} className="hover:bg-stone-50">
                   <td className="px-4 py-3">
                       {n.workshop ? (
-                        <Link href={`/admin/talleres/listado/${n.workshop_id}`} className="font-semibold text-[#F74897] hover:underline">{n.workshop.name}</Link>
+                        <Link href={`/admin/aliados/${n.workshop_id}`} className="font-semibold text-[#F74897] hover:underline">{n.workshop.name}</Link>
                     ) : (
                       <span className="text-stone-400">—</span>
                     )}
@@ -51,14 +51,14 @@ export default async function AdminNecesidadesPage() {
                   <td className="px-4 py-3 font-medium text-ink">{n.title}</td>
                   <td className="px-4 py-3">
                     {n.urgency ? (
-                      <span className="rounded bg-[#FFE4EC] px-2 py-0.5 text-xs font-medium text-[#D6003F]">{n.urgency}</span>
+                      <span className="rounded bg-[#FFE4EC] px-2 py-0.5 text-sm font-medium text-[#D6003F]">{n.urgency}</span>
                     ) : (
                       <span className="text-stone-400">—</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-stone-600 max-w-xs truncate">{n.description || "—"}</td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${STATUS_BADGES[n.status] || "bg-stone-100 text-stone-600"}`}>{n.status}</span>
+                    <span className={`inline-flex rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide ${STATUS_BADGES[n.status] || "bg-stone-100 text-stone-600"}`}>{n.status}</span>
                   </td>
                 </tr>
               ))}
@@ -67,7 +67,7 @@ export default async function AdminNecesidadesPage() {
         </div>
       ) : (
         <div className="rounded-xl border border-stone-200/80 bg-white/75 p-12 text-center">
-          <p className="text-stone-500 font-medium">No hay necesidades registradas.</p>
+          <p className="text-stone-500 font-medium">No hay tareas registradas.</p>
         </div>
       )}
 
@@ -76,11 +76,11 @@ export default async function AdminNecesidadesPage() {
           <div key={n.id} className="rounded-xl border border-stone-200/80 bg-white/75 p-5 space-y-3">
             <div className="flex items-center justify-between">
               {n.workshop ? (
-                <Link href={`/admin/talleres/listado/${n.workshop_id}`} className="font-semibold text-[#F74897] hover:underline text-sm">{n.workshop.name}</Link>
+                <Link href={`/admin/aliados/${n.workshop_id}`} className="font-semibold text-[#F74897] hover:underline text-sm">{n.workshop.name}</Link>
               ) : (
-                <span className="text-stone-400 text-sm">Sin taller</span>
+                <span className="text-stone-400 text-sm">Sin aliado</span>
               )}
-              <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${STATUS_BADGES[n.status] || "bg-stone-100 text-stone-600"}`}>{n.status}</span>
+              <span className={`inline-flex rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide ${STATUS_BADGES[n.status] || "bg-stone-100 text-stone-600"}`}>{n.status}</span>
             </div>
             <p className="font-semibold text-ink">{n.title}</p>
             {n.description ? <p className="text-sm text-stone-600">{n.description}</p> : null}

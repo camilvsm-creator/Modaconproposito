@@ -6,13 +6,13 @@ export default function ProduccionesPage() {
     <div className="space-y-6">
       <AdminPageHeader
         eyebrow="Panel"
-        title="Producciones"
+        title="Tareas"
         description="Gestiona las confecciones activas del aliado."
-        navigation={{ baseHref: "/admin/talleres/panel", baseLabel: "Panel", currentLabel: "Producciones" }}
+        navigation={{ baseHref: "/admin/aliado", baseLabel: "Panel", currentLabel: "Tareas" }}
       />
       <EmptyState
-        title="Producciones próximamente"
-        description="El módulo de producciones estará disponible pronto."
+        title="Tareas próximamente"
+        description="El módulo de tareas estará disponible pronto."
       />
     </div>
   );

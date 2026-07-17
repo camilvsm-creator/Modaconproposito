@@ -8,7 +8,7 @@ export default function MensajesPage() {
         eyebrow="Panel"
         title="Mensajes"
         description="Centro de comunicación con Promoda."
-        navigation={{ baseHref: "/admin/talleres/panel", baseLabel: "Panel", currentLabel: "Mensajes" }}
+        navigation={{ baseHref: "/admin/aliado", baseLabel: "Panel", currentLabel: "Mensajes" }}
       />
       <EmptyState
         title="Mensajes próximamente"

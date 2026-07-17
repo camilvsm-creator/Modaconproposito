@@ -54,7 +54,7 @@ function pageHref(params: Record<string, string | string[] | undefined>, page: n
   if (status) search.set("status", status);
   if (page > 1) search.set("page", String(page));
   const query = search.toString();
-  return query ? `/admin/talleres/patrones?${query}` : "/admin/talleres/patrones";
+  return query ? `/admin/patrones?${query}` : "/admin/patrones";
 }
 
 export default async function AdminPatronesPage({
@@ -63,7 +63,7 @@ export default async function AdminPatronesPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const user = await requireWorkshopAdminUser();
-  const isPromoda = user.app_metadata?.role === "admin_talleres";
+  const isPromoda = user.app_metadata?.role === "admin";
   const activeBg = isPromoda ? "bg-[#F74897]" : "bg-primary";
 
   const params = await searchParams;
@@ -82,7 +82,7 @@ export default async function AdminPatronesPage({
           title="Patrones estandarizados"
           description="Administra los patrones de costura publicados para descarga."
           meta={`${result.total} patrones`}
-          navigation={{ baseHref: "/admin/talleres", baseLabel: "Aliados", currentLabel: "Patrones" }}
+          navigation={{ baseHref: "/admin/aliados", baseLabel: "Aliados", currentLabel: "Patrones" }}
         />
         <div className="flex flex-wrap gap-3">
           {PATTERN_STATUS_OPTIONS.map((opt) => {
@@ -198,10 +198,10 @@ export default async function AdminPatronesPage({
                       </td>
                       <td className="px-4 py-3 align-top leading-tight">
                         <div className="flex flex-col gap-2">
-                          <Button form={statusFormId} type="submit" variant="secondary" className="w-full text-xs">
+                          <Button form={statusFormId} type="submit" variant="secondary" className="w-full text-sm">
                             Cambiar estado
                           </Button>
-                          <Button form={editFormId} type="submit" variant="ghost" className="w-full text-xs">
+                          <Button form={editFormId} type="submit" variant="ghost" className="w-full text-sm">
                             Guardar cambios
                           </Button>
                         </div>
@@ -262,7 +262,7 @@ export default async function AdminPatronesPage({
                       ))}
                     </select>
                     <div className="flex gap-2">
-                      <Button type="submit" variant="secondary" className="flex-1 text-xs">Cambiar estado</Button>
+                      <Button type="submit" variant="secondary" className="flex-1 text-sm">Cambiar estado</Button>
                     </div>
                   </form>
                 </div>

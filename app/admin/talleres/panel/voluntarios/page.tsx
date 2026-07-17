@@ -8,7 +8,7 @@ export default function VoluntariosPage() {
         eyebrow="Panel"
         title="Voluntarios"
         description="Voluntarios asignados al aliado por el equipo de Promoda."
-        navigation={{ baseHref: "/admin/talleres/panel", baseLabel: "Panel", currentLabel: "Voluntarios" }}
+        navigation={{ baseHref: "/admin/aliado", baseLabel: "Panel", currentLabel: "Voluntarios" }}
       />
       <EmptyState
         title="Voluntarios próximamente"

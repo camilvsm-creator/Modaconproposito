@@ -8,7 +8,7 @@ export default function MaterialesPage() {
         eyebrow="Panel"
         title="Materiales"
         description="Control de insumos disponibles para cada producción."
-        navigation={{ baseHref: "/admin/talleres/panel", baseLabel: "Panel", currentLabel: "Materiales" }}
+        navigation={{ baseHref: "/admin/aliado", baseLabel: "Panel", currentLabel: "Materia prima" }}
       />
       <EmptyState
         title="Materiales próximamente"

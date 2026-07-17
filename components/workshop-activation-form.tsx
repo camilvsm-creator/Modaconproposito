@@ -86,7 +86,7 @@ export function WorkshopActivationForm({
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <InputShell label="Taller">
+          <InputShell label="Aliado">
             <input className={inputClassName} value={workshopName} readOnly />
           </InputShell>
           <InputShell label="Responsable">

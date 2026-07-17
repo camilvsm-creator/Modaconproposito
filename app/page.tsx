@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { SectionCard } from "@/components/ui";
+import { ALLY_CATEGORY_LABELS } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Promoda — Red de Aliados Verificados",
@@ -27,7 +28,7 @@ export default function NuestraMisionPage() {
             </h2>
             <div className="space-y-4 text-sm leading-6 text-stone-700">
               <p>
-                Esta iniciativa nace para conectar a talleres, escuelas y academias de confección,
+                Esta iniciativa nace para conectar a aliados textiles, escuelas y academias de confección,
                 costureros, diseñadores, patronistas, docentes, estudiantes y
                 voluntarios con un propósito común: apoyar a las comunidades
                 afectadas por el terremoto ocurrido en Venezuela el 24 de junio
@@ -35,7 +36,7 @@ export default function NuestraMisionPage() {
               </p>
               <p>
                 Desde nuestra experiencia dentro del sector moda, identificamos
-                una forma de aportar: unir la capacidad productiva de talleres
+                una forma de aportar: unir la capacidad productiva de aliados
                 e institutos a nivel nacional para confeccionar artículos textiles
                 necesarios como ropa interior, sábanas, toallas y otros productos
                 esenciales que muchas veces no forman parte de las donaciones
@@ -43,7 +44,7 @@ export default function NuestraMisionPage() {
               </p>
               <p>
                 A través de esta plataforma creamos una red colaborativa que
-                conecta talleres, voluntarios y aliados para transformar
+                conecta aliados, voluntarios y colaboradores para transformar
                 conocimientos, manos de trabajo y materiales en soluciones
                 concretas. Los productos elaborados serán entregados mediante
                 las entidades correspondientes, buscando garantizar que lleguen
@@ -58,9 +59,9 @@ export default function NuestraMisionPage() {
             </h2>
             <div className="grid gap-4 md:grid-cols-3">
               <SectionCard className="flex flex-col p-5">
-                <h3 className="font-black text-[#F74897]">Talleres verificados</h3>
+                <h3 className="font-black text-[#F74897]">Aliados verificados</h3>
                 <p className="mt-2 text-sm leading-6 text-stone-600">
-                  Los talleres, escuelas y academias pueden registrarse para formar parte de la red,
+                  Las academias, talleres, escuelas y otros aliados pueden registrarse para formar parte de la red,
                   compartir su capacidad de producción y participar en la
                   confección de productos textiles destinados a apoyar a las
                   comunidades afectadas.
@@ -87,12 +88,26 @@ export default function NuestraMisionPage() {
 
           <section className="space-y-4">
             <h2 className="text-2xl font-black tracking-[-0.02em] text-ink">
+              Categorías de aliados
+            </h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {Object.entries(ALLY_CATEGORY_LABELS).map(([value, label]) => (
+                <SectionCard key={value} className="p-5">
+                  <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F74897]">{label}</p>
+                  <p className="mt-2 text-sm leading-6 text-stone-600">Aliados que pueden sumarse a tareas, producción y apoyo textil coordinado por Promoda.</p>
+                </SectionCard>
+              ))}
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-black tracking-[-0.02em] text-ink">
               Nuestro objetivo
             </h2>
             <p className="text-sm leading-6 text-stone-700">
               Crear una red organizada que permita activar el talento y la
               capacidad del sector textil venezolano para responder ante
-              situaciones de emergencia, fortalecer los talleres participantes
+              situaciones de emergencia y fortalecer los aliados participantes
               y generar un impacto real en las comunidades.
             </p>
             <p className="text-sm leading-6 text-stone-700">
@@ -144,7 +159,7 @@ export default function NuestraMisionPage() {
               Únete
             </p>
             <p className="max-w-2xl text-sm leading-6 text-stone-700">
-              Si eres taller, voluntario, empresa o profesional del sector
+              Si eres aliado, voluntario, empresa o profesional del sector
               moda, puedes formar parte de esta iniciativa.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
@@ -152,7 +167,7 @@ export default function NuestraMisionPage() {
                 href="/registro"
                 className="rounded-full bg-[#F74897] px-6 py-3 text-sm font-bold text-white hover:bg-[#D6003F]"
               >
-                Ofrecer mi taller
+                Registrar aliado
               </Link>
               <Link
                 href="/voluntarios"

@@ -78,10 +78,10 @@ export function AdminLoginForm() {
             Red de Aliados Verificados
           </p>
           <h2 className="mt-3 text-2xl font-black tracking-[-0.03em] text-ink lg:text-3xl">
-            Red de Talleres de Confección
+            Red de Aliados Promoda
           </h2>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-stone-500">
-            Plataforma para coordinar talleres de confección, reparación y
+            Plataforma para coordinar aliados, voluntarios y recursos de
             clasificación textil con aliados y voluntarios verificados.
           </p>
         </div>

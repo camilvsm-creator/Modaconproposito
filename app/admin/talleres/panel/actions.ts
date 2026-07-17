@@ -16,15 +16,15 @@ async function verifyWorkshopAccess(user: { id: string; app_metadata?: Record<st
     if (!workshop || workshop.id !== workshopId) return null;
     return workshop;
   }
-  if (role === "admin" || role === "admin_talleres") {
+  if (role === "admin") {
     const { data } = await admin
-      .from("user_workshops")
+      .from("user_allies")
       .select("id")
       .eq("user_id", user.id)
-      .eq("workshop_id", workshopId)
+      .eq("ally_id", workshopId)
       .maybeSingle();
     if (!data) return null;
-    const { data: workshop } = await admin.from("workshops").select("*").eq("id", workshopId).maybeSingle();
+    const { data: workshop } = await admin.from("allies").select("*").eq("id", workshopId).maybeSingle();
     return workshop;
   }
   return null;
@@ -35,7 +35,7 @@ export async function updateWorkshopProfileAction(formData: FormData): Promise<R
   const admin = createSupabaseAdminClient();
 
   const workshopId = String(formData.get("workshopId") || "").trim();
-  if (!workshopId) return { error: "ID de taller no válido." };
+  if (!workshopId) return { error: "ID de aliado no válido." };
 
   const workshop = await verifyWorkshopAccess(user, workshopId, admin);
   if (!workshop) return { error: "No tienes permiso para editar este aliado." };
@@ -71,7 +71,7 @@ export async function updateWorkshopProfileAction(formData: FormData): Promise<R
   updates.public_instagram_allowed = publicInstagramAllowed;
   updates.public_whatsapp_allowed = publicWhatsappAllowed;
 
-  const { error } = await admin.from("workshops").update(updates).eq("id", workshopId);
+  const { error } = await admin.from("allies").update(updates).eq("id", workshopId);
   if (error) return { error: error.message };
 
   const role = user.app_metadata?.role as string;
@@ -81,7 +81,7 @@ export async function updateWorkshopProfileAction(formData: FormData): Promise<R
     actor_email: user.email,
     context_type: role === "aliado" ? "aliado" : "platform",
     context_id: workshopId,
-    entity_type: "workshop",
+    entity_type: "ally",
     entity_id: workshopId,
     action: "profile_update",
     new_data: updates,
@@ -103,17 +103,17 @@ export async function createWorkshopNeedAction(formData: FormData): Promise<Resu
   const requestedItems = String(formData.get("requestedItems") || "").trim();
   const urgency = String(formData.get("urgency") || "").trim();
 
-  if (!workshopId) return { error: "ID de taller no válido." };
+  if (!workshopId) return { error: "ID de aliado no válido." };
   if (!title) return { error: "El título de la necesidad es obligatorio." };
 
   const workshop = await verifyWorkshopAccess(user, workshopId, admin);
   if (!workshop) return { error: "No tienes permiso para crear necesidades para este aliado." };
 
-  const { error } = await admin.from("workshop_needs").insert({
-    workshop_id: workshopId,
+  const { error } = await admin.from("assigned_tasks").insert({
+    ally_id: workshopId,
     title,
     description: description || null,
-    requested_items: requestedItems || null,
+    expected_output: requestedItems || null,
     urgency: urgency || null,
     status: "pendiente",
   });
@@ -127,10 +127,10 @@ export async function createWorkshopNeedAction(formData: FormData): Promise<Resu
     actor_email: user.email,
     context_type: role === "aliado" ? "aliado" : "platform",
     context_id: workshopId,
-    entity_type: "workshop_need",
+    entity_type: "assigned_task",
     entity_id: null,
     action: "create",
-    new_data: { workshop_id: workshopId, title },
+    new_data: { ally_id: workshopId, title },
   });
 
   revalidatePath("/admin/talleres/panel/necesidades");
@@ -152,7 +152,7 @@ export async function closeWorkshopNeedAction(formData: FormData): Promise<Resul
   if (!workshop) return { error: "No tienes permiso para cerrar esta necesidad." };
 
   const { error } = await admin
-    .from("workshop_needs")
+    .from("assigned_tasks")
     .update({ status: "cerrada", closed_at: new Date().toISOString() })
     .eq("id", needId);
 
@@ -173,14 +173,14 @@ export async function uploadWorkshopPhotoAction(formData: FormData): Promise<Res
   const title = String(formData.get("title") || "").trim();
   const description = String(formData.get("description") || "").trim();
 
-  if (!workshopId) return { error: "ID de taller no válido." };
+  if (!workshopId) return { error: "ID de aliado no válido." };
   if (!storagePath) return { error: "No se recibió la imagen." };
 
   const workshop = await verifyWorkshopAccess(user, workshopId, admin);
   if (!workshop) return { error: "No tienes permiso para subir fotos a este aliado." };
 
-  const { error } = await admin.from("workshop_photos").insert({
-    workshop_id: workshopId,
+  const { error } = await admin.from("ally_photos").insert({
+    ally_id: workshopId,
     storage_path: storagePath,
     title: title || null,
     description: description || null,
@@ -202,12 +202,12 @@ export async function uploadWorkshopAvatarAction(formData: FormData): Promise<Re
   const workshopId = String(formData.get("workshopId") || "").trim();
   const storagePath = String(formData.get("storagePath") || "").trim();
 
-  if (!workshopId) return { error: "ID de taller no válido." };
+  if (!workshopId) return { error: "ID de aliado no válido." };
 
   const workshop = await verifyWorkshopAccess(user, workshopId, admin);
   if (!workshop) return { error: "No tienes permiso para cambiar el avatar de este aliado." };
 
-  const { error } = await admin.from("workshops").update({ avatar_path: storagePath || null }).eq("id", workshopId);
+  const { error } = await admin.from("allies").update({ avatar_path: storagePath || null }).eq("id", workshopId);
   if (error) return { error: error.message };
 
   revalidatePath("/admin/talleres/panel");

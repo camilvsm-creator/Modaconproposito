@@ -51,7 +51,7 @@ export function NeedsList({ needs, workshopId }: { needs: WorkshopNeed[]; worksh
               <div className="space-y-1 min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-base font-semibold text-ink">{need.title}</h3>
-                  <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide", statusTone)}>
+                  <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-sm font-semibold uppercase tracking-wide", statusTone)}>
                     {statusLabel}
                   </span>
                 </div>
@@ -61,7 +61,7 @@ export function NeedsList({ needs, workshopId }: { needs: WorkshopNeed[]; worksh
                     <span className="font-medium">Solicitan:</span> {need.requested_items}
                   </p>
                 ) : null}
-                <p className="text-xs text-stone-400">{formatDate(need.created_at)}</p>
+                <p className="text-sm text-stone-400">{formatDate(need.created_at)}</p>
               </div>
               {(need.status === "pendiente" || need.status === "publicada") && (
                 <Button

@@ -8,7 +8,7 @@ export default function EntregasPage() {
         eyebrow="Panel"
         title="Entregas"
         description="Registro de productos entregados a Promoda o a beneficiarios."
-        navigation={{ baseHref: "/admin/talleres/panel", baseLabel: "Panel", currentLabel: "Entregas" }}
+        navigation={{ baseHref: "/admin/aliado", baseLabel: "Panel", currentLabel: "Entregas" }}
       />
       <EmptyState
         title="Entregas próximamente"

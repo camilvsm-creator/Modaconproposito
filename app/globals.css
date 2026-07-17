@@ -11,12 +11,6 @@
 
 :root {
   color-scheme: light;
-  --color-primary: 180 35 24;
-  --color-primary-dark: 143 29 22;
-  --color-primary-soft: 254 228 226;
-}
-
-[data-theme="promoda"] {
   --color-primary: 255 11 85;
   --color-primary-dark: 214 0 63;
   --color-primary-soft: 255 228 236;

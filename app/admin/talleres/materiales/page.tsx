@@ -10,8 +10,8 @@ export default async function AdminMaterialesPage() {
       <AdminPageHeader
         eyebrow="Promoda"
         title="Materiales"
-        description="Vista consolidada de los materiales solicitados por los talleres."
-        navigation={{ baseHref: "/admin/talleres", baseLabel: "Inicio", currentLabel: "Materiales" }}
+        description="Vista consolidada de la materia prima asignada a aliados."
+        navigation={{ baseHref: "/admin/aliados", baseLabel: "Aliados", currentLabel: "Materia prima" }}
       />
       <EmptyState
         title="Materiales próximamente"

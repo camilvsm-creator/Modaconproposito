@@ -9,9 +9,9 @@ export default async function AdminProduccionesPage() {
     <div className="space-y-6">
       <AdminPageHeader
         eyebrow="Promoda"
-        title="Producciones"
-        description="Administra toda la producción de la red de talleres."
-        navigation={{ baseHref: "/admin/talleres", baseLabel: "Inicio", currentLabel: "Producciones" }}
+        title="Tareas"
+        description="Administra las tareas de producción asignadas a aliados."
+        navigation={{ baseHref: "/admin/aliados", baseLabel: "Aliados", currentLabel: "Tareas" }}
       />
       <EmptyState
         title="Producciones próximamente"

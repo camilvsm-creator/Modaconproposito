@@ -24,7 +24,7 @@ function pageHref(params: Record<string, string | string[] | undefined>, page: n
   const search = new URLSearchParams();
   if (page > 1) search.set("page", String(page));
   const query = search.toString();
-  return query ? `/admin/talleres/cartuchera?${query}` : "/admin/talleres/cartuchera";
+  return query ? `/admin/cartuchera?${query}` : "/admin/cartuchera";
 }
 
 export default async function AdminCartucheraPage({
@@ -47,7 +47,7 @@ export default async function AdminCartucheraPage({
           title="Tu Cartera, Mi Refugio"
           meta={`${result.total} donaciones`}
           navigation={{
-            baseHref: "/admin/talleres",
+            baseHref: "/admin/aliados",
             baseLabel: "Aliados",
             currentLabel: "Cartuchera",
           }}
@@ -77,11 +77,11 @@ export default async function AdminCartucheraPage({
                     <td className="px-4 py-3 align-top text-stone-700 leading-tight">
                       <p>{donation.donor_email}</p>
                       {donation.donor_phone ? (
-                        <p className="text-xs text-stone-500">{donation.donor_phone}</p>
+                        <p className="text-sm text-stone-500">{donation.donor_phone}</p>
                       ) : null}
                     </td>
                     <td className="px-4 py-3 align-top text-stone-700 leading-tight">
-                      <span className="rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-semibold text-stone-600">
+                      <span className="rounded-full bg-stone-100 px-2.5 py-0.5 text-sm font-semibold text-stone-600">
                         {HELP_TYPE_LABELS[donation.help_type] ?? donation.help_type}
                       </span>
                     </td>
@@ -106,15 +106,15 @@ export default async function AdminCartucheraPage({
                 <div className="space-y-1 text-sm text-stone-700">
                   <p className="font-semibold text-ink">{donation.donor_name}</p>
                   <p>{donation.donor_email}</p>
-                  {donation.donor_phone ? <p className="text-xs text-stone-500">{donation.donor_phone}</p> : null}
+                  {donation.donor_phone ? <p className="text-sm text-stone-500">{donation.donor_phone}</p> : null}
                   <p>
-                    <span className="rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-semibold text-stone-600">
+                    <span className="rounded-full bg-stone-100 px-2.5 py-0.5 text-sm font-semibold text-stone-600">
                       {HELP_TYPE_LABELS[donation.help_type] ?? donation.help_type}
                     </span>
                     {donation.quantity ? <span className="ml-2 text-stone-500">Cant: {donation.quantity}</span> : null}
                   </p>
                   <p className="text-stone-600">{donation.description}</p>
-                  <p className="text-xs text-stone-500">{formatDate(donation.created_at)}</p>
+                  <p className="text-sm text-stone-500">{formatDate(donation.created_at)}</p>
                 </div>
               </div>
             ))}

@@ -40,7 +40,7 @@ export default async function TalleresPanelPerfilPage() {
         eyebrow="Panel"
         title="Perfil del Aliado"
         description="Actualiza la información y foto de perfil de tu aliado."
-        navigation={{ baseHref: "/admin/talleres/panel", baseLabel: "Panel", currentLabel: "Perfil" }}
+        navigation={{ baseHref: "/admin/aliado", baseLabel: "Panel", currentLabel: "Perfil" }}
       />
       <WorkshopProfileForm workshop={workshop} />
     </div>

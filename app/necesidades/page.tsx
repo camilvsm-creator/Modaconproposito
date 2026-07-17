@@ -45,11 +45,10 @@ export default async function TallerNecesidadesPage({
               RED DE ALIADOS VERIFICADOS
             </p>
             <h1 className="text-3xl font-black tracking-[-0.03em] text-ink sm:text-4xl">
-              Necesidades de talleres
+              Tareas y necesidades publicadas
             </h1>
             <p className="max-w-3xl text-sm leading-6 text-stone-600">
-              Insumos, materiales y apoyo que necesitan los talleres voluntarios
-              para seguir ayudando.
+              Insumos, materiales y apoyo que Promoda publica para coordinar con aliados y colaboradores.
             </p>
           </div>
 
@@ -66,10 +65,10 @@ export default async function TallerNecesidadesPage({
                     </h3>
                     {need.workshop?.slug ? (
                       <Link
-                        href={`/${need.workshop.slug}`}
+                        href={`/aliados/${need.workshop.slug}`}
                         className="inline-block text-sm font-bold text-[#F74897] underline-offset-2 hover:underline"
                       >
-                        {need.workshop.name ?? "Taller"}
+                        {need.workshop.name ?? "Aliado"}
                       </Link>
                     ) : null}
                     {need.description ? (
@@ -93,7 +92,7 @@ export default async function TallerNecesidadesPage({
                       {formatDate(need.published_at ?? need.created_at)}
                     </p>
                     <LinkButton
-                      href={`/talleres?help=${need.id}`}
+                      href={`/aliados?help=${need.id}`}
                       variant="primary"
                       className="text-sm"
                     >
@@ -105,8 +104,8 @@ export default async function TallerNecesidadesPage({
             </div>
           ) : (
             <EmptyState
-              title="Aún no hay necesidades publicadas."
-              description="Las necesidades de los talleres se publicarán una vez aprobadas."
+              title="Aún no hay tareas o necesidades publicadas."
+              description="Las tareas y necesidades se publicarán una vez aprobadas."
             />
           )}
 

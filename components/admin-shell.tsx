@@ -7,6 +7,7 @@ import { BarChart3, Building2, Check, ClipboardList, FileText, FolderKanban, Git
 
 import { cn } from "@/lib/utils";
 import { switchContextAction } from "@/app/admin/actions";
+import { WORKSHOP_PHOTO_BUCKET } from "@/lib/constants";
 import type { AppContext, LinkedWorkshop } from "@/lib/types";
 
 type AdminShellProps = {
@@ -25,38 +26,31 @@ type NavItem = {
 };
 
 const sharedAdminItems: NavItem[] = [
-  { href: "/admin/talleres", label: "Inicio", icon: LayoutDashboard },
-  { href: "/admin/talleres/necesidades", label: "Necesidades", icon: HandHeart },
-  { href: "/admin/talleres/solicitudes-ayuda", label: "Solicitudes", icon: HandHeart },
-  { href: "/admin/talleres/producciones", label: "Producciones", icon: FolderKanban },
-  { href: "/admin/talleres/voluntarios", label: "Voluntarios", icon: Users },
-  { href: "/admin/talleres/materiales", label: "Materiales", icon: Package },
-  { href: "/admin/talleres/entregas", label: "Entregas", icon: PackageCheck },
-  { href: "/admin/talleres/mensajes", label: "Mensajes", icon: MessageCircle },
-  { href: "/admin/talleres/reportes", label: "Reporte", icon: BarChart3 },
-  { href: "/admin/talleres/aliados", label: "Ayuda", icon: GitFork },
-  { href: "/admin/talleres/patrones", label: "Patrones", icon: FileText },
-  { href: "/admin/talleres/cartuchera", label: "Cartuchera", icon: ClipboardList },
-  { href: "/admin/talleres/ofertas", label: "Ofertas", icon: MessageCircle },
+  { href: "/admin/aliados", label: "Aliados", icon: LayoutDashboard },
+  { href: "/admin/tareas", label: "Tareas", icon: FolderKanban },
+  { href: "/admin/solicitudes", label: "Solicitudes", icon: HandHeart },
+  { href: "/admin/voluntarios", label: "Voluntarios", icon: Users },
+  { href: "/admin/colaboradores", label: "Colaboradores", icon: GitFork },
+  { href: "/admin/materia-prima", label: "Materia prima", icon: Package },
+  { href: "/admin/entregas", label: "Entregas", icon: PackageCheck },
+  { href: "/admin/patrones", label: "Patrones", icon: FileText },
+  { href: "/admin/cartuchera", label: "Cartuchera", icon: ClipboardList },
+  { href: "/admin/mensajes", label: "Mensajes", icon: MessageCircle },
+  { href: "/admin/reportes", label: "Reportes", icon: BarChart3 },
 ];
 
 const aliadoNavItems: NavItem[] = [
-  { href: "/admin/talleres/panel/perfil", label: "Perfil", icon: User },
-  { href: "/admin/talleres/panel/producciones", label: "Producciones", icon: Scissors },
-  { href: "/admin/talleres/panel/materiales", label: "Materiales", icon: Package },
-  { href: "/admin/talleres/panel/voluntarios", label: "Voluntarios", icon: Users },
-  { href: "/admin/talleres/panel/necesidades", label: "Necesidades", icon: HandHeart },
-  { href: "/admin/talleres/panel/entregas", label: "Entregas", icon: PackageCheck },
-  { href: "/admin/talleres/panel/mensajes", label: "Mensajes", icon: MessageCircle },
+  { href: "/admin/aliado/perfil", label: "Perfil", icon: User },
+  { href: "/admin/aliado/tareas", label: "Tareas asignadas", icon: FolderKanban },
+  { href: "/admin/aliado/voluntarios", label: "Voluntarios asignados", icon: Users },
+  { href: "/admin/aliado/entregas", label: "Entregas", icon: PackageCheck },
+  { href: "/admin/aliado/materia-prima", label: "Materia prima", icon: Package },
+  { href: "/admin/aliado/mensajes", label: "Mensajes", icon: MessageCircle },
 ];
 
 const navByRole: Record<string, NavItem[]> = {
   admin: sharedAdminItems,
-  admin_talleres: sharedAdminItems,
   aliado: aliadoNavItems,
-  admin_inspector: sharedAdminItems,
-  inspector: sharedAdminItems,
-  volunteers_editor: sharedAdminItems,
 };
 
 function ContextSwitcher({
@@ -76,7 +70,7 @@ function ContextSwitcher({
 
   return (
     <div className={cn("border-b pb-4 shrink-0", isPromoda ? "border-[#F74897]/10" : "border-stone-300")}>
-      <p className={cn("text-[11px] font-semibold uppercase tracking-[0.16em] mb-2", isPromoda ? "text-[#D6003F]" : "text-stone-500")}>
+      <p className={cn("text-sm font-semibold uppercase tracking-[0.16em] mb-2", isPromoda ? "text-[#D6003F]" : "text-stone-500")}>
         Espacio de trabajo
       </p>
       <div className="flex flex-col gap-1">
@@ -112,7 +106,7 @@ function ContextSwitcher({
             >
               {w.avatar_path ? (
                 <img
-                  src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/workshop-photos/${w.avatar_path}`}
+                  src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${WORKSHOP_PHOTO_BUCKET}/${w.avatar_path}`}
                   alt={w.name}
                   className="h-5 w-5 rounded-full object-cover shrink-0"
                 />
@@ -133,8 +127,8 @@ function ContextSwitcher({
 
 export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, children }: AdminShellProps) {
   const pathname = usePathname();
-  const isPromoda = role === "admin_talleres" || role === "aliado" || role === "admin";
-  const isAdmin = role === "admin" || role === "admin_talleres";
+  const isPromoda = true;
+  const isAdmin = role === "admin";
 
   const effectiveRole = context.type === "aliado" ? "aliado" : role;
   const items = context.type === "aliado" ? aliadoNavItems : (navByRole[role] ?? navByRole.admin);
@@ -147,7 +141,7 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
 
   function isActive(href: string) {
     if (href === "/admin") return pathname === "/admin";
-    if (href === "/admin/talleres") return pathname === "/admin/talleres";
+    if (href === "/admin/aliados") return pathname === "/admin/aliados" || pathname === "/admin/talleres";
     return pathname.startsWith(href);
   }
 
@@ -195,17 +189,17 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
             {/* Sidebar header */}
             <div className={cn("border-b pb-4 shrink-0", isPromoda ? "border-[#F74897]/10" : "border-stone-300")}>
               {isPromoda ? (
-                <Link href="/admin/talleres" className="flex items-center gap-2">
+                <Link href="/admin/aliados" className="flex items-center gap-2">
                   <img src="/promoda-logo.svg" alt="Promoda" className="h-7 w-auto" />
                 </Link>
               ) : (
                 <>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">Promoda</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Promoda</p>
                   <h1 className="mt-1.5 text-xl font-semibold tracking-[-0.03em] text-ink">Operaciones</h1>
                 </>
               )}
               <p className={cn("mt-3 truncate text-sm", isPromoda ? "text-stone-500" : "text-stone-600")}>{email || role}</p>
-              <p className={cn("mt-1 text-[11px] font-semibold uppercase tracking-[0.16em]", isPromoda ? "text-[#D6003F]" : "text-stone-500")}>
+              <p className={cn("mt-1 text-sm font-semibold uppercase tracking-[0.16em]", isPromoda ? "text-[#D6003F]" : "text-stone-500")}>
                 {context.type === "aliado" ? "Aliado" : role}
               </p>
             </div>
@@ -331,7 +325,7 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
                 </div>
               ) : (
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">Admin</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Admin</p>
                   <h2 className="mt-1 text-lg font-semibold tracking-[-0.03em] text-ink">Operaciones</h2>
                 </div>
               )}

@@ -19,7 +19,7 @@ const sourceSans = Source_Sans_3({
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: "Promoda",
-  description: "Red de talleres voluntarios y patrones estandarizados.",
+  description: "Red de aliados, voluntarios, colaboradores y patrones estandarizados.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -50,7 +50,7 @@ export default async function RootLayout({
               </div>
               <div className="text-center sm:text-left">
                 <p className="text-sm font-bold text-stone-700">Aliados Verificados</p>
-                <p className="text-sm text-stone-400">Patrones estandarizados y coordinación de talleres de confección y apoyo textil.</p>
+                <p className="text-sm text-stone-400">Patrones estandarizados y coordinación de aliados de confección y apoyo textil.</p>
               </div>
             </div>
           </footer>

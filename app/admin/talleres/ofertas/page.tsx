@@ -48,7 +48,7 @@ function pageHref(params: Record<string, string | string[] | undefined>, page: n
   if (tipo) search.set("tipo", tipo);
   if (page > 1) search.set("page", String(page));
   const query = search.toString();
-  return query ? `/admin/talleres/ofertas?${query}` : "/admin/talleres/ofertas";
+  return query ? `/admin/colaboradores?${query}` : "/admin/colaboradores";
 }
 
 export default async function AdminWorkshopHelpOffersPage({
@@ -57,7 +57,7 @@ export default async function AdminWorkshopHelpOffersPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const user = await requireWorkshopAdminUser();
-  const isPromoda = user.app_metadata?.role === "admin_talleres";
+  const isPromoda = user.app_metadata?.role === "admin";
   const activeBg = isPromoda ? "bg-[#F74897]" : "bg-primary";
 
   const params = await searchParams;
@@ -76,9 +76,9 @@ export default async function AdminWorkshopHelpOffersPage({
         <AdminPageHeader
           eyebrow="Aliados"
           title="Ofertas de ayuda"
-          description="Gestiona las ofertas de ayuda dirigidas a los talleres."
+          description="Gestiona las ofertas de colaboración dirigidas a la red."
           meta={`${result.total} ofertas`}
-          navigation={{ baseHref: "/admin/talleres", baseLabel: "Aliados", currentLabel: "Ofertas" }}
+          navigation={{ baseHref: "/admin/aliados", baseLabel: "Aliados", currentLabel: "Colaboradores" }}
         />
         <div className="flex flex-wrap gap-3">
           {HELP_STATUS_OPTIONS.map((opt) => {
@@ -133,7 +133,7 @@ export default async function AdminWorkshopHelpOffersPage({
                   <th className="px-4 py-3">Disponibilidad</th>
                   <th className="px-4 py-3">Descripción</th>
                   <th className="px-4 py-3">Ubicación</th>
-                  <th className="px-4 py-3">Taller / Necesidad</th>
+                  <th className="px-4 py-3">Aliado / Tarea</th>
                   <th className="px-4 py-3">Estado</th>
                   <th className="px-4 py-3">Notas internas</th>
                   <th className="px-4 py-3">Acción</th>
@@ -150,12 +150,12 @@ export default async function AdminWorkshopHelpOffersPage({
                           <input type="hidden" name="id" value={offer.id} />
                         </form>
                         <p className="font-semibold text-ink">{offer.donor_name}</p>
-                        <p className="mt-1 text-xs text-stone-500">{formatDate(offer.created_at)}</p>
+                        <p className="mt-1 text-sm text-stone-500">{formatDate(offer.created_at)}</p>
                       </td>
                       <td className="px-4 py-3 align-top text-stone-700 leading-tight">
                         <p>{offer.donor_contact}</p>
-                        {offer.donor_email ? <p className="text-xs text-stone-500">{offer.donor_email}</p> : null}
-                        {offer.donor_phone ? <p className="text-xs text-stone-500">{offer.donor_phone}</p> : null}
+                        {offer.donor_email ? <p className="text-sm text-stone-500">{offer.donor_email}</p> : null}
+                        {offer.donor_phone ? <p className="text-sm text-stone-500">{offer.donor_phone}</p> : null}
                       </td>
                       <td className="px-4 py-3 align-top text-stone-700 leading-tight">
                         {offer.help_type}
@@ -165,7 +165,7 @@ export default async function AdminWorkshopHelpOffersPage({
                       </td>
                       <td className="px-4 py-3 align-top text-stone-700 leading-tight">
                         {offer.availability ? (
-                          <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-semibold text-stone-600">
+                          <span className="rounded-full bg-stone-100 px-2 py-0.5 text-sm font-semibold text-stone-600">
                             {HELP_AVAILABILITY_LABELS[offer.availability] ?? offer.availability}
                           </span>
                         ) : (
@@ -181,7 +181,7 @@ export default async function AdminWorkshopHelpOffersPage({
                       <td className="px-4 py-3 align-top leading-tight">
                         {offer.workshop ? (
                           <Link
-                            href={`/admin/talleres/listado/${offer.workshop.id}`}
+                            href={`/admin/aliados/${offer.workshop.id}`}
                             className="text-primary hover:underline"
                           >
                             {offer.workshop.name}
@@ -190,7 +190,7 @@ export default async function AdminWorkshopHelpOffersPage({
                           <span className="text-stone-400">—</span>
                         )}
                         {offer.need ? (
-                          <p className="text-xs text-stone-500">{offer.need.title}</p>
+                          <p className="text-sm text-stone-500">{offer.need.title}</p>
                         ) : null}
                       </td>
                       <td className="px-4 py-3 align-top leading-tight">
@@ -240,12 +240,12 @@ export default async function AdminWorkshopHelpOffersPage({
                   <p className="text-stone-600">{offer.description}</p>
                   {offer.location ? <p className="text-sm text-stone-500">Ubicación: {offer.location}</p> : null}
                   {offer.workshop ? (
-                    <Link href={`/admin/talleres/listado/${offer.workshop.id}`} className="text-primary hover:underline">
+                    <Link href={`/admin/aliados/${offer.workshop.id}`} className="text-primary hover:underline">
                       {offer.workshop.name}
                     </Link>
                   ) : null}
-                  {offer.need ? <p className="text-xs text-stone-500">{offer.need.title}</p> : null}
-                  <p className="text-xs text-stone-500">{formatDate(offer.created_at)}</p>
+                  {offer.need ? <p className="text-sm text-stone-500">{offer.need.title}</p> : null}
+                  <p className="text-sm text-stone-500">{formatDate(offer.created_at)}</p>
                 </div>
 
                 <div className="space-y-3">

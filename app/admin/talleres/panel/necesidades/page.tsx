@@ -41,9 +41,9 @@ export default async function TalleresPanelNecesidadesPage() {
     <div className="space-y-6">
       <AdminPageHeader
         eyebrow="Panel"
-        title="Necesidades"
-        description="Registra lo que necesita tu aliado y lleva el control de las necesidades activas."
-        navigation={{ baseHref: "/admin/talleres/panel", baseLabel: "Panel", currentLabel: "Necesidades" }}
+        title="Tareas"
+        description="Consulta y lleva el control de las tareas asignadas a tu aliado."
+        navigation={{ baseHref: "/admin/aliado", baseLabel: "Panel", currentLabel: "Tareas" }}
       />
       <div className="space-y-8">
         <CreateNeedForm workshopId={workshop.id} />

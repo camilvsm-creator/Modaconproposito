@@ -53,7 +53,7 @@ export async function logContextSwitch(
     entity_type: "context",
     entity_id: toWorkshopId,
     action: "context_switch",
-    old_data: { context_type: fromContext, workshop_id: fromWorkshopId },
-    new_data: { context_type: toContext, workshop_id: toWorkshopId },
+    old_data: { context_type: fromContext, ally_id: fromWorkshopId },
+    new_data: { context_type: toContext, ally_id: toWorkshopId },
   });
 }

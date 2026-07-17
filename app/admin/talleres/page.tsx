@@ -3,9 +3,9 @@ import Link from "next/link";
 import { AdminPageHeader } from "@/components/admin-page-header";
 import { AdminPagination } from "@/components/admin-pagination";
 import { SectionCard } from "@/components/ui";
-import { DeleteWorkshopButton } from "@/components/delete-workshop-button";
 import { GenerateAccessButton } from "@/components/generate-access-button";
 import { requireWorkshopAdminUser } from "@/lib/auth";
+import { ALLY_CATEGORIES, ALLY_CATEGORY_LABELS } from "@/lib/constants";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAdminWorkshopsPage } from "@/lib/workshops";
 import { deactivateWorkshopAction, reactivateWorkshopAction } from "@/app/admin/talleres/actions";
@@ -79,13 +79,15 @@ function pageHref(params: Record<string, string | string[] | undefined>, page: n
   const search = new URLSearchParams();
   const tab = getStringParam(params, "tab");
   const status = getStringParam(params, "status");
+  const category = getStringParam(params, "category");
   const q = getStringParam(params, "q");
   if (tab) search.set("tab", tab);
   if (status) search.set("status", status);
+  if (category) search.set("category", category);
   if (q) search.set("q", q);
   if (page > 1) search.set("page", String(page));
   const query = search.toString();
-  return query ? `/admin/talleres?${query}` : "/admin/talleres";
+  return query ? `/admin/aliados?${query}` : "/admin/aliados";
 }
 
 export default async function AdminInicioPage({
@@ -94,12 +96,13 @@ export default async function AdminInicioPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const user = await requireWorkshopAdminUser();
-  const isPromoda = user.app_metadata?.role === "admin_talleres";
+  const isPromoda = user.app_metadata?.role === "admin";
   const activeBg = isPromoda ? "bg-[#F74897]" : "bg-primary";
 
   const params = await searchParams;
   const tab = getStringParam(params, "tab") || "talleres";
   const status = getStringParam(params, "status") || "all";
+  const category = getStringParam(params, "category") || "all";
   const q = getStringParam(params, "q");
 
   const result = await getAdminWorkshopsPage({
@@ -107,6 +110,7 @@ export default async function AdminInicioPage({
     limit: WORKSHOPS_PER_PAGE,
     tab: tab as "postulaciones" | "talleres",
     status: status === "all" ? undefined : status,
+    category: category === "all" ? undefined : category,
     q: q || undefined,
   });
 
@@ -118,10 +122,10 @@ export default async function AdminInicioPage({
     { count: postulacionesPendientes },
     { count: necesidadesCount },
   ] = await Promise.all([
-    admin.from("workshops").select("id", { count: "exact", head: true }),
-    admin.from("workshops").select("id", { count: "exact", head: true }).eq("status", "activo"),
-    admin.from("workshops").select("id", { count: "exact", head: true }).in("status", ["pendiente", "approved_pending_activation"]),
-    admin.from("workshop_needs").select("id", { count: "exact", head: true }).in("status", ["pendiente", "publicada"]),
+    admin.from("allies").select("id", { count: "exact", head: true }),
+    admin.from("allies").select("id", { count: "exact", head: true }).eq("status", "activo"),
+    admin.from("allies").select("id", { count: "exact", head: true }).in("status", ["pendiente", "approved_pending_activation"]),
+    admin.from("assigned_tasks").select("id", { count: "exact", head: true }).in("status", ["pendiente", "asignada", "en_progreso"]),
   ]);
 
   const stats = [
@@ -138,13 +142,13 @@ export default async function AdminInicioPage({
       <AdminPageHeader
         eyebrow="Promoda"
         title="Inicio"
-        description="Resumen general de la red de talleres."
+        description="Resumen general de la red de aliados."
         actions={
           <Link
-            href="/admin/talleres/crear"
+            href="/admin/aliados/crear"
             className="inline-flex items-center justify-center rounded-full bg-[#F74897] px-5 py-3 text-sm font-semibold text-white hover:bg-[#D6003F] transition"
           >
-            Crear taller
+            Crear aliado
           </Link>
         }
       />
@@ -202,10 +206,17 @@ export default async function AdminInicioPage({
               );
             })}
           </div>
-          <form action="/admin/talleres" method="get" className="flex w-full flex-col gap-3 sm:flex-row lg:max-w-[420px]">
+          <form action="/admin/aliados" method="get" className="flex w-full flex-col gap-3 sm:flex-row lg:max-w-[640px]">
             <input name="q" defaultValue={q ?? ""} placeholder="Buscar por nombre, responsable o ciudad" className="w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm" />
+            <select name="category" defaultValue={category} className="rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-700">
+              <option value="all">Todas las categorías</option>
+              {ALLY_CATEGORIES.map((value) => (
+                <option key={value} value={value}>{ALLY_CATEGORY_LABELS[value]}</option>
+              ))}
+            </select>
             <input type="hidden" name="page" value="1" />
             <input type="hidden" name="tab" value={tab} />
+            {status !== "all" ? <input type="hidden" name="status" value={status} /> : null}
             <button className={`rounded-lg ${activeBg} px-5 py-2.5 text-sm font-semibold text-white`} type="submit">Buscar</button>
           </form>
         </div>
@@ -218,6 +229,7 @@ export default async function AdminInicioPage({
               <thead className="border-b border-stone-200 bg-stone-50/80 text-sm font-semibold text-stone-600">
                 <tr>
                   <th className="px-4 py-3">Nombre</th>
+                  <th className="px-4 py-3">Categoría</th>
                   <th className="px-4 py-3">Responsable</th>
                   <th className="px-4 py-3">Estado</th>
                   <th className="px-4 py-3">Ubicación</th>
@@ -228,13 +240,18 @@ export default async function AdminInicioPage({
                 {result.items.map((w) => (
                   <tr key={w.id} className="hover:bg-stone-50 transition-colors">
                     <td className="px-4 py-3 align-top leading-tight">
-                      <Link href={`/admin/talleres/listado/${w.id}`} className="font-semibold text-[#F74897] hover:underline">
+                      <Link href={`/admin/aliados/${w.id}`} className="font-semibold text-[#F74897] hover:underline">
                         {w.name}
                       </Link>
                     </td>
+                    <td className="px-4 py-3 align-top leading-tight">
+                      <span className="inline-flex rounded-full bg-[#FFE4EC] px-2.5 py-1 text-sm font-semibold text-[#D6003F]">
+                        {ALLY_CATEGORY_LABELS[w.category] ?? w.category}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 align-top text-stone-700 leading-tight">{w.responsible_name ?? "—"}</td>
                     <td className="px-4 py-3 align-top leading-tight">
-                      <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${STATUS_BADGES[w.status] || "bg-stone-100 text-stone-600"}`}>
+                      <span className={`inline-block rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide ${STATUS_BADGES[w.status] || "bg-stone-100 text-stone-600"}`}>
                         {STATUS_LABELS[w.status] || w.status}
                       </span>
                     </td>
@@ -242,8 +259,8 @@ export default async function AdminInicioPage({
                     <td className="px-4 py-3 align-top leading-tight">
                       <div className="flex flex-wrap gap-1.5">
                         <Link
-                          href={`/admin/talleres/listado/${w.id}`}
-                          className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[#F74897] ring-1 ring-stone-300 hover:bg-stone-50 transition"
+                           href={`/admin/aliados/${w.id}`}
+                          className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-[#F74897] ring-1 ring-stone-300 hover:bg-stone-50 transition"
                         >
                           Detalle
                         </Link>
@@ -255,7 +272,7 @@ export default async function AdminInicioPage({
                       <input type="hidden" name="id" value={w.id} />
                       <button
                         type="submit"
-                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-green-600 ring-1 ring-green-300 hover:bg-green-50 transition"
+                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-green-600 ring-1 ring-green-300 hover:bg-green-50 transition"
                       >
                         Reactivar
                       </button>
@@ -265,15 +282,12 @@ export default async function AdminInicioPage({
                       <input type="hidden" name="id" value={w.id} />
                       <button
                         type="submit"
-                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-red-600 ring-1 ring-red-300 hover:bg-red-50 transition"
+                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-red-600 ring-1 ring-red-300 hover:bg-red-50 transition"
                       >
                         Desactivar
                       </button>
                     </form>
                   ) : null}
-                  {(w.status === "desactivado" || w.status === "rechazado" || w.status === "pendiente" || w.status === "approved_pending_activation") && (
-                    <DeleteWorkshopButton workshopId={w.id} workshopName={w.name} />
-                  )}
                       </div>
                     </td>
                   </tr>
@@ -286,17 +300,22 @@ export default async function AdminInicioPage({
             {result.items.map((w) => (
               <div key={w.id} className="rounded-xl border border-stone-200/80 bg-white/75 p-5 space-y-4">
                 <div className="space-y-1 text-sm text-stone-700">
-                  <Link href={`/admin/talleres/listado/${w.id}`} className="font-semibold text-[#F74897] hover:underline">{w.name}</Link>
+                  <Link href={`/admin/aliados/${w.id}`} className="font-semibold text-[#F74897] hover:underline">{w.name}</Link>
                   <p className="text-stone-600">{w.responsible_name ?? "—"}</p>
+                  <p>
+                    <span className="inline-flex rounded-full bg-[#FFE4EC] px-2.5 py-1 text-sm font-semibold text-[#D6003F]">
+                      {ALLY_CATEGORY_LABELS[w.category] ?? w.category}
+                    </span>
+                  </p>
                   <p className="text-stone-400">{w.city ?? "—"}, {w.state}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${STATUS_BADGES[w.status]}`}>{STATUS_LABELS[w.status]}</span>
+                  <span className={`inline-block rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide ${STATUS_BADGES[w.status]}`}>{STATUS_LABELS[w.status]}</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   <Link
-                    href={`/admin/talleres/listado/${w.id}`}
-                    className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[#F74897] ring-1 ring-stone-300 hover:bg-stone-50 transition"
+                    href={`/admin/aliados/${w.id}`}
+                    className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-[#F74897] ring-1 ring-stone-300 hover:bg-stone-50 transition"
                   >
                     Ver detalle
                   </Link>
@@ -308,7 +327,7 @@ export default async function AdminInicioPage({
                       <input type="hidden" name="id" value={w.id} />
                       <button
                         type="submit"
-                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-green-600 ring-1 ring-green-300 hover:bg-green-50 transition"
+                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-green-600 ring-1 ring-green-300 hover:bg-green-50 transition"
                       >
                         Reactivar
                       </button>
@@ -318,15 +337,12 @@ export default async function AdminInicioPage({
                       <input type="hidden" name="id" value={w.id} />
                       <button
                         type="submit"
-                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-red-600 ring-1 ring-red-300 hover:bg-red-50 transition"
+                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-red-600 ring-1 ring-red-300 hover:bg-red-50 transition"
                       >
                         Desactivar
                       </button>
                     </form>
                   ) : null}
-                  {(w.status === "desactivado" || w.status === "rechazado" || w.status === "pendiente" || w.status === "approved_pending_activation") && (
-                    <DeleteWorkshopButton workshopId={w.id} workshopName={w.name} />
-                  )}
                 </div>
               </div>
             ))}
@@ -342,7 +358,7 @@ export default async function AdminInicioPage({
         </div>
       ) : (
         <div className="rounded-xl border border-stone-200/80 bg-white/75 p-12 text-center">
-          <p className="text-stone-500 font-medium">No hay talleres que coincidan con los filtros.</p>
+          <p className="text-stone-500 font-medium">No hay aliados que coincidan con los filtros.</p>
         </div>
       )}
     </div>

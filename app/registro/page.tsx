@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 
 import { WorkshopRegistrationForm } from "@/components/workshop-registration-form";
-import { SectionCard } from "@/components/ui";
-
 export const metadata: Metadata = {
-  title: "Registrar mi taller — Promoda",
+  title: "Registrar aliado — Promoda",
 };
 
 export default function TallerRegistroPage() {
@@ -17,11 +15,10 @@ export default function TallerRegistroPage() {
               RED DE ALIADOS VERIFICADOS
             </p>
             <h1 className="text-3xl font-black tracking-[-0.03em] text-ink sm:text-4xl">
-              Registrar mi taller
+              Registrar aliado
             </h1>
             <p className="max-w-3xl text-sm leading-6 text-stone-600">
-              Registra tu taller de confección, reparación o clasificación
-              textil para coordinar ayuda con personas afectadas.
+              Registra una academia, taller, escuela u otro aliado textil para coordinar tareas con Promoda.
             </p>
           </div>
           <WorkshopRegistrationForm />

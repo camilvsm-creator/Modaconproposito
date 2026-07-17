@@ -19,17 +19,17 @@ export async function switchContextAction(workshopId: string | null): Promise<Re
   if (!user) return { error: "No autenticado" };
 
   const role = user.app_metadata?.role as string | undefined;
-  if (role !== "admin" && role !== "admin_talleres") {
+  if (role !== "admin") {
     return { error: "No tienes permiso para cambiar de contexto" };
   }
 
   if (workshopId) {
     const admin = createSupabaseAdminClient();
     const { data } = await admin
-      .from("user_workshops")
+      .from("user_allies")
       .select("id")
       .eq("user_id", user.id)
-      .eq("workshop_id", workshopId)
+      .eq("ally_id", workshopId)
       .maybeSingle();
 
     if (!data) return { error: "No tienes acceso a este aliado" };

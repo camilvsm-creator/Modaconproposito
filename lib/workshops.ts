@@ -7,7 +7,6 @@ import type {
   CartucheraDonation,
   Workshop,
   WorkshopActivationToken,
-  WorkshopHelpOffer,
   WorkshopHelpOfferWithRelations,
   WorkshopListItem,
   WorkshopNeed,
@@ -35,18 +34,42 @@ function assertQueryOk(error: { message: string } | null, context: string) {
   }
 }
 
-// ---- Slug generation ----
+function normalizeTask<T extends Record<string, unknown>>(task: T): T & {
+  requested_items: string | null;
+  workshop_id: string | null;
+  workshop?: unknown;
+} {
+  return {
+    ...task,
+    requested_items: (task.expected_output as string | null | undefined) ?? null,
+    workshop_id: (task.ally_id as string | null | undefined) ?? null,
+    workshop: task.ally,
+  };
+}
+
+function normalizeTasks<T extends Record<string, unknown>>(tasks: T[] | null): Array<T & { requested_items: string | null }> {
+  return (tasks ?? []).map((task) => normalizeTask(task));
+}
+
+function normalizeOffer<T extends Record<string, unknown>>(offer: T): T & { workshop?: unknown; need?: unknown } {
+  return {
+    ...offer,
+    workshop: offer.ally,
+    need: offer.task,
+  };
+}
+
 export async function generateWorkshopSlug(name: string): Promise<string> {
   const base = name
     .toLowerCase()
     .replace(/[^\w\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
-    .trim() || "taller";
+    .trim() || "aliado";
 
   const admin = await createSupabaseServerClient();
   const { data } = await admin
-    .from("workshops")
+    .from("allies")
     .select("slug")
     .like("slug", `${base}%`);
 
@@ -58,17 +81,20 @@ export async function generateWorkshopSlug(name: string): Promise<string> {
   return `${base}-${counter}`;
 }
 
-// ---- Admin queries ----
+export const generateAllySlug = generateWorkshopSlug;
+
 export async function getAdminWorkshopsPage({
   page = 1,
   limit = 20,
   status,
+  category,
   tab,
   q,
 }: {
   page?: number;
   limit?: number;
   status?: string;
+  category?: string;
   tab?: "postulaciones" | "talleres";
   q?: string;
 } = {}): Promise<PagedResult<WorkshopListItem>> {
@@ -79,8 +105,8 @@ export async function getAdminWorkshopsPage({
   const to = from + limit - 1;
 
   let query = admin
-    .from("workshops")
-    .select("id, user_id, name, responsible_name, city, state, status, created_at", { count: "exact" })
+    .from("allies")
+    .select("id, user_id, category, name, responsible_name, city, state, status, created_at", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -93,56 +119,54 @@ export async function getAdminWorkshopsPage({
     query = query.in("status", activeStatuses);
   }
 
-  if (status && status !== "all") {
-    query = query.eq("status", status);
-  }
-  if (q) {
-    query = query.or(`name.ilike.%${q}%,responsible_name.ilike.%${q}%,city.ilike.%${q}%`);
-  }
+  if (status && status !== "all") query = query.eq("status", status);
+  if (category && category !== "all") query = query.eq("category", category);
+  if (q) query = query.or(`name.ilike.%${q}%,responsible_name.ilike.%${q}%,city.ilike.%${q}%`);
 
   const { data, count, error } = await query;
-  assertQueryOk(error, "No se pudieron cargar los talleres");
-  const total = count ?? 0;
+  assertQueryOk(error, "No se pudieron cargar los aliados");
 
   return {
     items: (data ?? []) as WorkshopListItem[],
-    total,
+    total: count ?? 0,
     page,
     limit,
-    pageCount: Math.max(Math.ceil(total / limit), 1),
+    pageCount: Math.max(Math.ceil((count ?? 0) / limit), 1),
   };
 }
 
+export const getAdminAlliesPage = getAdminWorkshopsPage;
+
 export async function getAdminWorkshopById(id: string) {
   const admin = await createSupabaseServerClient();
-  const { data, error } = await admin.from("workshops").select("*").eq("id", id).maybeSingle();
-  assertQueryOk(error, "No se pudo cargar el taller");
+  const { data, error } = await admin.from("allies").select("*").eq("id", id).maybeSingle();
+  assertQueryOk(error, "No se pudo cargar el aliado");
   return (data ?? null) as Workshop | null;
 }
 
-export async function getAdminWorkshopNeeds(
-  workshopId: string,
-): Promise<WorkshopNeed[]> {
+export const getAdminAllyById = getAdminWorkshopById;
+
+export async function getAdminWorkshopNeeds(allyId: string): Promise<WorkshopNeed[]> {
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
-    .from("workshop_needs")
+    .from("assigned_tasks")
     .select("*")
-    .eq("workshop_id", workshopId)
+    .eq("ally_id", allyId)
     .order("created_at", { ascending: false });
-  assertQueryOk(error, "No se pudieron cargar las necesidades del taller");
-  return (data ?? []) as WorkshopNeed[];
+  assertQueryOk(error, "No se pudieron cargar las tareas del aliado");
+  return normalizeTasks(data) as unknown as WorkshopNeed[];
 }
 
-export async function getAdminWorkshopPhotos(
-  workshopId: string,
-): Promise<WorkshopPhoto[]> {
+export const getAdminAllyTasks = getAdminWorkshopNeeds;
+
+export async function getAdminWorkshopPhotos(allyId: string): Promise<WorkshopPhoto[]> {
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
-    .from("workshop_photos")
+    .from("ally_photos")
     .select("*")
-    .eq("workshop_id", workshopId)
+    .eq("ally_id", allyId)
     .order("created_at", { ascending: false });
-  assertQueryOk(error, "No se pudieron cargar las fotos del taller");
+  assertQueryOk(error, "No se pudieron cargar las fotos del aliado");
   return (data ?? []) as WorkshopPhoto[];
 }
 
@@ -162,25 +186,22 @@ export async function getAdminNeedsPage({
   const to = from + limit - 1;
 
   let query = admin
-    .from("workshop_needs")
-    .select("*, workshop:workshops(id, name)", { count: "exact" })
+    .from("assigned_tasks")
+    .select("*, ally:allies(id, name)", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  if (status && status !== "all") {
-    query = query.eq("status", status);
-  }
+  if (status && status !== "all") query = query.eq("status", status);
 
   const { data, count, error } = await query;
-  assertQueryOk(error, "No se pudieron cargar las necesidades");
-  const total = count ?? 0;
+  assertQueryOk(error, "No se pudieron cargar las tareas");
 
   return {
-    items: (data ?? []) as WorkshopNeedWithWorkshopName[],
-    total,
+    items: normalizeTasks(data) as unknown as WorkshopNeedWithWorkshopName[],
+    total: count ?? 0,
     page,
     limit,
-    pageCount: Math.max(Math.ceil(total / limit), 1),
+    pageCount: Math.max(Math.ceil((count ?? 0) / limit), 1),
   };
 }
 
@@ -202,36 +223,29 @@ export async function getAdminHelpOffersPage({
   const to = from + limit - 1;
 
   let query = admin
-    .from("workshop_help_offers")
-    .select("*, workshop:workshops(id, name, slug), need:workshop_needs(id, title)", { count: "exact" })
+    .from("collaborator_offers")
+    .select("*, ally:allies(id, name, slug), task:assigned_tasks(id, title)", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  if (status && status !== "all") {
-    query = query.eq("status", status);
-  }
-
+  if (status && status !== "all") query = query.eq("status", status);
   if (tipo && tipo !== "all") {
     const group = HELP_TYPE_GROUPS.find((g) => g.label.toLowerCase() === tipo.toLowerCase());
-    if (group) {
-      query = query.in("help_type", [...group.options]);
-    }
+    if (group) query = query.in("help_type", [...group.options]);
   }
 
   const { data, count, error } = await query;
-  assertQueryOk(error, "No se pudieron cargar las ofertas de ayuda");
-  const total = count ?? 0;
+  assertQueryOk(error, "No se pudieron cargar las ofertas de colaboradores");
 
   return {
-    items: (data ?? []) as WorkshopHelpOfferWithRelations[],
-    total,
+    items: (data ?? []).map((offer) => normalizeOffer(offer)) as unknown as WorkshopHelpOfferWithRelations[],
+    total: count ?? 0,
     page,
     limit,
-    pageCount: Math.max(Math.ceil(total / limit), 1),
+    pageCount: Math.max(Math.ceil((count ?? 0) / limit), 1),
   };
 }
 
-// ---- Admin volunteers ----
 export async function getAdminVolunteersPage({
   page = 1,
   limit = 20,
@@ -242,32 +256,7 @@ export async function getAdminVolunteersPage({
   q?: string;
 } = {}): Promise<PagedResult<WorkshopVolunteer>> {
   const admin = createSupabaseAdminClient();
-  page = Math.max(page, 1);
-  limit = Math.min(Math.max(limit, 1), 100);
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
-
-  let query = admin
-    .from("workshop_volunteers")
-    .select("*", { count: "exact" })
-    .order("name", { ascending: true })
-    .range(from, to);
-
-  if (q) {
-    query = query.ilike("name", `%${q}%`);
-  }
-
-  const { data, count, error } = await query;
-  assertQueryOk(error, "No se pudieron cargar los voluntarios");
-  const total = count ?? 0;
-
-  return {
-    items: (data ?? []) as WorkshopVolunteer[],
-    total,
-    page,
-    limit,
-    pageCount: Math.max(Math.ceil(total / limit), 1),
-  };
+  return getAdminVolunteersPageFromClient(admin, { page, limit, q });
 }
 
 export async function getAdminVolunteersPageFromClient(
@@ -288,41 +277,39 @@ export async function getAdminVolunteersPageFromClient(
   const to = from + limit - 1;
 
   let query = client
-    .from("workshop_volunteers")
+    .from("ally_volunteer_assignments")
     .select("*", { count: "exact" })
     .order("name", { ascending: true })
     .range(from, to);
 
-  if (q) {
-    query = query.ilike("name", `%${q}%`);
-  }
+  if (q) query = query.ilike("name", `%${q}%`);
 
   const { data, count, error } = await query;
-  assertQueryOk(error, "No se pudieron cargar los voluntarios");
-  const total = count ?? 0;
+  assertQueryOk(error, "No se pudieron cargar los voluntarios asignados");
 
   return {
     items: (data ?? []) as WorkshopVolunteer[],
-    total,
+    total: count ?? 0,
     page,
     limit,
-    pageCount: Math.max(Math.ceil(total / limit), 1),
+    pageCount: Math.max(Math.ceil((count ?? 0) / limit), 1),
   };
 }
 
-// ---- Public queries ----
 export async function getPublicWorkshopsPage({
   page = 1,
   limit = 12,
   q,
   state,
   city,
+  category,
 }: {
   page?: number;
   limit?: number;
   q?: string;
   state?: string;
   city?: string;
+  category?: string;
 } = {}): Promise<PagedResult<Workshop & { needs_count: number }>> {
   const supabase = createSupabasePublicClient();
   page = Math.max(page, 1);
@@ -331,96 +318,83 @@ export async function getPublicWorkshopsPage({
   const to = from + limit - 1;
 
   let query = supabase
-    .from("workshops")
+    .from("allies")
     .select("*", { count: "exact" })
     .eq("status", "activo")
     .order("name", { ascending: true })
     .range(from, to);
 
-  if (q) {
-    query = query.or(`name.ilike.%${q}%,what_they_do.ilike.%${q}%,city.ilike.%${q}%`);
-  }
-  if (state) {
-    query = query.eq("state", state);
-  }
-  if (city) {
-    query = query.eq("city", city);
-  }
+  if (q) query = query.or(`name.ilike.%${q}%,what_they_do.ilike.%${q}%,city.ilike.%${q}%`);
+  if (state) query = query.eq("state", state);
+  if (city) query = query.eq("city", city);
+  if (category) query = query.eq("category", category);
 
   const { data, count, error } = await query;
-  assertQueryOk(error, "No se pudieron cargar los talleres públicos");
-  const total = count ?? 0;
-  const workshops = (data ?? []) as Workshop[];
+  assertQueryOk(error, "No se pudieron cargar los aliados públicos");
+  const allies = (data ?? []) as Workshop[];
 
-  const needsCountMap = new Map<string, number>();
-  if (workshops.length > 0) {
-    const { data: needs, error: needsError } = await supabase
-      .from("workshop_needs")
-      .select("workshop_id")
-      .in("workshop_id", workshops.map((w) => w.id))
+  const tasksCountMap = new Map<string, number>();
+  if (allies.length > 0) {
+    const { data: tasks, error: tasksError } = await supabase
+      .from("assigned_tasks")
+      .select("ally_id")
+      .in("ally_id", allies.map((a) => a.id))
       .eq("status", "publicada");
-    assertQueryOk(needsError, "No se pudo cargar el conteo de necesidades públicas");
+    assertQueryOk(tasksError, "No se pudo cargar el conteo de tareas públicas");
 
-    if (needs) {
-      for (const n of needs) {
-        needsCountMap.set(n.workshop_id, (needsCountMap.get(n.workshop_id) ?? 0) + 1);
-      }
+    for (const task of tasks ?? []) {
+      tasksCountMap.set(task.ally_id, (tasksCountMap.get(task.ally_id) ?? 0) + 1);
     }
   }
 
-  const items = workshops.map((w) => ({
-    ...w,
-    needs_count: needsCountMap.get(w.id) ?? 0,
-  }));
-
   return {
-    items,
-    total,
+    items: allies.map((ally) => ({ ...ally, needs_count: tasksCountMap.get(ally.id) ?? 0 })),
+    total: count ?? 0,
     page,
     limit,
-    pageCount: Math.max(Math.ceil(total / limit), 1),
+    pageCount: Math.max(Math.ceil((count ?? 0) / limit), 1),
   };
 }
+
+export const getPublicAlliesPage = getPublicWorkshopsPage;
 
 export async function getPublicWorkshopBySlug(slug: string) {
   const supabase = createSupabasePublicClient();
   const { data, error } = await supabase
-    .from("workshops")
+    .from("allies")
     .select("*")
     .eq("slug", slug)
     .eq("status", "activo")
     .maybeSingle();
-  assertQueryOk(error, "No se pudo cargar el taller público");
+  assertQueryOk(error, "No se pudo cargar el aliado público");
   return (data ?? null) as Workshop | null;
 }
 
-export async function getPublicWorkshopNeeds(
-  workshopId: string,
-): Promise<WorkshopNeed[]> {
+export const getPublicAllyBySlug = getPublicWorkshopBySlug;
+
+export async function getPublicWorkshopNeeds(allyId: string): Promise<WorkshopNeed[]> {
   const supabase = createSupabasePublicClient();
   const { data, error } = await supabase
-    .from("workshop_needs")
-    .select("id, title, description, requested_items, urgency, status, created_at")
-    .eq("workshop_id", workshopId)
+    .from("assigned_tasks")
+    .select("id, title, description, expected_output, urgency, status, created_at")
+    .eq("ally_id", allyId)
     .eq("status", "publicada")
     .order("created_at", { ascending: false })
     .limit(50);
-  assertQueryOk(error, "No se pudieron cargar las necesidades públicas del taller");
-  return (data ?? []) as WorkshopNeed[];
+  assertQueryOk(error, "No se pudieron cargar las tareas públicas del aliado");
+  return normalizeTasks(data) as unknown as WorkshopNeed[];
 }
 
-export async function getPublicWorkshopPhotos(
-  workshopId: string,
-): Promise<WorkshopPhoto[]> {
+export async function getPublicWorkshopPhotos(allyId: string): Promise<WorkshopPhoto[]> {
   const supabase = createSupabasePublicClient();
   const { data, error } = await supabase
-    .from("workshop_photos")
+    .from("ally_photos")
     .select("id, title, description, storage_path, status, created_at")
-    .eq("workshop_id", workshopId)
+    .eq("ally_id", allyId)
     .eq("status", "aprobada")
     .order("created_at", { ascending: false })
     .limit(50);
-  assertQueryOk(error, "No se pudieron cargar las fotos públicas del taller");
+  assertQueryOk(error, "No se pudieron cargar las fotos públicas del aliado");
   return (data ?? []) as WorkshopPhoto[];
 }
 
@@ -438,106 +412,119 @@ export async function getPublicNeedsPage({
   const to = from + limit - 1;
 
   const { data, count, error } = await supabase
-    .from("workshop_needs")
-    .select("*, workshop:workshops!inner(id, name, slug, status)", { count: "exact" })
+    .from("assigned_tasks")
+    .select("*, ally:allies!inner(id, name, slug, status)", { count: "exact" })
     .eq("status", "publicada")
-    .eq("workshop.status", "activo")
+    .eq("ally.status", "activo")
     .order("created_at", { ascending: false })
     .range(from, to);
-  assertQueryOk(error, "No se pudieron cargar las necesidades públicas");
-
-  const total = count ?? 0;
+  assertQueryOk(error, "No se pudieron cargar las tareas públicas");
 
   return {
-    items: (data ?? []) as WorkshopNeedWithWorkshopName[],
-    total,
+    items: normalizeTasks(data) as unknown as WorkshopNeedWithWorkshopName[],
+    total: count ?? 0,
     page,
     limit,
-    pageCount: Math.max(Math.ceil(total / limit), 1),
+    pageCount: Math.max(Math.ceil((count ?? 0) / limit), 1),
   };
 }
 
-// ---- Panel queries (by user_id) ----
 export const getWorkshopByUserId = cache(async (userId: string) => {
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
-    .from("workshops")
+    .from("allies")
     .select("*")
     .eq("user_id", userId)
     .maybeSingle();
-  assertQueryOk(error, "No se pudo cargar el taller del usuario");
+  assertQueryOk(error, "No se pudo cargar el aliado del usuario");
   return (data ?? null) as Workshop | null;
 });
+
+export const getAllyByUserId = getWorkshopByUserId;
 
 export const getWorkshopAvatarPath = cache(async (userId: string) => {
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
-    .from("workshops")
+    .from("allies")
     .select("avatar_path")
     .eq("user_id", userId)
     .maybeSingle();
-  assertQueryOk(error, "No se pudo cargar el avatar del taller");
+  assertQueryOk(error, "No se pudo cargar el avatar del aliado");
   return data?.avatar_path ?? null;
 });
 
 export const getUserLinkedWorkshops = cache(async (userId: string) => {
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
-    .from("user_workshops")
-    .select("workshop:workshops(id, name, slug, avatar_path)")
+    .from("user_allies")
+    .select("ally:allies(id, name, slug, avatar_path)")
     .eq("user_id", userId);
   assertQueryOk(error, "No se pudieron cargar los aliados vinculados");
   if (!data) return [];
   return data
-    .map((row) => row.workshop as unknown as { id: string; name: string; slug: string; avatar_path: string | null })
+    .map((row) => row.ally as unknown as { id: string; name: string; slug: string; avatar_path: string | null })
     .filter(Boolean);
 });
 
-export const getWorkshopById = cache(async (workshopId: string) => {
+export const getUserLinkedAllies = getUserLinkedWorkshops;
+
+export const getWorkshopById = cache(async (allyId: string) => {
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
-    .from("workshops")
+    .from("allies")
     .select("*")
-    .eq("id", workshopId)
+    .eq("id", allyId)
     .maybeSingle();
   assertQueryOk(error, "No se pudo cargar el aliado");
   return (data ?? null) as Workshop | null;
 });
 
-export async function getWorkshopNeeds(workshopId: string): Promise<WorkshopNeed[]> {
+export const getAllyById = getWorkshopById;
+
+export async function getWorkshopNeeds(allyId: string): Promise<WorkshopNeed[]> {
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
-    .from("workshop_needs")
+    .from("assigned_tasks")
     .select("*")
-    .eq("workshop_id", workshopId)
+    .eq("ally_id", allyId)
     .order("created_at", { ascending: false });
-  assertQueryOk(error, "No se pudieron cargar las necesidades del panel");
-  return (data ?? []) as WorkshopNeed[];
+  assertQueryOk(error, "No se pudieron cargar las tareas del panel");
+  return normalizeTasks(data) as unknown as WorkshopNeed[];
 }
 
-export async function getWorkshopPhotos(workshopId: string): Promise<WorkshopPhoto[]> {
+export const getAllyTasks = getWorkshopNeeds;
+
+export async function getWorkshopPhotos(allyId: string): Promise<WorkshopPhoto[]> {
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
-    .from("workshop_photos")
+    .from("ally_photos")
     .select("*")
-    .eq("workshop_id", workshopId)
+    .eq("ally_id", allyId)
     .order("created_at", { ascending: false });
   assertQueryOk(error, "No se pudieron cargar las fotos del panel");
   return (data ?? []) as WorkshopPhoto[];
 }
 
-// ---- Activation tokens ----
 export async function createWorkshopActivationToken(
-  workshopId: string,
+  allyId: string,
   createdByUserId?: string | null,
 ) {
   const admin = createSupabaseAdminClient();
   const token = crypto.randomBytes(24).toString("hex");
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
-  const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const now = new Date().toISOString();
 
-  const { error } = await admin.from("workshop_activation_tokens").insert({
-    workshop_id: workshopId,
+  const { error: invalidateError } = await admin
+    .from("ally_activation_tokens")
+    .update({ used_at: now })
+    .eq("ally_id", allyId)
+    .is("used_at", null);
+
+  if (invalidateError) throw new Error(invalidateError.message);
+
+  const { error } = await admin.from("ally_activation_tokens").insert({
+    ally_id: allyId,
     token_hash: tokenHash,
     expires_at: expiresAt,
     created_by_user_id: createdByUserId ?? null,
@@ -545,26 +532,30 @@ export async function createWorkshopActivationToken(
 
   if (error) throw new Error(error.message);
 
-  return {
-    token,
-    activationLink: `${getSiteUrl()}/admin/activar-taller?token=${token}`,
-    expiresAt,
-  };
+  const activationUrl = new URL("/admin/activar-aliado", getSiteUrl());
+  activationUrl.searchParams.set("token", token);
+
+  return { token, activationLink: activationUrl.toString(), expiresAt };
 }
+
+export const createAllyActivationToken = createWorkshopActivationToken;
 
 export async function findWorkshopActivationToken(rawToken: string) {
   const admin = createSupabaseAdminClient();
   const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
 
   const { data, error } = await admin
-    .from("workshop_activation_tokens")
-    .select("*, workshop:workshops(*)")
+    .from("ally_activation_tokens")
+    .select("*, ally:allies(*)")
     .eq("token_hash", tokenHash)
     .maybeSingle();
   assertQueryOk(error, "No se pudo cargar el token de activación");
 
-  return (data ?? null) as (WorkshopActivationToken & { workshop?: Workshop }) | null;
+  if (!data) return null;
+  return { ...data, workshop: data.ally } as unknown as (WorkshopActivationToken & { workshop?: Workshop; ally?: Workshop });
 }
+
+export const findAllyActivationToken = findWorkshopActivationToken;
 
 export async function getAdminCartucheraDonationsPage({
   page = 1,
@@ -586,13 +577,11 @@ export async function getAdminCartucheraDonationsPage({
     .range(from, to);
   assertQueryOk(error, "No se pudieron cargar las donaciones de cartuchera");
 
-  const total = count ?? 0;
-
   return {
     items: (data ?? []) as CartucheraDonation[],
-    total,
+    total: count ?? 0,
     page,
     limit,
-    pageCount: Math.max(Math.ceil(total / limit), 1),
+    pageCount: Math.max(Math.ceil((count ?? 0) / limit), 1),
   };
 }

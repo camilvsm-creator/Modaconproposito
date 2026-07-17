@@ -2,18 +2,12 @@
 
 import { createClient } from "@supabase/supabase-js";
 
-import { INSPECTION_PHOTO_BUCKET, INSPECTOR_VERIFICATION_BUCKET, PHOTO_BUCKET } from "@/lib/constants";
+import { WORKSHOP_PHOTO_BUCKET } from "@/lib/constants";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-function getBucket(bucket: "photos" | "inspections" | "verification") {
-  if (bucket === "inspections") return INSPECTION_PHOTO_BUCKET;
-  if (bucket === "verification") return INSPECTOR_VERIFICATION_BUCKET;
-  return PHOTO_BUCKET;
-}
-
-async function uploadFile(file: File, bucket: "photos" | "inspections" | "verification", pathPrefix?: string): Promise<string> {
+async function uploadFile(file: File, pathPrefix?: string): Promise<string> {
   const ext = file.name.split(".").pop() || (file.type.startsWith("video/") ? "mp4" : "jpg");
   const basePath = pathPrefix?.trim() ? `${pathPrefix.replace(/^\/+|\/+$/g, "")}/` : "client/";
   const storagePath = `${basePath}${self.crypto.randomUUID()}.${ext}`;
@@ -23,7 +17,7 @@ async function uploadFile(file: File, bucket: "photos" | "inspections" | "verifi
   });
 
   const { error } = await supabase.storage
-    .from(getBucket(bucket))
+    .from(WORKSHOP_PHOTO_BUCKET)
     .upload(storagePath, file, { contentType: file.type, upsert: false });
 
   if (error) {
@@ -35,13 +29,13 @@ async function uploadFile(file: File, bucket: "photos" | "inspections" | "verifi
 
 export async function uploadFiles(
   files: File[],
-  bucket: "photos" | "inspections" | "verification",
+  _bucket: "photos" = "photos",
   pathPrefix?: string,
 ): Promise<string[]> {
   const paths: string[] = [];
 
   for (const file of files) {
-    const path = await uploadFile(file, bucket, pathPrefix);
+    const path = await uploadFile(file, pathPrefix);
     paths.push(path);
   }
 

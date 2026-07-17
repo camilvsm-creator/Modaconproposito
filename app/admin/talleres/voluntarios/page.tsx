@@ -35,7 +35,7 @@ function pageHref(params: Record<string, string | string[] | undefined>, page: n
   if (q) search.set("q", q);
   if (page > 1) search.set("page", String(page));
   const query = search.toString();
-  return query ? `/admin/talleres/voluntarios?${query}` : "/admin/talleres/voluntarios";
+  return query ? `/admin/voluntarios?${query}` : "/admin/voluntarios";
 }
 
 export default async function AdminVoluntariosPage({
@@ -60,12 +60,12 @@ export default async function AdminVoluntariosPage({
       <AdminPageHeader
         eyebrow="Promoda"
         title="Voluntarios"
-        description="Listado de voluntarios activos de la red de talleres."
+        description="Listado de voluntarios activos de la red de aliados."
         meta={`${result.total} voluntarios`}
-        navigation={{ baseHref: "/admin/talleres", baseLabel: "Inicio", currentLabel: "Voluntarios" }}
+        navigation={{ baseHref: "/admin/aliados", baseLabel: "Aliados", currentLabel: "Voluntarios" }}
       />
 
-      <form action="/admin/talleres/voluntarios" method="get" className="flex gap-3">
+      <form action="/admin/voluntarios" method="get" className="flex gap-3">
         <input name="q" defaultValue={q ?? ""} placeholder="Buscar por nombre" className="w-full max-w-md rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm" />
         <input type="hidden" name="page" value="1" />
         <button className="rounded-lg bg-[#F74897] px-5 py-2.5 text-sm font-semibold text-white" type="submit">Buscar</button>
@@ -97,7 +97,7 @@ export default async function AdminVoluntariosPage({
                       )}
                     </td>
                     <td className="px-4 py-3 align-top leading-tight">
-                      <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${ROLE_BADGES[v.role ?? ""] ?? "bg-stone-100 text-stone-600"}`}>
+                      <span className={`inline-block rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide ${ROLE_BADGES[v.role ?? ""] ?? "bg-stone-100 text-stone-600"}`}>
                         {v.role ?? "—"}
                       </span>
                     </td>
@@ -124,7 +124,7 @@ export default async function AdminVoluntariosPage({
                   {v.instagram ? <p className="text-[#F74897]">@{v.instagram}</p> : null}
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${ROLE_BADGES[v.role ?? ""] ?? "bg-stone-100 text-stone-600"}`}>
+                  <span className={`inline-block rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide ${ROLE_BADGES[v.role ?? ""] ?? "bg-stone-100 text-stone-600"}`}>
                     {v.role ?? "—"}
                   </span>
                   {v.phone ? (

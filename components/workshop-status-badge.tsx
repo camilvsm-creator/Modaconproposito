@@ -30,7 +30,7 @@ export function WorkshopStatusBadge({ value, type = "workshop" }: { value: strin
   return (
     <span
       className={cn(
-        "inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide",
+        "inline-flex rounded-full px-3 py-1 text-sm font-semibold uppercase tracking-wide",
         tones[value] ?? "bg-stone-100 text-stone-700",
       )}
     >

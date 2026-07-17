@@ -5,6 +5,7 @@ import { AdminPageHeader } from "@/components/admin-page-header";
 import { requireWorkshopUser } from "@/lib/auth";
 import { getWorkshopByUserId, getWorkshopById, getWorkshopNeeds, getWorkshopPhotos } from "@/lib/workshops";
 import {
+  WORKSHOP_PHOTO_BUCKET,
   WORKSHOP_STATUS_LABELS,
   WORKSHOP_STATUS_TONES,
 } from "@/lib/constants";
@@ -55,7 +56,7 @@ export default async function TalleresPanelDashboardPage() {
           <div className={"flex h-12 w-12 shrink-0 items-center justify-center rounded-full " + (workshop.avatar_path ? "" : "bg-[#FFE4EC]")}>
             {workshop.avatar_path ? (
               <img
-                src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/workshop-photos/${workshop.avatar_path}`}
+                src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${WORKSHOP_PHOTO_BUCKET}/${workshop.avatar_path}`}
                 alt={workshop.name}
                 className="h-12 w-12 rounded-full object-cover"
               />
@@ -81,11 +82,11 @@ export default async function TalleresPanelDashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <SectionCard className="p-4">
           <p className="text-3xl font-bold text-ink">{activeNeedsCount}</p>
-          <p className="mt-1 text-sm text-stone-500">Necesidades activas</p>
+          <p className="mt-1 text-sm text-stone-500">Tareas activas</p>
         </SectionCard>
         <SectionCard className="p-4">
           <p className="text-3xl font-bold text-ink">0</p>
-          <p className="mt-1 text-sm text-stone-500">Producciones activas</p>
+          <p className="mt-1 text-sm text-stone-500">Tareas en progreso</p>
         </SectionCard>
         <SectionCard className="p-4">
           <p className="text-3xl font-bold text-ink">0</p>
@@ -93,7 +94,7 @@ export default async function TalleresPanelDashboardPage() {
         </SectionCard>
         <SectionCard className="p-4">
           <p className="text-3xl font-bold text-ink">0</p>
-          <p className="mt-1 text-sm text-stone-500">Materiales pendientes</p>
+          <p className="mt-1 text-sm text-stone-500">Materia prima pendiente</p>
         </SectionCard>
         <SectionCard className="p-4">
           <p className="text-3xl font-bold text-ink">{photosCount}</p>
@@ -106,11 +107,11 @@ export default async function TalleresPanelDashboardPage() {
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <Link href="/admin/talleres/panel/producciones">
-          <Button variant="primary">Reportar avances</Button>
+        <Link href="/admin/aliado/tareas">
+          <Button variant="primary">Ver tareas asignadas</Button>
         </Link>
-        <Link href="/admin/talleres/panel/necesidades">
-          <Button variant="secondary">Gestionar necesidades</Button>
+        <Link href="/admin/aliado/materia-prima">
+          <Button variant="secondary">Ver materia prima</Button>
         </Link>
 
       </div>

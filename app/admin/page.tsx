@@ -12,8 +12,8 @@ export default async function AdminPage() {
     return <AdminLoginForm />;
   }
 
-  if (user.app_metadata?.role === "aliado") redirect("/admin/talleres/panel");
-  if (user.app_metadata?.role === "admin" || user.app_metadata?.role === "admin_talleres") redirect("/admin/talleres");
+  if (user.app_metadata?.role === "aliado") redirect("/admin/aliado");
+  if (user.app_metadata?.role === "admin") redirect("/admin/aliados");
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">

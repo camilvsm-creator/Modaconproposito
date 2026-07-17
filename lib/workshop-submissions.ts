@@ -10,6 +10,7 @@ type Result = { success: true } | { success: false; error: string };
 
 export async function submitWorkshopRegistration(formData: FormData): Promise<Result> {
   const name = String(formData.get("name") || "").trim();
+  const category = String(formData.get("category") || "taller").trim();
   const responsibleName = String(formData.get("responsibleName") || "").trim();
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const whatsapp = String(formData.get("whatsapp") || "").trim();
@@ -25,23 +26,25 @@ export async function submitWorkshopRegistration(formData: FormData): Promise<Re
   const publicInstagramAllowed = formData.get("publicInstagramAllowed") === "on";
   const publicWhatsappAllowed = formData.get("publicWhatsappAllowed") === "on";
 
-  if (!name) return { success: false, error: "El nombre del taller es obligatorio." };
+  if (!name) return { success: false, error: "El nombre del aliado es obligatorio." };
+  if (!["academia", "taller", "escuela", "otro"].includes(category)) return { success: false, error: "La categoría del aliado no es válida." };
   if (!responsibleName) return { success: false, error: "El nombre del responsable es obligatorio." };
   if (!email || !email.includes("@")) return { success: false, error: "Correo electrónico inválido." };
   if (!state) return { success: false, error: "El estado es obligatorio." };
   if (!city) return { success: false, error: "La ciudad es obligatoria." };
   if (!publicLocation) return { success: false, error: "La zona o referencia pública es obligatoria." };
-  if (!whatTheyDo) return { success: false, error: "Indica qué hace o puede aportar el taller." };
+  if (!whatTheyDo) return { success: false, error: "Indica qué hace o puede aportar el aliado." };
 
   if (!publicNameAllowed) {
-    return { success: false, error: "Debes autorizar mostrar públicamente el nombre del taller." };
+    return { success: false, error: "Debes autorizar mostrar públicamente el nombre del aliado." };
   }
 
   const supabase = createSupabasePublicClient();
   const slug = await generateWorkshopSlug(name);
 
-  const { error: insertError } = await supabase.from("workshops").insert({
+  const { error: insertError } = await supabase.from("allies").insert({
     name,
+    category,
     slug,
     responsible_name: responsibleName,
     email,
@@ -61,7 +64,7 @@ export async function submitWorkshopRegistration(formData: FormData): Promise<Re
   });
 
   if (insertError) {
-    return { success: false, error: "No pudimos registrar el taller. Intenta nuevamente." };
+    return { success: false, error: "No pudimos registrar el aliado. Intenta nuevamente." };
   }
 
   revalidatePath("/admin/talleres");
@@ -90,8 +93,8 @@ export async function submitWorkshopHelpOffer(formData: FormData): Promise<Resul
 
   const supabase = createSupabasePublicClient();
 
-  const { error } = await supabase.from("workshop_help_offers").insert({
-    workshop_id: workshopId || null,
+  const { error } = await supabase.from("collaborator_offers").insert({
+    ally_id: workshopId || null,
     need_id: needId || null,
     donor_name: donorName,
     donor_contact: donorContact,

@@ -17,7 +17,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const user = data.user;
 
   if (!user) {
-    if (pathname !== "/admin" && !pathname.startsWith("/admin/activar-taller")) redirect("/admin");
+    if (pathname !== "/admin" && !pathname.startsWith("/admin/activar-taller") && !pathname.startsWith("/admin/activar-aliado")) redirect("/admin");
     return <>{children}</>;
   }
 
@@ -32,15 +32,13 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     }
   }
 
-  const linkedWorkshops = (role === "admin" || role === "admin_talleres")
+  const linkedWorkshops = role === "admin"
     ? await getUserLinkedWorkshops(user.id)
     : [];
 
   return (
-    <div data-theme={"promoda"}>
-      <AdminShell role={role} email={user.email} avatarUrl={avatarUrl} context={context} linkedWorkshops={linkedWorkshops}>
-        {children}
-      </AdminShell>
-    </div>
+    <AdminShell role={role} email={user.email} avatarUrl={avatarUrl} context={context} linkedWorkshops={linkedWorkshops}>
+      {children}
+    </AdminShell>
   );
 }
