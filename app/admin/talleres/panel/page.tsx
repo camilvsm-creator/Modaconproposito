@@ -1,24 +1,33 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 
 import { AdminPageHeader } from "@/components/admin-page-header";
 import { requireWorkshopUser } from "@/lib/auth";
-import { getWorkshopByUserId, getWorkshopNeeds, getWorkshopPhotos } from "@/lib/workshops";
+import { getWorkshopByUserId, getWorkshopById, getWorkshopNeeds, getWorkshopPhotos } from "@/lib/workshops";
 import {
   WORKSHOP_STATUS_LABELS,
   WORKSHOP_STATUS_TONES,
 } from "@/lib/constants";
 import { formatDateTime } from "@/lib/utils";
 import { Button, SectionCard } from "@/components/ui";
+import { getContextFromHeaders } from "@/lib/context";
 
 export default async function TalleresPanelDashboardPage() {
   const user = await requireWorkshopUser();
   const role = user.app_metadata?.role as string | undefined;
+  const hdrs = await headers();
+  const context = getContextFromHeaders(hdrs);
 
-  const workshop = role === "taller" ? await getWorkshopByUserId(user.id) : null;
+  let workshop = null;
+  if (context.type === "aliado") {
+    workshop = await getWorkshopById(context.workshopId);
+  } else if (role === "aliado") {
+    workshop = await getWorkshopByUserId(user.id);
+  }
   if (!workshop) {
     return (
       <div className="rounded-xl border border-stone-200/80 bg-white/75 p-8 text-center shadow-card">
-        <p className="text-stone-600">No se encontró el taller asociado a tu cuenta.</p>
+        <p className="text-stone-600">No se encontró el aliado asociado a tu cuenta.</p>
       </div>
     );
   }

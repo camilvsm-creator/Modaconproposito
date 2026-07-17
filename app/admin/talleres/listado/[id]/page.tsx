@@ -87,7 +87,7 @@ export default async function AdminTallerDetailPage({
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Talleres"
+        eyebrow="Aliados"
         title={taller.name}
         meta={STATUS_LABELS[taller.status] || taller.status}
         actions={

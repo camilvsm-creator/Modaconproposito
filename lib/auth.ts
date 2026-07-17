@@ -50,5 +50,5 @@ export async function requireWorkshopAdminUser() {
 }
 
 export async function requireWorkshopUser() {
-  return requireUserRoles(["admin", "admin_talleres", "taller"]);
+  return requireUserRoles(["admin", "admin_talleres", "aliado"]);
 }

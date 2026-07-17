@@ -193,16 +193,16 @@ export async function sendInspectionAssignmentEmail(
 
 export async function sendMensajeNotification(
   contenido: string,
-  emisor: "taller" | "admin",
+  emisor: "aliado" | "admin",
   tallerEmail?: string,
   tallerNombre?: string,
 ) {
-  const destino = emisor === "taller"
+  const destino = emisor === "aliado"
     ? process.env.PROMODA_EMAIL!
     : tallerEmail!;
 
-  const subject = emisor === "taller"
-    ? `✉️ Mensaje de ${tallerNombre ?? "tu taller"} — Promoda`
+  const subject = emisor === "aliado"
+    ? `✉️ Mensaje de ${tallerNombre ?? "tu aliado"} — Promoda`
     : "✉️ Nuevo mensaje de Promoda";
 
   const { error } = await resend.emails.send({

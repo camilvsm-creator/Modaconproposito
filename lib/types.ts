@@ -828,3 +828,14 @@ export type DuplicateCandidate = {
   report: DuplicateCandidateReport | null;
   original_report: DuplicateCandidateReport | null;
 };
+
+export type AppContext =
+  | { type: "platform" }
+  | { type: "aliado"; workshopId: string };
+
+export type LinkedWorkshop = {
+  id: string;
+  name: string;
+  slug: string;
+  avatar_path: string | null;
+};

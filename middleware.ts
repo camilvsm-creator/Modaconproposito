@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { CONTEXT_COOKIE, CONTEXT_PLATFORM } from "@/lib/context";
 
 type CookieToSet = {
   name: string;
@@ -10,6 +11,9 @@ type CookieToSet = {
 export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", request.nextUrl.pathname);
+
+  const contextValue = request.cookies.get(CONTEXT_COOKIE)?.value ?? CONTEXT_PLATFORM;
+  requestHeaders.set("x-context", contextValue);
 
   let response = NextResponse.next({
     request: {

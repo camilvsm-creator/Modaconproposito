@@ -74,11 +74,11 @@ export default async function AdminWorkshopHelpOffersPage({
     <div className="space-y-6">
       <div className="space-y-5">
         <AdminPageHeader
-          eyebrow="Talleres"
+          eyebrow="Aliados"
           title="Ofertas de ayuda"
           description="Gestiona las ofertas de ayuda dirigidas a los talleres."
           meta={`${result.total} ofertas`}
-          navigation={{ baseHref: "/admin/talleres", baseLabel: "Talleres", currentLabel: "Ofertas" }}
+          navigation={{ baseHref: "/admin/talleres", baseLabel: "Aliados", currentLabel: "Ofertas" }}
         />
         <div className="flex flex-wrap gap-3">
           {HELP_STATUS_OPTIONS.map((opt) => {

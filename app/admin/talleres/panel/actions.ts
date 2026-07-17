@@ -5,24 +5,40 @@ import { revalidatePath } from "next/cache";
 import { requireWorkshopUser } from "@/lib/auth";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getWorkshopByUserId } from "@/lib/workshops";
+import { logAuditEvent } from "@/lib/audit";
 
 type Result = { error?: string; success?: boolean };
+
+async function verifyWorkshopAccess(user: { id: string; app_metadata?: Record<string, unknown> }, workshopId: string, admin: ReturnType<typeof createSupabaseAdminClient>) {
+  const role = user.app_metadata?.role as string | undefined;
+  if (role === "aliado") {
+    const workshop = await getWorkshopByUserId(user.id);
+    if (!workshop || workshop.id !== workshopId) return null;
+    return workshop;
+  }
+  if (role === "admin" || role === "admin_talleres") {
+    const { data } = await admin
+      .from("user_workshops")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("workshop_id", workshopId)
+      .maybeSingle();
+    if (!data) return null;
+    const { data: workshop } = await admin.from("workshops").select("*").eq("id", workshopId).maybeSingle();
+    return workshop;
+  }
+  return null;
+}
 
 export async function updateWorkshopProfileAction(formData: FormData): Promise<Result> {
   const user = await requireWorkshopUser();
   const admin = createSupabaseAdminClient();
-  const role = user.app_metadata?.role;
 
   const workshopId = String(formData.get("workshopId") || "").trim();
   if (!workshopId) return { error: "ID de taller no válido." };
 
-  let workshop = null;
-  if (role === "taller") {
-    workshop = await getWorkshopByUserId(user.id);
-    if (!workshop || workshop.id !== workshopId) {
-      return { error: "No tienes permiso para editar este taller." };
-    }
-  }
+  const workshop = await verifyWorkshopAccess(user, workshopId, admin);
+  if (!workshop) return { error: "No tienes permiso para editar este aliado." };
 
   const name = String(formData.get("name") || "").trim();
   const responsibleName = String(formData.get("responsibleName") || "").trim();
@@ -58,6 +74,19 @@ export async function updateWorkshopProfileAction(formData: FormData): Promise<R
   const { error } = await admin.from("workshops").update(updates).eq("id", workshopId);
   if (error) return { error: error.message };
 
+  const role = user.app_metadata?.role as string;
+  await logAuditEvent({
+    actor_id: user.id,
+    actor_role: role,
+    actor_email: user.email,
+    context_type: role === "aliado" ? "aliado" : "platform",
+    context_id: workshopId,
+    entity_type: "workshop",
+    entity_id: workshopId,
+    action: "profile_update",
+    new_data: updates,
+  });
+
   revalidatePath("/admin/talleres/panel");
   revalidatePath("/ver-talleres");
   if (workshop?.slug) revalidatePath(`/${workshop.slug}`);
@@ -67,7 +96,6 @@ export async function updateWorkshopProfileAction(formData: FormData): Promise<R
 export async function createWorkshopNeedAction(formData: FormData): Promise<Result> {
   const user = await requireWorkshopUser();
   const admin = createSupabaseAdminClient();
-  const role = user.app_metadata?.role;
 
   const workshopId = String(formData.get("workshopId") || "").trim();
   const title = String(formData.get("title") || "").trim();
@@ -78,13 +106,8 @@ export async function createWorkshopNeedAction(formData: FormData): Promise<Resu
   if (!workshopId) return { error: "ID de taller no válido." };
   if (!title) return { error: "El título de la necesidad es obligatorio." };
 
-  let workshop = null;
-  if (role === "taller") {
-    workshop = await getWorkshopByUserId(user.id);
-    if (!workshop || workshop.id !== workshopId) {
-      return { error: "No tienes permiso para crear necesidades para este taller." };
-    }
-  }
+  const workshop = await verifyWorkshopAccess(user, workshopId, admin);
+  if (!workshop) return { error: "No tienes permiso para crear necesidades para este aliado." };
 
   const { error } = await admin.from("workshop_needs").insert({
     workshop_id: workshopId,
@@ -97,6 +120,19 @@ export async function createWorkshopNeedAction(formData: FormData): Promise<Resu
 
   if (error) return { error: error.message };
 
+  const role = user.app_metadata?.role as string;
+  await logAuditEvent({
+    actor_id: user.id,
+    actor_role: role,
+    actor_email: user.email,
+    context_type: role === "aliado" ? "aliado" : "platform",
+    context_id: workshopId,
+    entity_type: "workshop_need",
+    entity_id: null,
+    action: "create",
+    new_data: { workshop_id: workshopId, title },
+  });
+
   revalidatePath("/admin/talleres/panel/necesidades");
   revalidatePath("/necesidades");
   if (workshop?.slug) revalidatePath(`/${workshop.slug}`);
@@ -106,20 +142,14 @@ export async function createWorkshopNeedAction(formData: FormData): Promise<Resu
 export async function closeWorkshopNeedAction(formData: FormData): Promise<Result> {
   const user = await requireWorkshopUser();
   const admin = createSupabaseAdminClient();
-  const role = user.app_metadata?.role;
 
   const needId = String(formData.get("id") || "");
   const workshopId = String(formData.get("workshopId") || "").trim();
 
   if (!needId || !workshopId) return { error: "Solicitud inválida." };
 
-  let workshop = null;
-  if (role === "taller") {
-    workshop = await getWorkshopByUserId(user.id);
-    if (!workshop || workshop.id !== workshopId) {
-      return { error: "No tienes permiso para cerrar esta necesidad." };
-    }
-  }
+  const workshop = await verifyWorkshopAccess(user, workshopId, admin);
+  if (!workshop) return { error: "No tienes permiso para cerrar esta necesidad." };
 
   const { error } = await admin
     .from("workshop_needs")
@@ -137,7 +167,6 @@ export async function closeWorkshopNeedAction(formData: FormData): Promise<Resul
 export async function uploadWorkshopPhotoAction(formData: FormData): Promise<Result> {
   const user = await requireWorkshopUser();
   const admin = createSupabaseAdminClient();
-  const role = user.app_metadata?.role;
 
   const workshopId = String(formData.get("workshopId") || "").trim();
   const storagePath = String(formData.get("storagePath") || "").trim();
@@ -147,13 +176,8 @@ export async function uploadWorkshopPhotoAction(formData: FormData): Promise<Res
   if (!workshopId) return { error: "ID de taller no válido." };
   if (!storagePath) return { error: "No se recibió la imagen." };
 
-  let workshop = null;
-  if (role === "taller") {
-    workshop = await getWorkshopByUserId(user.id);
-    if (!workshop || workshop.id !== workshopId) {
-      return { error: "No tienes permiso para subir fotos a este taller." };
-    }
-  }
+  const workshop = await verifyWorkshopAccess(user, workshopId, admin);
+  if (!workshop) return { error: "No tienes permiso para subir fotos a este aliado." };
 
   const { error } = await admin.from("workshop_photos").insert({
     workshop_id: workshopId,
@@ -174,20 +198,14 @@ export async function uploadWorkshopPhotoAction(formData: FormData): Promise<Res
 export async function uploadWorkshopAvatarAction(formData: FormData): Promise<Result> {
   const user = await requireWorkshopUser();
   const admin = createSupabaseAdminClient();
-  const role = user.app_metadata?.role;
 
   const workshopId = String(formData.get("workshopId") || "").trim();
   const storagePath = String(formData.get("storagePath") || "").trim();
 
   if (!workshopId) return { error: "ID de taller no válido." };
 
-  let workshop = null;
-  if (role === "taller") {
-    workshop = await getWorkshopByUserId(user.id);
-    if (!workshop || workshop.id !== workshopId) {
-      return { error: "No tienes permiso para cambiar el avatar de este taller." };
-    }
-  }
+  const workshop = await verifyWorkshopAccess(user, workshopId, admin);
+  if (!workshop) return { error: "No tienes permiso para cambiar el avatar de este aliado." };
 
   const { error } = await admin.from("workshops").update({ avatar_path: storagePath || null }).eq("id", workshopId);
   if (error) return { error: error.message };

@@ -48,7 +48,7 @@ export default async function AdminCartucheraPage({
           meta={`${result.total} donaciones`}
           navigation={{
             baseHref: "/admin/talleres",
-            baseLabel: "Talleres",
+            baseLabel: "Aliados",
             currentLabel: "Cartuchera",
           }}
         />

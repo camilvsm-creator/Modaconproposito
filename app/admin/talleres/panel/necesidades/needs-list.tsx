@@ -32,7 +32,7 @@ export function NeedsList({ needs, workshopId }: { needs: WorkshopNeed[]; worksh
     return (
       <EmptyState
         title="Sin necesidades registradas"
-        description="Añade una necesidad para que la comunidad pueda ayudar a tu taller."
+        description="Añade una necesidad para que la comunidad pueda ayudar a tu aliado."
       />
     );
   }

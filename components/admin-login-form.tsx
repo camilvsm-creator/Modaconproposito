@@ -95,7 +95,7 @@ export function AdminLoginForm() {
               Panel de administración
             </h1>
             <p className="mt-2 text-sm text-stone-500">
-              Ingresa para gestionar tu taller y coordinar la ayuda textil.
+              Ingresa para gestionar tu aliado y coordinar la ayuda textil.
             </p>
           </div>
 

@@ -70,7 +70,7 @@ export async function activateWorkshopFromTokenAction(formData: FormData): Promi
       full_name: workshop.responsible_name || workshop.name,
       workshop_name: workshop.name,
     },
-    app_metadata: { role: "taller" },
+    app_metadata: { role: "aliado" },
   });
 
   if (createError || !createdUser?.user) {
@@ -100,6 +100,12 @@ export async function activateWorkshopFromTokenAction(formData: FormData): Promi
   if (updateError) {
     return { error: "Cuenta creada pero no se pudo vincular al taller. Contacta al equipo." };
   }
+
+  await admin.from("user_workshops").insert({
+    user_id: createdUser.user.id,
+    workshop_id: workshop.id,
+    workshop_role: "owner",
+  });
 
   await admin
     .from("workshop_activation_tokens")

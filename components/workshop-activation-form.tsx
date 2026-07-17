@@ -82,7 +82,7 @@ export function WorkshopActivationForm({
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-1">
           <h2 className="text-xl font-bold text-primary">Activa tu acceso</h2>
-          <p className="text-sm text-stone-600">Completa tus datos para habilitar la cuenta de tu taller.</p>
+          <p className="text-sm text-stone-600">Completa tus datos para habilitar la cuenta de tu aliado.</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">

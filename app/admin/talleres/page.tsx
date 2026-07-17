@@ -24,7 +24,7 @@ const WORKSHOPS_PER_PAGE = 15;
 
 const TABS = [
   { value: "postulaciones", label: "Postulaciones" },
-  { value: "talleres", label: "Talleres" },
+  { value: "talleres", label: "Aliados" },
 ] as const;
 
 const POSTULATION_STATUS_OPTIONS = [
@@ -125,7 +125,7 @@ export default async function AdminInicioPage({
   ]);
 
   const stats = [
-    { label: "Talleres", value: totalTalleres ?? 0 },
+    { label: "Aliados", value: totalTalleres ?? 0 },
     { label: "Activos", value: talleresActivos ?? 0 },
     { label: "Necesidades urgentes", value: necesidadesCount ?? 0 },
     { label: "Postulaciones pendientes", value: postulacionesPendientes ?? 0 },

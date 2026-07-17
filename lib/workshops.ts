@@ -480,6 +480,30 @@ export const getWorkshopAvatarPath = cache(async (userId: string) => {
   return data?.avatar_path ?? null;
 });
 
+export const getUserLinkedWorkshops = cache(async (userId: string) => {
+  const admin = await createSupabaseServerClient();
+  const { data, error } = await admin
+    .from("user_workshops")
+    .select("workshop:workshops(id, name, slug, avatar_path)")
+    .eq("user_id", userId);
+  assertQueryOk(error, "No se pudieron cargar los aliados vinculados");
+  if (!data) return [];
+  return data
+    .map((row) => row.workshop as unknown as { id: string; name: string; slug: string; avatar_path: string | null })
+    .filter(Boolean);
+});
+
+export const getWorkshopById = cache(async (workshopId: string) => {
+  const admin = await createSupabaseServerClient();
+  const { data, error } = await admin
+    .from("workshops")
+    .select("*")
+    .eq("id", workshopId)
+    .maybeSingle();
+  assertQueryOk(error, "No se pudo cargar el aliado");
+  return (data ?? null) as Workshop | null;
+});
+
 export async function getWorkshopNeeds(workshopId: string): Promise<WorkshopNeed[]> {
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin

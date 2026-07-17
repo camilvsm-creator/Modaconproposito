@@ -12,7 +12,7 @@ export default async function AdminPage() {
     return <AdminLoginForm />;
   }
 
-  if (user.app_metadata?.role === "taller") redirect("/admin/talleres/panel");
+  if (user.app_metadata?.role === "aliado") redirect("/admin/talleres/panel");
   if (user.app_metadata?.role === "admin" || user.app_metadata?.role === "admin_talleres") redirect("/admin/talleres");
 
   return (

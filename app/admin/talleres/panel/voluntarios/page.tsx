@@ -7,7 +7,7 @@ export default function VoluntariosPage() {
       <AdminPageHeader
         eyebrow="Panel"
         title="Voluntarios"
-        description="Voluntarios asignados al taller por el equipo de Promoda."
+        description="Voluntarios asignados al aliado por el equipo de Promoda."
         navigation={{ baseHref: "/admin/talleres/panel", baseLabel: "Panel", currentLabel: "Voluntarios" }}
       />
       <EmptyState

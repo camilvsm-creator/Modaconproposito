@@ -78,11 +78,11 @@ export default async function AdminPatronesPage({
     <div className="space-y-6">
       <div className="space-y-5">
         <AdminPageHeader
-          eyebrow="Talleres"
+          eyebrow="Aliados"
           title="Patrones estandarizados"
           description="Administra los patrones de costura publicados para descarga."
           meta={`${result.total} patrones`}
-          navigation={{ baseHref: "/admin/talleres", baseLabel: "Talleres", currentLabel: "Patrones" }}
+          navigation={{ baseHref: "/admin/talleres", baseLabel: "Aliados", currentLabel: "Patrones" }}
         />
         <div className="flex flex-wrap gap-3">
           {PATTERN_STATUS_OPTIONS.map((opt) => {

@@ -14,13 +14,13 @@ export default async function TalleresLayout({ children }: { children: ReactNode
     redirect("/admin");
   }
 
-  if (user && user.app_metadata?.role === "taller") {
+  if (user && user.app_metadata?.role === "aliado") {
     if (!pathname.startsWith("/admin/talleres/panel")) {
       redirect("/admin/talleres/panel");
     }
   }
 
-  if (pathname.startsWith("/admin/talleres/panel") && user?.app_metadata?.role !== "taller") {
+  if (pathname.startsWith("/admin/talleres/panel") && user?.app_metadata?.role !== "aliado") {
     redirect("/admin/talleres");
   }
 

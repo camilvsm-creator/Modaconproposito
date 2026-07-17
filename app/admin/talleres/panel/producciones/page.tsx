@@ -7,7 +7,7 @@ export default function ProduccionesPage() {
       <AdminPageHeader
         eyebrow="Panel"
         title="Producciones"
-        description="Gestiona las confecciones activas del taller."
+        description="Gestiona las confecciones activas del aliado."
         navigation={{ baseHref: "/admin/talleres/panel", baseLabel: "Panel", currentLabel: "Producciones" }}
       />
       <EmptyState

@@ -113,14 +113,14 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
     <div className="space-y-6">
       {/* Avatar section */}
       <SectionCard className="p-6">
-        <h2 className="mb-2 text-lg font-semibold text-ink">Avatar del taller</h2>
+        <h2 className="mb-2 text-lg font-semibold text-ink">Avatar del aliado</h2>
         <p className="mb-4 text-sm text-stone-500">Usa una imagen cuadrada. Formato JPG o PNG, máximo {avatarLimitMb} MB.</p>
         <div className="flex flex-wrap items-center gap-6">
           <div className="shrink-0">
             {avatarPreview || avatarSrc ? (
               <img
                 src={avatarPreview || avatarSrc!}
-                alt="Avatar del taller"
+                alt="Avatar del aliado"
                 className="h-20 w-20 rounded-full object-cover ring-2 ring-stone-200"
               />
             ) : (
@@ -188,12 +188,12 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
       </SectionCard>
 
       <SectionCard className="p-6">
-        <h2 className="mb-4 text-lg font-semibold text-ink">Datos del taller</h2>
+        <h2 className="mb-4 text-lg font-semibold text-ink">Datos del aliado</h2>
         <form onSubmit={handleSubmit} className="space-y-5">
           <input type="hidden" name="workshopId" value={workshop.id} />
 
           <div className="grid gap-4 md:grid-cols-2">
-            <InputShell label="Nombre del taller">
+            <InputShell label="Nombre del aliado">
               <input className={inputClassName} name="name" value={name} onChange={(e) => setName(e.target.value)} required />
             </InputShell>
             <InputShell label="Responsable">
@@ -230,7 +230,7 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
             <textarea className={inputClassName + " min-h-[100px]"} name="description" value={description} onChange={(e) => setDescription(e.target.value)} />
           </InputShell>
 
-          <InputShell label="Qué hace el taller">
+          <InputShell label="Qué hace el aliado">
             <textarea className={inputClassName + " min-h-[100px]"} name="whatTheyDo" value={whatTheyDo} onChange={(e) => setWhatTheyDo(e.target.value)} required />
           </InputShell>
 
