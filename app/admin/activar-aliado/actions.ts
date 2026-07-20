@@ -112,13 +112,10 @@ export async function activateWorkshopFromTokenAction(formData: FormData): Promi
     .update({ used_at: now })
     .eq("id", activationToken.id);
 
-  revalidatePath("/admin/talleres");
   revalidatePath("/admin/aliados");
-  revalidatePath(`/admin/talleres/listado/${workshop.id}`);
   revalidatePath(`/admin/aliados/${workshop.id}`);
   revalidatePath(`/${workshop.slug}`);
   revalidatePath(`/aliados/${workshop.slug}`);
-  revalidatePath("/ver-talleres");
   revalidatePath("/aliados");
   return {};
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { createWorkshopNeedAction } from "@/app/admin/talleres/panel/actions";
+import { createWorkshopNeedAction } from "@/app/admin/ally-actions";
 import { Button, InputShell, SectionCard, inputClassName } from "@/components/ui";
 import { URGENCY_LABELS, URGENCY_LEVELS } from "@/lib/constants";
 

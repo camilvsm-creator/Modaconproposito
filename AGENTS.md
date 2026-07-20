@@ -20,7 +20,7 @@ No asumir que los modulos marcados como `Mock` o `UI pendiente` estan completos 
 ## Comandos
 
 - `npm run dev` - desarrollo local.
-- `npm run build` - build de produccion. Debe pasar antes de considerar estable un cambio.
+- `npm run build` - build de produccion. Ejecutarlo solo cuando el usuario lo pida expresamente.
 - `npx tsc --noEmit --pretty` - type check principal.
 - `npm run typecheck` - alias de typecheck sin pretty.
 
@@ -89,11 +89,10 @@ Despues de tocar DB:
 | `/voluntarios` | Registro publico de voluntarios | Client/Server action |
 | `/adopta-una-cartuchera` | Formulario de donacion Cartuchera | Client/Server action |
 
-Rutas legacy mantenidas por compatibilidad:
+Ruta temporal mantenida por compatibilidad:
 
 | Ruta | Comportamiento |
 |------|----------------|
-| `/ver-talleres` | Redirige a `/aliados` |
 | `/[slug]` | Wrapper temporal del detalle publico |
 
 ### Admin (`/admin/*`)
@@ -109,38 +108,37 @@ Protegido por middleware y guards en layouts con `lib/auth.ts`.
 | `/admin/aliados` | Resumen, listado, filtros, desactivar/reactivar, generar acceso | Estable |
 | `/admin/aliados/[id]` | Detalle, edicion, generar acceso, desactivar/reactivar | Estable |
 | `/admin/aliados/crear` | Crear aliado, categoria y link de activacion | Estable |
-| `/admin/tareas` | Gestion de tareas asignadas | Parcial |
-| `/admin/voluntarios` | Voluntarios y asignaciones existentes | Parcial/DB real |
+| `/admin/perfil` | Perfil del aliado autenticado | DB real, solo `aliado` |
+| `/admin/tareas` | Admin: todas las tareas. Aliado: solo sus tareas | Parcial/DB real |
+| `/admin/voluntarios` | Admin: red completa. Aliado: sus asignaciones | Parcial/DB real |
 | `/admin/colaboradores` | Ofertas de colaboradores | Parcial/DB real |
 | `/admin/patrones` | Gestion de patrones | DB real |
 | `/admin/cartuchera` | Donaciones Cartuchera | DB real |
 | `/admin/solicitudes` | Solicitudes de ayuda | UI pendiente, DB existe |
-| `/admin/materia-prima` | Materia prima consolidada | UI pendiente, DB existe |
-| `/admin/entregas` | Entregas | UI pendiente, DB existe |
-| `/admin/mensajes` | Mensajes admin-aliado | UI pendiente, DB existe |
+| `/admin/materia-prima` | Admin: inventario consolidado. Aliado: sus asignaciones | UI pendiente, DB existe |
+| `/admin/entregas` | Admin: entregas globales. Aliado: sus entregas | UI pendiente, DB existe |
+| `/admin/mensajes` | Admin: todos los hilos. Aliado: sus hilos | UI pendiente, DB existe |
 | `/admin/reportes` | Estadisticas | UI pendiente |
 
-### Panel del aliado (`/admin/aliado/*`)
+### Estructura de modulos
 
-Accesible por rol `aliado`; `admin` puede gestionar desde rutas admin.
-El codigo mantiene wrappers temporales hacia `app/admin/talleres/panel/*` mientras se completa el renombrado interno.
+Las carpetas de `app/admin` representan modulos de dominio, nunca roles ni perfiles de usuario.
 
-| Ruta | Descripcion | Estado |
-|------|-------------|--------|
-| `/admin/aliado` | Dashboard del aliado | Parcial/DB real |
-| `/admin/aliado/perfil` | Editar perfil | DB real |
-| `/admin/aliado/tareas` | Tareas asignadas | DB real/parcial |
-| `/admin/aliado/voluntarios` | Voluntarios asignados | UI pendiente, DB existe |
-| `/admin/aliado/entregas` | Entregas propias | UI pendiente, DB existe |
-| `/admin/aliado/materia-prima` | Materia prima asignada | UI pendiente, DB existe |
-| `/admin/aliado/mensajes` | Mensajes con admin | UI pendiente, DB existe |
+- `app/admin/aliados/`: gestion administrativa de la entidad aliado. Incluye listado, detalle, creacion y sus acciones.
+- `app/admin/tareas/`: tareas. La pagina decide el alcance con el rol autenticado; los componentes de tareas del aliado viven en `components/` dentro de este modulo.
+- `app/admin/perfil/`: perfil del aliado autenticado y sus componentes.
+- `app/admin/{voluntarios,colaboradores,materia-prima,entregas,mensajes,patrones,cartuchera,solicitudes,reportes}/`: un modulo por dominio.
+- `app/admin/ally-scope.ts`: resuelve el aliado vinculado al usuario autenticado con rol `aliado`.
+- `app/admin/ally-actions.ts`: acciones que un aliado puede ejecutar exclusivamente sobre sus propios recursos.
+
+No crear rutas, layouts ni carpetas como `/admin/aliado`, `/admin/talleres`, `/admin/panel` o equivalentes. Un rol modifica el alcance de un modulo existente; no crea un arbol de rutas.
 
 ## Roles de usuario
 
 | Rol | Acceso | Se usa en |
 |-----|--------|-----------|
-| `admin` | Todo el sistema | `/admin/*` completo |
-| `aliado` | Solo su propio aliado | `/admin/aliado/*` |
+| `admin` | Todos los recursos de los modulos administrativos | `/admin/*` segun cada modulo |
+| `aliado` | Solo sus recursos y asignaciones | `/admin/perfil`, `/admin/tareas`, `/admin/voluntarios`, `/admin/materia-prima`, `/admin/entregas`, `/admin/mensajes` |
 
 Roles asignados via `app_metadata.role` en JWT. Nunca usar `user_metadata` para autorizacion.
 
@@ -176,7 +174,6 @@ Debe:
 ### Activar aliado
 
 Ruta canonica: `/admin/activar-aliado?token=...`.
-Wrapper legacy: `/admin/activar-taller`.
 
 Debe:
 
@@ -191,7 +188,7 @@ Debe:
 
 Ruta: `/admin/aliados/[id]?tab=editar`.
 
-Debe permitir actualizar datos principales, categoria, visibilidad publica y notas admin. Debe revalidar rutas canonicas y legacy.
+Debe permitir actualizar datos principales, categoria, visibilidad publica y notas admin. Debe revalidar las rutas canonicas afectadas.
 
 ### Desactivar/reactivar aliado
 
@@ -261,12 +258,12 @@ No crear buckets nuevos sin verificar existencia. No hacer `DROP BUCKET`.
 
 | Archivo | Uso |
 |---------|-----|
-| `app/admin/talleres/actions.ts` | Acciones admin de aliados, tareas, fotos, colaboradores y activacion. Mantiene nombres `Workshop*` por compatibilidad interna. |
-| `app/admin/talleres/panel/actions.ts` | Acciones del panel del aliado. Mantiene nombres `Workshop*` temporalmente. |
-| `app/admin/talleres/patrones/actions.ts` | Acciones de patrones. |
-| `app/admin/activar-taller/actions.ts` | Activacion de aliado por token. Wrapper temporal para `/admin/activar-aliado`. |
-| `lib/workshops.ts` | Data layer principal de aliados y compatibilidad legacy. Queries nuevas deben apuntar a tablas `allies` y relacionadas. |
-| `lib/workshop-submissions.ts` | Registro publico de aliados y ofertas de ayuda. Nombre legacy temporal. |
+| `app/admin/aliados/actions.ts` | Acciones administrativas de aliados, tareas relacionadas, fotos y ofertas. |
+| `app/admin/ally-actions.ts` | Acciones limitadas al aliado autenticado. Siempre valida que el recurso pertenezca a su `user_id`. |
+| `app/admin/patrones/actions.ts` | Acciones de patrones. |
+| `app/admin/activar-aliado/actions.ts` | Activacion de aliado por token. |
+| `lib/workshops.ts` | Data layer principal de aliados. Las queries nuevas deben apuntar a tablas `allies` y relacionadas. |
+| `lib/workshop-submissions.ts` | Registro publico de aliados y ofertas de ayuda. |
 | `lib/cartuchera-submissions.ts` | Donaciones Cartuchera. |
 
 Reglas para Server Actions:
@@ -274,13 +271,15 @@ Reglas para Server Actions:
 - Usar `"use server"`.
 - Retornar `{ error?: string }` y campos adicionales necesarios.
 - Validar entradas en servidor aunque el formulario tenga `required`.
-- Llamar `revalidatePath()` para rutas canonicas y wrappers legacy cuando aplique.
+- Llamar `revalidatePath()` solo para las rutas canonicas afectadas.
 - No hacer operaciones destructivas salvo que el usuario lo pida explicitamente y haya confirmacion clara.
 
 ## Convenciones de codigo
 
 - **Dominio nuevo**: UI, rutas y docs deben hablar de `aliados`, `tareas`, `colaboradores`, `voluntarios`, `materia prima`, `entregas`, `solicitudes` y `mensajes`.
-- **Compatibilidad temporal**: algunos archivos, exports y componentes usan `Workshop*` o rutas bajo `app/admin/talleres/*`. No crear nuevas dependencias a esos nombres salvo wrappers temporales o para tocar codigo existente.
+- **Rutas por dominio**: no crear rutas ni carpetas por rol. `aliado` es un rol y cada modulo resuelve su alcance desde la sesion autenticada.
+- **Alcance por rol**: el admin ve y gestiona todos los recursos; el aliado solo puede leer o modificar sus recursos y asignaciones. La restriccion debe existir tanto en el guard/server action como en la query/RLS aplicable.
+- **Sin arboles heredados**: no crear ni importar desde `app/admin/talleres/*`, `app/admin/aliado/*`, ni rutas equivalentes. No reintroducir `/ver-talleres` ni `/admin/activar-taller`.
 - **Queries nuevas**: usar `allies`, `assigned_tasks`, `ally_photos`, `collaborator_offers`, `volunteers`, `ally_volunteer_assignments`, `raw_materials`, `ally_raw_material_assignments`, `ally_deliveries`, `aid_requests`, `message_threads`, `messages`.
 - **No usar tablas legacy**: no consultar `workshops`, `workshop_needs`, `workshop_photos`, `workshop_help_offers`, `workshop_volunteers`, `user_workshops` ni `workshop_activation_tokens`.
 - **Tailwind**: usar valores arbitrarios como `text-[#FF0B55]` o `bg-[#F74897]` para Promoda; no modificar `tailwind.config.ts` para colores del dominio salvo necesidad clara.
@@ -289,7 +288,7 @@ Reglas para Server Actions:
 - **Paginacion**: tipo `PagedResult<T>` con `page`, `limit`, `pageCount`, `items`, `total`.
 - **Modales**: preferir `components/modal.tsx` si se agrega UI modal nueva.
 - **Rojo**: reservar para acciones destructivas, estados de error o rechazo. Evitar usar rojo para acciones primarias.
-- **Al eliminar componentes o rutas**: verificar imports huerfanos con `npx tsc --noEmit --pretty`.
+- **Al eliminar componentes o rutas**: limpiar `.next/types` si conserva definiciones de rutas eliminadas y verificar imports huerfanos con `npx tsc --noEmit --pretty`.
 
 ## RLS y seguridad
 
@@ -331,7 +330,8 @@ QA manual minimo para aliados:
 - Generar link de acceso.
 - Activar usuario con contraseña.
 - Login como aliado.
-- Ver `/admin/aliado`.
+- Ver `/admin/tareas` y confirmar que solo aparecen sus tareas.
+- Ver `/admin/perfil` y confirmar que solo actualiza su aliado.
 - Desactivar aliado.
 - Confirmar que no aparece en `/aliados`.
 - Reactivar aliado.
@@ -356,19 +356,25 @@ Prioridad recomendada:
 
 Reportes no requiere tabla propia inicialmente; debe salir de agregados sobre tablas existentes.
 
-## Codigo heredado
+## Reglas de ubicacion
 
-El proyecto conserva wrappers y nombres internos heredados de `workshops/talleres` para reducir riesgo durante el refactor.
+Antes de crear un archivo, ubicarlo segun esta regla:
 
-Permitido temporalmente:
-
-- Imports existentes desde `app/admin/talleres/*`.
-- Exports `Workshop*` que son aliases de `Ally*`.
-- Wrappers de rutas legacy.
+| Necesidad | Ubicacion |
+|-----------|-----------|
+| Gestion administrativa de aliados | `app/admin/aliados/` |
+| Accion administrativa sobre aliados | `app/admin/aliados/actions.ts` |
+| Alcance del usuario aliado autenticado | `app/admin/ally-scope.ts` |
+| Accion propia del aliado | `app/admin/ally-actions.ts` |
+| Perfil del aliado | `app/admin/perfil/` |
+| UI propia de tareas | `app/admin/tareas/components/` |
+| Accion o UI de otro dominio | Dentro del modulo de dominio correspondiente bajo `app/admin/` |
+| UI reutilizable entre modulos | `components/` |
+| Lectura/escritura de datos reutilizable | `lib/` |
 
 No permitido en codigo nuevo:
 
 - Crear tablas `workshop_*`.
-- Crear rutas nuevas bajo `/admin/talleres` salvo wrapper temporal.
-- Escribir UI nueva hablando de `talleres` cuando el dominio correcto es `aliados`.
+- Crear rutas o carpetas por rol, panel o entidad antigua.
+- Reintroducir imports o rutas con `talleres`.
 - Agregar borrado permanente de aliados en UI.

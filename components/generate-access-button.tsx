@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { generateAccessLinkAction } from "@/app/admin/talleres/actions";
+import { generateAccessLinkAction } from "@/app/admin/aliados/actions";
 
 export function GenerateAccessButton({ workshopId, workshopName }: { workshopId: string; workshopName: string }) {
   const [open, setOpen] = useState(false);

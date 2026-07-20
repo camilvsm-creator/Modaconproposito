@@ -2,43 +2,37 @@
 
 import { revalidatePath } from "next/cache";
 
+import { logAuditEvent } from "@/lib/audit";
 import { requireWorkshopUser } from "@/lib/auth";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getWorkshopByUserId } from "@/lib/workshops";
-import { logAuditEvent } from "@/lib/audit";
 
 type Result = { error?: string; success?: boolean };
 
-async function verifyWorkshopAccess(user: { id: string; app_metadata?: Record<string, unknown> }, workshopId: string, admin: ReturnType<typeof createSupabaseAdminClient>) {
+async function verifyAllyAccess(
+  user: { id: string; app_metadata?: Record<string, unknown> },
+  allyId: string,
+  admin: ReturnType<typeof createSupabaseAdminClient>,
+) {
   const role = user.app_metadata?.role as string | undefined;
+
   if (role === "aliado") {
-    const workshop = await getWorkshopByUserId(user.id);
-    if (!workshop || workshop.id !== workshopId) return null;
-    return workshop;
+    const ally = await getWorkshopByUserId(user.id);
+    return ally?.id === allyId ? ally : null;
   }
-  if (role === "admin") {
-    const { data } = await admin
-      .from("user_allies")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("ally_id", workshopId)
-      .maybeSingle();
-    if (!data) return null;
-    const { data: workshop } = await admin.from("allies").select("*").eq("id", workshopId).maybeSingle();
-    return workshop;
-  }
+
   return null;
 }
 
 export async function updateWorkshopProfileAction(formData: FormData): Promise<Result> {
   const user = await requireWorkshopUser();
   const admin = createSupabaseAdminClient();
+  const allyId = String(formData.get("workshopId") || "").trim();
 
-  const workshopId = String(formData.get("workshopId") || "").trim();
-  if (!workshopId) return { error: "ID de aliado no válido." };
+  if (!allyId) return { error: "ID de aliado no válido." };
 
-  const workshop = await verifyWorkshopAccess(user, workshopId, admin);
-  if (!workshop) return { error: "No tienes permiso para editar este aliado." };
+  const ally = await verifyAllyAccess(user, allyId, admin);
+  if (!ally) return { error: "No tienes permiso para editar este aliado." };
 
   const name = String(formData.get("name") || "").trim();
   const responsibleName = String(formData.get("responsibleName") || "").trim();
@@ -50,28 +44,25 @@ export async function updateWorkshopProfileAction(formData: FormData): Promise<R
   const publicLocation = String(formData.get("publicLocation") || "").trim();
   const whatTheyDo = String(formData.get("whatTheyDo") || "").trim();
   const description = String(formData.get("description") || "").trim();
-  const publicNameAllowed = formData.get("publicNameAllowed") === "on";
-  const publicLocationAllowed = formData.get("publicLocationAllowed") === "on";
-  const publicInstagramAllowed = formData.get("publicInstagramAllowed") === "on";
-  const publicWhatsappAllowed = formData.get("publicWhatsappAllowed") === "on";
+  const updates: Record<string, unknown> = {
+    whatsapp: whatsapp || null,
+    instagram: instagram || null,
+    municipality: municipality || null,
+    public_location: publicLocation || null,
+    what_they_do: whatTheyDo || null,
+    description: description || null,
+    public_name_allowed: formData.get("publicNameAllowed") === "on",
+    public_location_allowed: formData.get("publicLocationAllowed") === "on",
+    public_instagram_allowed: formData.get("publicInstagramAllowed") === "on",
+    public_whatsapp_allowed: formData.get("publicWhatsappAllowed") === "on",
+  };
 
-  const updates: Record<string, unknown> = {};
   if (name) updates.name = name;
   if (responsibleName) updates.responsible_name = responsibleName;
-  updates.whatsapp = whatsapp || null;
-  updates.instagram = instagram || null;
   if (state) updates.state = state;
   if (city) updates.city = city;
-  updates.municipality = municipality || null;
-  updates.public_location = publicLocation || null;
-  updates.what_they_do = whatTheyDo || null;
-  updates.description = description || null;
-  updates.public_name_allowed = publicNameAllowed;
-  updates.public_location_allowed = publicLocationAllowed;
-  updates.public_instagram_allowed = publicInstagramAllowed;
-  updates.public_whatsapp_allowed = publicWhatsappAllowed;
 
-  const { error } = await admin.from("allies").update(updates).eq("id", workshopId);
+  const { error } = await admin.from("allies").update(updates).eq("id", allyId);
   if (error) return { error: error.message };
 
   const role = user.app_metadata?.role as string;
@@ -80,37 +71,40 @@ export async function updateWorkshopProfileAction(formData: FormData): Promise<R
     actor_role: role,
     actor_email: user.email,
     context_type: role === "aliado" ? "aliado" : "platform",
-    context_id: workshopId,
+    context_id: allyId,
     entity_type: "ally",
-    entity_id: workshopId,
+    entity_id: allyId,
     action: "profile_update",
     new_data: updates,
   });
 
-  revalidatePath("/admin/talleres/panel");
-  revalidatePath("/ver-talleres");
-  if (workshop?.slug) revalidatePath(`/${workshop.slug}`);
+  revalidatePath("/admin/perfil");
+  revalidatePath("/aliados");
+  if (ally.slug) {
+    revalidatePath(`/aliados/${ally.slug}`);
+    revalidatePath(`/${ally.slug}`);
+  }
+
   return { success: true };
 }
 
 export async function createWorkshopNeedAction(formData: FormData): Promise<Result> {
   const user = await requireWorkshopUser();
   const admin = createSupabaseAdminClient();
-
-  const workshopId = String(formData.get("workshopId") || "").trim();
+  const allyId = String(formData.get("workshopId") || "").trim();
   const title = String(formData.get("title") || "").trim();
   const description = String(formData.get("description") || "").trim();
   const requestedItems = String(formData.get("requestedItems") || "").trim();
   const urgency = String(formData.get("urgency") || "").trim();
 
-  if (!workshopId) return { error: "ID de aliado no válido." };
+  if (!allyId) return { error: "ID de aliado no válido." };
   if (!title) return { error: "El título de la necesidad es obligatorio." };
 
-  const workshop = await verifyWorkshopAccess(user, workshopId, admin);
-  if (!workshop) return { error: "No tienes permiso para crear necesidades para este aliado." };
+  const ally = await verifyAllyAccess(user, allyId, admin);
+  if (!ally) return { error: "No tienes permiso para crear tareas para este aliado." };
 
   const { error } = await admin.from("assigned_tasks").insert({
-    ally_id: workshopId,
+    ally_id: allyId,
     title,
     description: description || null,
     expected_output: requestedItems || null,
@@ -126,61 +120,68 @@ export async function createWorkshopNeedAction(formData: FormData): Promise<Resu
     actor_role: role,
     actor_email: user.email,
     context_type: role === "aliado" ? "aliado" : "platform",
-    context_id: workshopId,
+    context_id: allyId,
     entity_type: "assigned_task",
     entity_id: null,
     action: "create",
-    new_data: { ally_id: workshopId, title },
+    new_data: { ally_id: allyId, title },
   });
 
-  revalidatePath("/admin/talleres/panel/necesidades");
+  revalidatePath("/admin/tareas");
   revalidatePath("/necesidades");
-  if (workshop?.slug) revalidatePath(`/${workshop.slug}`);
+  if (ally.slug) {
+    revalidatePath(`/aliados/${ally.slug}`);
+    revalidatePath(`/${ally.slug}`);
+  }
+
   return { success: true };
 }
 
 export async function closeWorkshopNeedAction(formData: FormData): Promise<Result> {
   const user = await requireWorkshopUser();
   const admin = createSupabaseAdminClient();
+  const taskId = String(formData.get("id") || "").trim();
+  const allyId = String(formData.get("workshopId") || "").trim();
 
-  const needId = String(formData.get("id") || "");
-  const workshopId = String(formData.get("workshopId") || "").trim();
+  if (!taskId || !allyId) return { error: "Solicitud inválida." };
 
-  if (!needId || !workshopId) return { error: "Solicitud inválida." };
-
-  const workshop = await verifyWorkshopAccess(user, workshopId, admin);
-  if (!workshop) return { error: "No tienes permiso para cerrar esta necesidad." };
+  const ally = await verifyAllyAccess(user, allyId, admin);
+  if (!ally) return { error: "No tienes permiso para cerrar esta tarea." };
 
   const { error } = await admin
     .from("assigned_tasks")
     .update({ status: "cerrada", closed_at: new Date().toISOString() })
-    .eq("id", needId);
+    .eq("id", taskId)
+    .eq("ally_id", allyId);
 
   if (error) return { error: error.message };
 
-  revalidatePath("/admin/talleres/panel/necesidades");
+  revalidatePath("/admin/tareas");
   revalidatePath("/necesidades");
-  if (workshop?.slug) revalidatePath(`/${workshop.slug}`);
+  if (ally.slug) {
+    revalidatePath(`/aliados/${ally.slug}`);
+    revalidatePath(`/${ally.slug}`);
+  }
+
   return { success: true };
 }
 
 export async function uploadWorkshopPhotoAction(formData: FormData): Promise<Result> {
   const user = await requireWorkshopUser();
   const admin = createSupabaseAdminClient();
-
-  const workshopId = String(formData.get("workshopId") || "").trim();
+  const allyId = String(formData.get("workshopId") || "").trim();
   const storagePath = String(formData.get("storagePath") || "").trim();
   const title = String(formData.get("title") || "").trim();
   const description = String(formData.get("description") || "").trim();
 
-  if (!workshopId) return { error: "ID de aliado no válido." };
+  if (!allyId) return { error: "ID de aliado no válido." };
   if (!storagePath) return { error: "No se recibió la imagen." };
 
-  const workshop = await verifyWorkshopAccess(user, workshopId, admin);
-  if (!workshop) return { error: "No tienes permiso para subir fotos a este aliado." };
+  const ally = await verifyAllyAccess(user, allyId, admin);
+  if (!ally) return { error: "No tienes permiso para subir fotos a este aliado." };
 
   const { error } = await admin.from("ally_photos").insert({
-    ally_id: workshopId,
+    ally_id: allyId,
     storage_path: storagePath,
     title: title || null,
     description: description || null,
@@ -190,27 +191,34 @@ export async function uploadWorkshopPhotoAction(formData: FormData): Promise<Res
 
   if (error) return { error: error.message };
 
-  revalidatePath("/admin/talleres/panel/fotos");
-  if (workshop?.slug) revalidatePath(`/${workshop.slug}`);
+  revalidatePath("/admin/perfil");
+  if (ally.slug) {
+    revalidatePath(`/aliados/${ally.slug}`);
+    revalidatePath(`/${ally.slug}`);
+  }
+
   return { success: true };
 }
 
 export async function uploadWorkshopAvatarAction(formData: FormData): Promise<Result> {
   const user = await requireWorkshopUser();
   const admin = createSupabaseAdminClient();
-
-  const workshopId = String(formData.get("workshopId") || "").trim();
+  const allyId = String(formData.get("workshopId") || "").trim();
   const storagePath = String(formData.get("storagePath") || "").trim();
 
-  if (!workshopId) return { error: "ID de aliado no válido." };
+  if (!allyId) return { error: "ID de aliado no válido." };
 
-  const workshop = await verifyWorkshopAccess(user, workshopId, admin);
-  if (!workshop) return { error: "No tienes permiso para cambiar el avatar de este aliado." };
+  const ally = await verifyAllyAccess(user, allyId, admin);
+  if (!ally) return { error: "No tienes permiso para cambiar el avatar de este aliado." };
 
-  const { error } = await admin.from("allies").update({ avatar_path: storagePath || null }).eq("id", workshopId);
+  const { error } = await admin.from("allies").update({ avatar_path: storagePath || null }).eq("id", allyId);
   if (error) return { error: error.message };
 
-  revalidatePath("/admin/talleres/panel");
-  if (workshop?.slug) revalidatePath(`/${workshop.slug}`);
+  revalidatePath("/admin/perfil");
+  if (ally.slug) {
+    revalidatePath(`/aliados/${ally.slug}`);
+    revalidatePath(`/${ally.slug}`);
+  }
+
   return { success: true };
 }

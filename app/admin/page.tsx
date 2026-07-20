@@ -12,7 +12,7 @@ export default async function AdminPage() {
     return <AdminLoginForm />;
   }
 
-  if (user.app_metadata?.role === "aliado") redirect("/admin/aliado");
+  if (user.app_metadata?.role === "aliado") redirect("/admin/tareas");
   if (user.app_metadata?.role === "admin") redirect("/admin/aliados");
 
   return (

@@ -95,7 +95,7 @@ export async function getAdminWorkshopsPage({
   limit?: number;
   status?: string;
   category?: string;
-  tab?: "postulaciones" | "talleres";
+  tab?: "postulaciones" | "aliados";
   q?: string;
 } = {}): Promise<PagedResult<WorkshopListItem>> {
   const admin = await createSupabaseServerClient();
@@ -115,7 +115,7 @@ export async function getAdminWorkshopsPage({
 
   if (tab === "postulaciones") {
     query = query.in("status", postulationStatuses);
-  } else if (tab === "talleres") {
+  } else if (tab === "aliados") {
     query = query.in("status", activeStatuses);
   }
 

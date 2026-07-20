@@ -1,4 +1,4 @@
-export default function TalleresLoading() {
+export default function AlliesLoading() {
   return (
     <div className="animate-pulse space-y-6">
       <div className="space-y-5">

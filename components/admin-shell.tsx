@@ -40,12 +40,12 @@ const sharedAdminItems: NavItem[] = [
 ];
 
 const aliadoNavItems: NavItem[] = [
-  { href: "/admin/aliado/perfil", label: "Perfil", icon: User },
-  { href: "/admin/aliado/tareas", label: "Tareas asignadas", icon: FolderKanban },
-  { href: "/admin/aliado/voluntarios", label: "Voluntarios asignados", icon: Users },
-  { href: "/admin/aliado/entregas", label: "Entregas", icon: PackageCheck },
-  { href: "/admin/aliado/materia-prima", label: "Materia prima", icon: Package },
-  { href: "/admin/aliado/mensajes", label: "Mensajes", icon: MessageCircle },
+  { href: "/admin/perfil", label: "Perfil", icon: User },
+  { href: "/admin/tareas", label: "Tareas asignadas", icon: FolderKanban },
+  { href: "/admin/voluntarios", label: "Voluntarios asignados", icon: Users },
+  { href: "/admin/entregas", label: "Entregas", icon: PackageCheck },
+  { href: "/admin/materia-prima", label: "Materia prima", icon: Package },
+  { href: "/admin/mensajes", label: "Mensajes", icon: MessageCircle },
 ];
 
 const navByRole: Record<string, NavItem[]> = {
@@ -130,8 +130,8 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
   const isPromoda = true;
   const isAdmin = role === "admin";
 
-  const effectiveRole = context.type === "aliado" ? "aliado" : role;
-  const items = context.type === "aliado" ? aliadoNavItems : (navByRole[role] ?? navByRole.admin);
+  const effectiveRole = role;
+  const items = navByRole[role] ?? navByRole.admin;
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
@@ -141,7 +141,7 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
 
   function isActive(href: string) {
     if (href === "/admin") return pathname === "/admin";
-    if (href === "/admin/aliados") return pathname === "/admin/aliados" || pathname === "/admin/talleres";
+    if (href === "/admin/aliados") return pathname === "/admin/aliados";
     return pathname.startsWith(href);
   }
 

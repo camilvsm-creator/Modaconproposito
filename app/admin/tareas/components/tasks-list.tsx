@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { closeWorkshopNeedAction } from "@/app/admin/talleres/panel/actions";
+import { closeWorkshopNeedAction } from "@/app/admin/ally-actions";
 import { Button, SectionCard } from "@/components/ui";
 import { EmptyState } from "@/components/empty-state";
 import { WORKSHOP_NEED_STATUS_LABELS, WORKSHOP_NEED_STATUS_TONES } from "@/lib/constants";

@@ -58,7 +58,7 @@ export async function switchContextAction(workshopId: string | null): Promise<Re
   );
 
   revalidatePath("/admin");
-  revalidatePath("/admin/talleres");
-  revalidatePath("/admin/talleres/panel");
+  revalidatePath("/admin/aliados");
+  revalidatePath("/admin/tareas");
   return {};
 }

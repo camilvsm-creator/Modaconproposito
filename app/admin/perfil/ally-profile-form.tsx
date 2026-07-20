@@ -3,7 +3,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 
-import { updateWorkshopProfileAction, uploadWorkshopAvatarAction } from "@/app/admin/talleres/panel/actions";
+import { updateWorkshopProfileAction, uploadWorkshopAvatarAction } from "@/app/admin/ally-actions";
 import { Button, InputShell, SectionCard, inputClassName } from "@/components/ui";
 import { WORKSHOP_PHOTO_BUCKET, MAX_WORKSHOP_AVATAR_BYTES } from "@/lib/constants";
 import type { Workshop } from "@/lib/types";

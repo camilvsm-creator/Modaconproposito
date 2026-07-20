@@ -67,7 +67,7 @@ export async function submitWorkshopRegistration(formData: FormData): Promise<Re
     return { success: false, error: "No pudimos registrar el aliado. Intenta nuevamente." };
   }
 
-  revalidatePath("/admin/talleres");
+  revalidatePath("/admin/aliados");
   return { success: true };
 }
 
@@ -112,6 +112,6 @@ export async function submitWorkshopHelpOffer(formData: FormData): Promise<Resul
     return { success: false, error: "No pudimos registrar tu oferta. Intenta nuevamente." };
   }
 
-  revalidatePath("/admin/talleres/ofertas");
+  revalidatePath("/admin/colaboradores");
   return { success: true };
 }

@@ -33,13 +33,12 @@ export async function updateWorkshopStatusAction(formData: FormData): Promise<Re
   if (error) return { error: error.message };
 
   const workshop = await getAdminWorkshopById(id);
-  revalidatePath("/admin/talleres");
   revalidatePath("/admin/aliados");
-  revalidatePath(`/admin/talleres/listado/${id}`);
+  revalidatePath("/admin/aliados");
+  revalidatePath(`/admin/aliados/${id}`);
   revalidatePath(`/admin/aliados/${id}`);
   if (workshop?.slug) revalidatePath(`/${workshop.slug}`);
   if (workshop?.slug) revalidatePath(`/aliados/${workshop.slug}`);
-  revalidatePath("/ver-talleres");
   revalidatePath("/aliados");
   return {};
 }
@@ -68,9 +67,9 @@ export async function approveWorkshopAction(formData: FormData): Promise<Result>
 
   const { activationLink } = await createWorkshopActivationToken(id, user.id);
 
-  revalidatePath("/admin/talleres");
   revalidatePath("/admin/aliados");
-  revalidatePath(`/admin/talleres/listado/${id}`);
+  revalidatePath("/admin/aliados");
+  revalidatePath(`/admin/aliados/${id}`);
   revalidatePath(`/admin/aliados/${id}`);
   return { activationLink };
 }
@@ -100,7 +99,7 @@ export async function sendWorkshopActivationEmailAction(formData: FormData): Pro
 
   if (error) return { error: `Error al enviar el correo: ${error}` };
 
-  revalidatePath(`/admin/talleres/listado/${workshopId}`);
+  revalidatePath(`/admin/aliados/${workshopId}`);
   revalidatePath(`/admin/aliados/${workshopId}`);
   return {};
 }
@@ -125,7 +124,7 @@ export async function generateWorkshopActivationLinkAction(formData: FormData): 
 
   const { activationLink } = await createWorkshopActivationToken(workshopId, user.id);
 
-  revalidatePath(`/admin/talleres/listado/${workshopId}`);
+  revalidatePath(`/admin/aliados/${workshopId}`);
   revalidatePath(`/admin/aliados/${workshopId}`);
   return { activationLink };
 }
@@ -150,9 +149,9 @@ export async function generateAccessLinkAction(formData: FormData): Promise<Resu
 
   const { activationLink } = await createWorkshopActivationToken(workshopId, user.id);
 
-  revalidatePath("/admin/talleres");
   revalidatePath("/admin/aliados");
-  revalidatePath(`/admin/talleres/listado/${workshopId}`);
+  revalidatePath("/admin/aliados");
+  revalidatePath(`/admin/aliados/${workshopId}`);
   revalidatePath(`/admin/aliados/${workshopId}`);
   return { activationLink };
 }
@@ -217,13 +216,12 @@ export async function updateWorkshopAction(formData: FormData): Promise<Result> 
   const { error } = await admin.from("allies").update(updates).eq("id", id);
   if (error) return { error: error.message };
 
-  revalidatePath("/admin/talleres");
   revalidatePath("/admin/aliados");
-  revalidatePath(`/admin/talleres/listado/${id}`);
+  revalidatePath("/admin/aliados");
+  revalidatePath(`/admin/aliados/${id}`);
   revalidatePath(`/admin/aliados/${id}`);
   if (workshop.slug) revalidatePath(`/${workshop.slug}`);
   if (workshop.slug) revalidatePath(`/aliados/${workshop.slug}`);
-  revalidatePath("/ver-talleres");
   revalidatePath("/aliados");
   return {};
 }
@@ -248,7 +246,7 @@ export async function updateNeedStatusAction(formData: FormData): Promise<Result
 
   const needWorkshopId = (await admin.from("assigned_tasks").select("ally_id").eq("id", id).maybeSingle()).data?.ally_id;
   const needWorkshop = needWorkshopId ? await getAdminWorkshopById(needWorkshopId) : null;
-  revalidatePath("/admin/talleres/necesidades");
+  revalidatePath("/admin/tareas");
   revalidatePath("/necesidades");
   if (needWorkshop?.slug) revalidatePath(`/${needWorkshop.slug}`);
   return {};
@@ -266,7 +264,7 @@ export async function updateNeedAdminNotesAction(formData: FormData): Promise<Re
   const { error } = await admin.from("assigned_tasks").update({ admin_notes: adminNotes || null }).eq("id", id);
   if (error) return { error: error.message };
 
-  revalidatePath("/admin/talleres/necesidades");
+  revalidatePath("/admin/tareas");
   return {};
 }
 
@@ -314,7 +312,7 @@ export async function updateHelpOfferStatusAction(formData: FormData): Promise<R
 
   const offerWorkshopId = (await admin.from("collaborator_offers").select("ally_id").eq("id", id).maybeSingle()).data?.ally_id;
   const offerWorkshop = offerWorkshopId ? await getAdminWorkshopById(offerWorkshopId) : null;
-  revalidatePath("/admin/talleres/ofertas");
+  revalidatePath("/admin/colaboradores");
   if (offerWorkshop?.slug) revalidatePath(`/${offerWorkshop.slug}`);
   return {};
 }
@@ -336,13 +334,12 @@ export async function deactivateWorkshopAction(formData: FormData): Promise<Resu
 
   if (error) return { error: error.message };
 
-  revalidatePath("/admin/talleres");
   revalidatePath("/admin/aliados");
-  revalidatePath(`/admin/talleres/listado/${id}`);
+  revalidatePath("/admin/aliados");
+  revalidatePath(`/admin/aliados/${id}`);
   revalidatePath(`/admin/aliados/${id}`);
   if (workshop.slug) revalidatePath(`/${workshop.slug}`);
   if (workshop.slug) revalidatePath(`/aliados/${workshop.slug}`);
-  revalidatePath("/ver-talleres");
   revalidatePath("/aliados");
   return {};
 }
@@ -364,13 +361,12 @@ export async function reactivateWorkshopAction(formData: FormData): Promise<Resu
 
   if (error) return { error: error.message };
 
-  revalidatePath("/admin/talleres");
   revalidatePath("/admin/aliados");
-  revalidatePath(`/admin/talleres/listado/${id}`);
+  revalidatePath("/admin/aliados");
+  revalidatePath(`/admin/aliados/${id}`);
   revalidatePath(`/admin/aliados/${id}`);
   if (workshop.slug) revalidatePath(`/${workshop.slug}`);
   if (workshop.slug) revalidatePath(`/aliados/${workshop.slug}`);
-  revalidatePath("/ver-talleres");
   revalidatePath("/aliados");
   return {};
 }
@@ -449,14 +445,13 @@ export async function createWorkshopAction(formData: FormData): Promise<Result> 
   );
 
   if (emailError) {
-    revalidatePath("/admin/talleres");
+    revalidatePath("/admin/aliados");
     revalidatePath("/admin/aliados");
     return { error: `Aliado creado, pero no se pudo enviar el correo: ${emailError}`, activationLink, allyId: workshop.id };
   }
 
-  revalidatePath("/admin/talleres");
   revalidatePath("/admin/aliados");
-  revalidatePath("/ver-talleres");
+  revalidatePath("/admin/aliados");
   revalidatePath("/aliados");
   return { activationLink, allyId: workshop.id };
 }

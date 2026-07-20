@@ -3,7 +3,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { useState } from "react";
 
-import { createPatternAction } from "@/app/admin/talleres/patrones/actions";
+import { createPatternAction } from "@/app/admin/patrones/actions";
 import { Button, InputShell, SectionCard, inputClassName } from "@/components/ui";
 import { PATTERN_BUCKET, PATTERN_CATEGORIES, PATTERN_DIFFICULTIES, PATTERN_DIFFICULTY_LABELS } from "@/lib/constants";
 

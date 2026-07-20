@@ -26,7 +26,7 @@ export async function updatePatternStatusAction(formData: FormData): Promise<Res
 
   if (error) return { error: error.message };
 
-  revalidatePath("/admin/talleres/patrones");
+  revalidatePath("/admin/patrones");
   return {};
 }
 
@@ -53,7 +53,7 @@ export async function updatePatternAction(formData: FormData): Promise<Result> {
   const { error } = await admin.from("sewing_patterns").update(updates).eq("id", id);
   if (error) return { error: error.message };
 
-  revalidatePath("/admin/talleres/patrones");
+  revalidatePath("/admin/patrones");
   return {};
 }
 
@@ -85,6 +85,6 @@ export async function createPatternAction(formData: FormData): Promise<Result> {
 
   if (error) return { error: error.message };
 
-  revalidatePath("/admin/talleres/patrones");
+  revalidatePath("/admin/patrones");
   return {};
 }

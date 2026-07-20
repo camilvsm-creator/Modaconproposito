@@ -17,7 +17,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const user = data.user;
 
   if (!user) {
-    if (pathname !== "/admin" && !pathname.startsWith("/admin/activar-taller") && !pathname.startsWith("/admin/activar-aliado")) redirect("/admin");
+    if (pathname !== "/admin" && !pathname.startsWith("/admin/activar-aliado")) redirect("/admin");
     return <>{children}</>;
   }
 

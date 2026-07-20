@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { activateWorkshopFromTokenAction } from "@/app/admin/activar-taller/actions";
+import { activateWorkshopFromTokenAction } from "@/app/admin/activar-aliado/actions";
 import { Button, InputShell, SectionCard, inputClassName } from "@/components/ui";
 
 export function WorkshopActivationForm({
