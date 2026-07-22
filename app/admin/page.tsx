@@ -14,6 +14,7 @@ export default async function AdminPage() {
 
   if (user.app_metadata?.role === "aliado") redirect("/admin/tareas");
   if (user.app_metadata?.role === "admin") redirect("/admin/aliados");
+  if (user.app_metadata?.role === "solicitante") redirect("/admin/solicitudes");
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">

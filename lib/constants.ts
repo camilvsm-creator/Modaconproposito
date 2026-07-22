@@ -78,6 +78,8 @@ export const ASSIGNED_TASK_STATUSES = ["pendiente", "asignada", "en_progreso", "
 
 export const ASSIGNED_TASK_STATUS_LABELS: Record<string, string> = {
   pendiente: "Pendiente",
+  publicada: "Publicada",
+  cubierta: "Cubierta",
   asignada: "Asignada",
   en_progreso: "En progreso",
   completada: "Completada",
@@ -86,6 +88,8 @@ export const ASSIGNED_TASK_STATUS_LABELS: Record<string, string> = {
 
 export const ASSIGNED_TASK_STATUS_TONES: Record<string, string> = {
   pendiente: "bg-warning-soft text-warning",
+  publicada: "bg-success-soft text-success",
+  cubierta: "bg-info-soft text-info",
   asignada: "bg-info-soft text-info",
   en_progreso: "bg-blue-100 text-blue-700",
   completada: "bg-success-soft text-success",
@@ -196,3 +200,109 @@ export const AID_REQUEST_STATUSES = ["recibida", "en_revision", "convertida", "c
 export const RAW_MATERIAL_STATUSES = ["disponible", "agotado", "archivado"] as const;
 export const ALLY_RAW_MATERIAL_ASSIGNMENT_STATUSES = ["asignada", "entregada", "usada", "cancelada"] as const;
 export const ALLY_DELIVERY_STATUSES = ["pendiente", "entregada", "recibida", "cancelada"] as const;
+
+export const AID_REQUEST_STATUS_LABELS: Record<string, string> = {
+  recibida: "Recibida",
+  en_revision: "En revisión",
+  convertida: "Convertida",
+  cerrada: "Cerrada",
+};
+
+export const AID_REQUEST_STATUS_TONES: Record<string, string> = {
+  recibida: "bg-warning-soft text-warning",
+  en_revision: "bg-info-soft text-info",
+  convertida: "bg-blue-100 text-blue-700",
+  cerrada: "bg-success-soft text-success",
+};
+
+export const AID_REQUESTER_TYPES = ["ong", "fundacion", "institucion", "comunidad", "otro"] as const;
+
+export const AID_REQUESTER_TYPE_LABELS: Record<string, string> = {
+  ong: "ONG",
+  fundacion: "Fundación",
+  institucion: "Institución",
+  comunidad: "Comunidad",
+  otro: "Otro",
+};
+
+export const AID_REQUESTER_STATUS_LABELS: Record<string, string> = {
+  activo: "Activo",
+  pausado: "Pausado",
+  inactivo: "Inactivo",
+};
+
+export const AID_REQUESTER_STATUS_TONES: Record<string, string> = {
+  activo: "bg-success-soft text-success",
+  pausado: "bg-warning-soft text-warning",
+  inactivo: "bg-stone-200 text-stone-600",
+};
+
+export const RAW_MATERIAL_STATUS_LABELS: Record<string, string> = {
+  disponible: "Disponible",
+  agotado: "Agotado",
+  archivado: "Archivado",
+};
+
+export const RAW_MATERIAL_STATUS_TONES: Record<string, string> = {
+  disponible: "bg-success-soft text-success",
+  agotado: "bg-warning-soft text-warning",
+  archivado: "bg-stone-200 text-stone-600",
+};
+
+export const RAW_MATERIAL_ASSIGNMENT_STATUS_LABELS: Record<string, string> = {
+  asignada: "Asignada",
+  entregada: "Entregada",
+  usada: "Usada",
+  cancelada: "Cancelada",
+};
+
+export const RAW_MATERIAL_ASSIGNMENT_STATUS_TONES: Record<string, string> = {
+  asignada: "bg-info-soft text-info",
+  entregada: "bg-blue-100 text-blue-700",
+  usada: "bg-success-soft text-success",
+  cancelada: "bg-stone-200 text-stone-600",
+};
+
+export const DELIVERY_STATUS_LABELS: Record<string, string> = {
+  pendiente: "Pendiente",
+  entregada: "Entregada",
+  recibida: "Recibida",
+  cancelada: "Cancelada",
+};
+
+export const DELIVERY_STATUS_TONES: Record<string, string> = {
+  pendiente: "bg-warning-soft text-warning",
+  entregada: "bg-info-soft text-info",
+  recibida: "bg-success-soft text-success",
+  cancelada: "bg-stone-200 text-stone-600",
+};
+
+export const TASK_INCIDENT_STATUS_LABELS: Record<string, string> = {
+  open: "Abierta",
+  resolved: "Resuelta",
+};
+
+export const TASK_INCIDENT_STATUS_TONES: Record<string, string> = {
+  open: "bg-danger-soft text-danger",
+  resolved: "bg-success-soft text-success",
+};
+
+export const RAW_MATERIAL_MOVEMENT_TYPES = ["entrada_inicial", "entrada", "devolucion", "merma", "ajuste", "asignacion_tarea"] as const;
+
+export const RAW_MATERIAL_MOVEMENT_TYPE_LABELS: Record<string, string> = {
+  entrada_inicial: "Entrada inicial",
+  entrada: "Entrada",
+  devolucion: "Devolución",
+  merma: "Merma",
+  ajuste: "Ajuste",
+  asignacion_tarea: "Asignación a tarea",
+};
+
+export const RAW_MATERIAL_MOVEMENT_TYPE_TONES: Record<string, string> = {
+  entrada_inicial: "bg-success-soft text-success",
+  entrada: "bg-success-soft text-success",
+  devolucion: "bg-info-soft text-info",
+  merma: "bg-danger-soft text-danger",
+  ajuste: "bg-stone-200 text-stone-700",
+  asignacion_tarea: "bg-blue-100 text-blue-700",
+};

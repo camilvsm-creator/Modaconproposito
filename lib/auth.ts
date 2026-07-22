@@ -32,3 +32,15 @@ export async function requireWorkshopAdminUser() {
 export async function requireWorkshopUser() {
   return requireUserRoles(["admin", "aliado"]);
 }
+
+export async function requireRequesterUser() {
+  return requireUserRoles(["solicitante"]);
+}
+
+export async function requireRequestsUser() {
+  return requireUserRoles(["admin", "solicitante"]);
+}
+
+export async function requireOperationsUser() {
+  return requireUserRoles(["admin", "aliado", "solicitante"]);
+}

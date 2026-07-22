@@ -41,6 +41,45 @@ export type AllyListItem = Pick<
   "id" | "user_id" | "category" | "name" | "responsible_name" | "city" | "state" | "status" | "created_at"
 >;
 
+export type AidRequester = {
+  id: string;
+  user_id: string | null;
+  name: string;
+  type: string;
+  contact_name: string | null;
+  email: string | null;
+  phone: string | null;
+  location: string | null;
+  notes: string | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AidRequest = {
+  id: string;
+  requester_id: string | null;
+  title: string;
+  description: string | null;
+  requested_items: string | null;
+  urgency: string | null;
+  status: string;
+  admin_notes: string | null;
+  created_by_user_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AidRequesterActivationToken = {
+  id: string;
+  requester_id: string;
+  token_hash: string;
+  expires_at: string;
+  used_at: string | null;
+  created_by_user_id: string | null;
+  created_at: string;
+};
+
 export type AssignedTask = {
   id: string;
   ally_id: string;
@@ -215,12 +254,27 @@ export type RawMaterial = {
   updated_at: string;
 };
 
+export type RawMaterialMovement = {
+  id: string;
+  raw_material_id: string;
+  related_task_id: string | null;
+  related_assignment_id: string | null;
+  movement_type: string;
+  quantity_change: number;
+  balance_after: number | null;
+  notes: string | null;
+  created_by_user_id: string | null;
+  created_at: string;
+};
+
 export type AllyRawMaterialAssignment = {
   id: string;
   ally_id: string;
   raw_material_id: string | null;
+  task_id: string | null;
   name_snapshot: string;
   quantity: number | null;
+  used_quantity: number | null;
   unit: string | null;
   status: string;
   assigned_at: string;
@@ -238,11 +292,58 @@ export type AllyDelivery = {
   description: string | null;
   quantity: string | null;
   status: string;
+  scheduled_for: string | null;
   delivered_at: string | null;
+  received_at: string | null;
   received_by: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type TaskIncident = {
+  id: string;
+  task_id: string;
+  created_by_user_id: string | null;
+  created_by_role: string;
+  description: string;
+  status: string;
+  resolution_notes: string | null;
+  resolved_by_user_id: string | null;
+  resolved_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TaskMaterialAssignment = AllyRawMaterialAssignment & {
+  raw_material?: Pick<RawMaterial, "id" | "name" | "unit" | "stock_quantity" | "status"> | null;
+  ally?: Pick<Ally, "id" | "name" | "slug"> | null;
+  task?: Pick<AssignedTask, "id" | "title" | "status" | "due_date"> | null;
+};
+
+export type DeliveryWithRelations = AllyDelivery & {
+  ally?: Pick<Ally, "id" | "name" | "slug"> | null;
+  task?: Pick<AssignedTask, "id" | "title" | "status" | "due_date"> | null;
+};
+
+export type AidRequestWithRelations = AidRequest & {
+  requester?: Pick<AidRequester, "id" | "name" | "type" | "contact_name" | "email" | "user_id"> | null;
+  tasks?: Array<Pick<AssignedTask, "id" | "title" | "status" | "due_date" | "created_at"> & {
+    ally?: Pick<Ally, "id" | "name" | "slug"> | null;
+    deliveries?: DeliveryWithRelations[];
+  }>;
+};
+
+export type AssignedTaskBoardItem = AssignedTaskWithAllyName & {
+  material_assignments?: TaskMaterialAssignment[];
+  deliveries?: DeliveryWithRelations[];
+  incidents?: TaskIncident[];
+};
+
+export type RawMaterialMovementWithRelations = RawMaterialMovement & {
+  raw_material?: Pick<RawMaterial, "id" | "name" | "unit" | "status"> | null;
+  task?: Pick<AssignedTask, "id" | "title" | "status"> | null;
+  assignment?: Pick<AllyRawMaterialAssignment, "id" | "name_snapshot" | "ally_id"> | null;
 };
 
 export type AppContext =

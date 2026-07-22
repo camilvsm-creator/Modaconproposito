@@ -21,7 +21,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     return <>{children}</>;
   }
 
-  const role = user.app_metadata?.role ?? "admin";
+  const role = typeof user.app_metadata?.role === "string" ? user.app_metadata.role : "unknown";
 
   let avatarUrl: string | null = null;
   if (role === "aliado") {
