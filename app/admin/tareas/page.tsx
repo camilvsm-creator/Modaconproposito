@@ -8,8 +8,6 @@ import {
   ASSIGNED_TASK_STATUS_TONES,
   DELIVERY_STATUS_LABELS,
   DELIVERY_STATUS_TONES,
-  RAW_MATERIAL_ASSIGNMENT_STATUS_LABELS,
-  RAW_MATERIAL_ASSIGNMENT_STATUS_TONES,
   TASK_INCIDENT_STATUS_LABELS,
   TASK_INCIDENT_STATUS_TONES,
   URGENCY_LABELS,
@@ -24,10 +22,8 @@ import {
   getActiveAlliesForSelect,
   getAdminTaskBoard,
   getAllyTaskBoard,
-  getRawMaterials,
 } from "@/lib/production";
 import {
-  assignMaterialToTaskAction,
   createTaskIncidentAction,
   createAssignedTaskAction,
   resolveTaskIncidentAction,
@@ -69,7 +65,7 @@ export default async function AdminNecesidadesPage() {
         <AdminPageHeader
           eyebrow="Cuenta"
           title="Tareas"
-          description="Consulta tus tareas asignadas, reporta el consumo de materia prima y completa la producción."
+          description="Consulta tus tareas asignadas y completa la producción."
           navigation={{ baseHref: "/admin/perfil", baseLabel: "Perfil", currentLabel: "Tareas" }}
         />
 
@@ -96,7 +92,7 @@ export default async function AdminNecesidadesPage() {
                       </div>
                       {task.requested_items ? (
                         <p className="text-sm text-stone-500">
-                          <span className="font-medium text-stone-700">Resultado esperado:</span> {task.requested_items}
+                          <span className="font-medium text-stone-700">Objetivo de producción:</span> {task.requested_items}
                         </p>
                       ) : null}
                     </div>
@@ -153,49 +149,10 @@ export default async function AdminNecesidadesPage() {
                     </form>
                   </div>
 
-                  <div className="space-y-3">
-                    <h3 className="text-base font-semibold text-ink">Materia prima asignada</h3>
-                    {task.material_assignments?.length ? (
-                      <div className="space-y-3">
-                        {task.material_assignments.map((assignment) => (
-                          <div key={assignment.id} className="rounded-lg border border-stone-200 p-4">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <p className="font-medium text-ink">{assignment.name_snapshot}</p>
-                              <span className={cn("inline-flex rounded-full px-2 py-0.5 text-sm font-semibold uppercase tracking-wide", RAW_MATERIAL_ASSIGNMENT_STATUS_TONES[assignment.status] ?? "bg-stone-100 text-stone-600")}>{RAW_MATERIAL_ASSIGNMENT_STATUS_LABELS[assignment.status] ?? assignment.status}</span>
-                            </div>
-                            <p className="mt-1 text-sm text-stone-600">
-                              Asignado: {assignment.quantity ?? "-"} {assignment.unit ?? ""}
-                              {assignment.used_quantity !== null ? ` | Usado: ${assignment.used_quantity} ${assignment.unit ?? ""}` : ""}
-                            </p>
-                            {assignment.notes ? <p className="mt-1 text-sm text-stone-500">{assignment.notes}</p> : null}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-stone-500">Aún no te han asignado materia prima para esta tarea.</p>
-                    )}
-                  </div>
-
+                  {/* MVP: gestión de materia prima pausada — secciones "Materia prima asignada" y "Reporte de consumo" ocultas temporalmente */}
                   {editable ? (
                     <form action={saveTaskMaterialUsageAction} className="space-y-4 rounded-lg border border-stone-200 bg-white p-5">
                       <input type="hidden" name="taskId" value={task.id} />
-                      <div className="space-y-3">
-                        <h3 className="text-base font-semibold text-ink">Reporte de consumo</h3>
-                        {task.material_assignments?.length ? task.material_assignments.map((assignment) => (
-                          <label key={assignment.id} className="block space-y-2">
-                            <span className="text-sm font-medium text-stone-800">{assignment.name_snapshot}</span>
-                            <input
-                              className={inputClassName}
-                              name={`usedQuantity:${assignment.id}`}
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              defaultValue={assignment.used_quantity ?? ""}
-                              placeholder={`Máximo ${assignment.quantity ?? "sin tope"}`}
-                            />
-                          </label>
-                        )) : <p className="text-sm text-stone-500">Esta tarea no tiene materia prima asignada. Puedes dejar notas y marcarla como completada igualmente.</p>}
-                      </div>
 
                       <label className="block space-y-2">
                         <span className="text-sm font-medium text-stone-800">Notas del taller</span>
@@ -203,10 +160,9 @@ export default async function AdminNecesidadesPage() {
                       </label>
 
                       <div className="flex flex-wrap gap-3">
-                        <Button type="submit" name="intent" value="save" variant="secondary">Guardar consumo</Button>
+                        <Button type="submit" name="intent" value="save" variant="secondary">Guardar notas</Button>
                         {task.status !== "completada" ? <Button type="submit" name="intent" value="complete">Completar tarea</Button> : null}
                       </div>
-                      <p className="text-sm text-stone-500">Puedes seguir corrigiendo el consumo mientras la entrega no esté recibida o cancelada.</p>
                     </form>
                   ) : null}
                 </SectionCard>
@@ -214,17 +170,16 @@ export default async function AdminNecesidadesPage() {
             })}
           </div>
         ) : (
-          <EmptyState title="Sin tareas asignadas" description="Cuando Promoda te asigne producción aparecerá aquí con su materia prima y entregas." />
+          <EmptyState title="Sin tareas asignadas" description="Cuando Promoda te asigne producción aparecerá aquí." />
         )}
       </div>
     );
   }
 
   await requireWorkshopAdminUser();
-  const [tasks, allies, rawMaterials] = await Promise.all([
+  const [tasks, allies] = await Promise.all([
     getAdminTaskBoard(),
     getActiveAlliesForSelect(),
-    getRawMaterials(),
   ]);
 
   return (
@@ -232,7 +187,7 @@ export default async function AdminNecesidadesPage() {
       <AdminPageHeader
         eyebrow="Promoda"
         title="Tareas"
-        description="Crea tareas para los aliados, asigna materia prima y abre entregas cuando la producción esté lista."
+        description="Crea tareas para los aliados y gestiona su producción."
         meta={`${tasks.length} tareas`}
         navigation={{ baseHref: "/admin/aliados", baseLabel: "Aliados", currentLabel: "Tareas" }}
       />
@@ -255,11 +210,11 @@ export default async function AdminNecesidadesPage() {
           </label>
           <label className="block space-y-2 md:col-span-2">
             <span className="text-sm font-medium text-stone-800">Descripción</span>
-            <textarea className={`${inputClassName} min-h-[100px]`} name="description" />
+            <textarea className={`${inputClassName} min-h-[100px]`} name="description" placeholder="Describe el trabajo a realizar, especificaciones o instrucciones para el aliado." />
           </label>
           <label className="block space-y-2">
-            <span className="text-sm font-medium text-stone-800">Resultado esperado</span>
-            <input className={inputClassName} name="expectedOutput" placeholder="Ej. 10 franelas talla mixta" />
+            <span className="text-sm font-medium text-stone-800">Objetivo de producción</span>
+            <input className={inputClassName} name="expectedOutput" placeholder="Ej. 100 cartucheras escolares." />
           </label>
           <label className="block space-y-2">
             <span className="text-sm font-medium text-stone-800">Fecha límite</span>
@@ -308,7 +263,7 @@ export default async function AdminNecesidadesPage() {
                       {task.due_date ? <span>Entrega esperada: {formatDate(task.due_date)}</span> : null}
                       {task.urgency ? <span>Urgencia: {URGENCY_LABELS[task.urgency as keyof typeof URGENCY_LABELS] ?? task.urgency}</span> : null}
                     </div>
-                    {task.requested_items ? <p className="text-sm text-stone-500"><span className="font-medium text-stone-700">Resultado esperado:</span> {task.requested_items}</p> : null}
+                    {task.requested_items ? <p className="text-sm text-stone-500"><span className="font-medium text-stone-700">Objetivo de producción:</span> {task.requested_items}</p> : null}
                   </div>
 
                   {latestDelivery ? (
@@ -331,7 +286,7 @@ export default async function AdminNecesidadesPage() {
                     ))}
                   </select>
                   <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="description" defaultValue={task.description ?? ""} placeholder="Descripción de la tarea" />
-                  <input className={inputClassName} name="expectedOutput" defaultValue={task.requested_items ?? ""} placeholder="Resultado esperado" />
+                  <input className={inputClassName} name="expectedOutput" defaultValue={task.requested_items ?? ""} placeholder="Objetivo de producción" />
                   <input className={inputClassName} name="dueDate" type="date" defaultValue={task.due_date ?? ""} />
                   <select className={inputClassName} name="urgency" defaultValue={task.urgency ?? ""}>
                     <option value="">Urgencia</option>
@@ -375,73 +330,33 @@ export default async function AdminNecesidadesPage() {
 
                   <form action={createTaskIncidentAction} className="rounded-lg border border-stone-200 p-4 space-y-3">
                     <input type="hidden" name="taskId" value={task.id} />
-                    <textarea className={`${inputClassName} min-h-[90px]`} name="description" placeholder="Registrar incidencia, bloqueo o riesgo de producción" />
+                    <textarea className={`${inputClassName} min-h-[90px]`} name="description" placeholder="Describe una incidencia, bloqueo o riesgo de producción" />
                     <Button type="submit" variant="ghost">Registrar incidencia</Button>
                   </form>
                 </div>
 
-                <div className="grid gap-4 xl:grid-cols-2">
-                  <div className="space-y-3">
-                    <h3 className="text-base font-semibold text-ink">Materia prima asignada</h3>
-                    {task.material_assignments?.length ? (
-                      <div className="space-y-3">
-                        {task.material_assignments.map((assignment) => (
-                          <div key={assignment.id} className="rounded-lg border border-stone-200 p-4 text-sm text-stone-600">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <p className="font-medium text-ink">{assignment.name_snapshot}</p>
-                              <span className={cn("inline-flex rounded-full px-2 py-0.5 text-sm font-semibold uppercase tracking-wide", RAW_MATERIAL_ASSIGNMENT_STATUS_TONES[assignment.status] ?? "bg-stone-100 text-stone-600")}>{RAW_MATERIAL_ASSIGNMENT_STATUS_LABELS[assignment.status] ?? assignment.status}</span>
-                            </div>
-                            <p className="mt-1">Asignado: {assignment.quantity ?? "-"} {assignment.unit ?? ""}</p>
-                            <p>Usado: {assignment.used_quantity ?? "-"} {assignment.unit ?? ""}</p>
-                            {assignment.notes ? <p className="mt-1 text-stone-500">{assignment.notes}</p> : null}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-stone-500">Todavía no tiene materia prima asignada.</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-4">
-                    <form action={assignMaterialToTaskAction} className="rounded-lg border border-stone-200 p-4">
+                {/* MVP: gestión de materia prima pausada — secciones "Materia prima asignada" y "Asignar materia prima" ocultas temporalmente */}
+                <div className="space-y-4">
+                  {task.status === "completada" && !latestDelivery ? (
+                    <form action={createDeliveryAction} className="rounded-lg border border-stone-200 p-4">
                       <input type="hidden" name="taskId" value={task.id} />
-                      <h3 className="text-base font-semibold text-ink">Asignar materia prima</h3>
+                      <h3 className="text-base font-semibold text-ink">Crear entrega</h3>
                       <div className="mt-3 space-y-3">
-                        <select className={inputClassName} name="rawMaterialId" required defaultValue="">
-                          <option value="" disabled>Selecciona materia prima</option>
-                          {rawMaterials.map((material) => (
-                            <option key={material.id} value={material.id}>
-                              {material.name} {material.stock_quantity !== null ? `(${material.stock_quantity} ${material.unit ?? ""})` : ""}
-                            </option>
-                          ))}
-                        </select>
-                        <input className={inputClassName} name="quantity" type="number" min="0.01" step="0.01" required placeholder="Cantidad asignada" />
-                        <textarea className={`${inputClassName} min-h-[80px]`} name="notes" placeholder="Notas de asignación" />
-                        <Button type="submit" variant="secondary">Asignar material</Button>
+                        <input className={inputClassName} name="title" defaultValue={task.title} placeholder="Título de la entrega" />
+                        <textarea className={`${inputClassName} min-h-[80px]`} name="description" defaultValue={task.description ?? ""} placeholder="Descripción" />
+                        <input className={inputClassName} name="quantity" defaultValue={task.requested_items ?? ""} placeholder="Cantidad o resumen" />
+                        <textarea className={`${inputClassName} min-h-[80px]`} name="notes" placeholder="Notas logísticas" />
+                        <Button type="submit">Crear entrega</Button>
                       </div>
                     </form>
-
-                    {task.status === "completada" && !latestDelivery ? (
-                      <form action={createDeliveryAction} className="rounded-lg border border-stone-200 p-4">
-                        <input type="hidden" name="taskId" value={task.id} />
-                        <h3 className="text-base font-semibold text-ink">Crear entrega</h3>
-                        <div className="mt-3 space-y-3">
-                          <input className={inputClassName} name="title" defaultValue={task.title} placeholder="Título de la entrega" />
-                          <textarea className={`${inputClassName} min-h-[80px]`} name="description" defaultValue={task.description ?? ""} placeholder="Descripción" />
-                          <input className={inputClassName} name="quantity" defaultValue={task.requested_items ?? ""} placeholder="Cantidad o resumen" />
-                          <textarea className={`${inputClassName} min-h-[80px]`} name="notes" placeholder="Notas logísticas" />
-                          <Button type="submit">Crear entrega</Button>
-                        </div>
-                      </form>
-                    ) : null}
-                  </div>
+                  ) : null}
                 </div>
               </SectionCard>
             );
           })}
         </div>
       ) : (
-        <EmptyState title="No hay tareas registradas." description="Crea una tarea y luego asígnale materia prima para comenzar el flujo." />
+        <EmptyState title="No hay tareas registradas." description="Crea una tarea para comenzar el flujo." />
       )}
     </div>
   );
