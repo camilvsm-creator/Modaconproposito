@@ -34,6 +34,7 @@ export function SectionCard({
 
 type ButtonProps = ComponentProps<"button"> & {
   variant?: "primary" | "secondary" | "ghost";
+  size?: "default" | "sm";
 };
 
 const buttonClasses = {
@@ -48,6 +49,7 @@ const buttonClasses = {
 export function Button({
   className,
   variant = "primary",
+  size = "default",
   type = "button",
   ...props
 }: ButtonProps) {
@@ -55,7 +57,8 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-60",
+        "inline-flex items-center justify-center rounded-full font-semibold transition focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-60",
+        size === "sm" ? "px-4 py-2.5 text-sm" : "px-5 py-3 text-sm",
         buttonClasses[variant],
         className,
       )}
@@ -128,6 +131,9 @@ export function InputShell({
 
 export const inputClassName =
   "w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-base text-ink placeholder:text-stone-400 focus:border-primary/40 focus:ring-4 focus:ring-primary/10";
+
+export const compactInputClassName =
+  "w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-sm text-ink placeholder:text-stone-400 focus:border-primary/40 focus:ring-4 focus:ring-primary/10";
 
 export function CheckboxPill({
   checked,

@@ -4,7 +4,9 @@ import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type {
+  AllyVolunteerAssignmentWithRelations,
   CartucheraDonation,
+  Collaborator,
   Workshop,
   WorkshopActivationToken,
   WorkshopHelpOfferWithRelations,
@@ -294,6 +296,77 @@ export async function getAdminVolunteersPageFromClient(
     limit,
     pageCount: Math.max(Math.ceil((count ?? 0) / limit), 1),
   };
+}
+
+export async function getAdminCollaboratorsPage({
+  page = 1,
+  limit = 20,
+  q,
+  status,
+  type,
+}: {
+  page?: number;
+  limit?: number;
+  q?: string;
+  status?: string;
+  type?: string;
+} = {}): Promise<PagedResult<Collaborator>> {
+  const admin = await createSupabaseServerClient();
+  page = Math.max(page, 1);
+  limit = Math.min(Math.max(limit, 1), 100);
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  let query = admin
+    .from("collaborators")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (q) {
+    query = query.or(`name.ilike.%${q}%,contact_name.ilike.%${q}%,email.ilike.%${q}%`);
+  }
+
+  if (status && status !== "all") query = query.eq("status", status);
+  if (type && type !== "all") query = query.eq("type", type);
+
+  const { data, count, error } = await query;
+  assertQueryOk(error, "No se pudieron cargar los colaboradores");
+
+  return {
+    items: (data ?? []) as Collaborator[],
+    total: count ?? 0,
+    page,
+    limit,
+    pageCount: Math.max(Math.ceil((count ?? 0) / limit), 1),
+  };
+}
+
+export async function getAdminVolunteerAssignments(): Promise<AllyVolunteerAssignmentWithRelations[]> {
+  const admin = await createSupabaseServerClient();
+  const { data, error } = await admin
+    .from("ally_volunteer_assignments")
+    .select(`
+      *,
+      ally:allies(id, name, slug),
+      volunteer:volunteers(*)
+    `)
+    .order("assigned_at", { ascending: false });
+
+  assertQueryOk(error, "No se pudieron cargar las asignaciones de voluntarios");
+  return (data ?? []) as AllyVolunteerAssignmentWithRelations[];
+}
+
+export async function getActiveVolunteers() {
+  const admin = await createSupabaseServerClient();
+  const { data, error } = await admin
+    .from("volunteers")
+    .select("*")
+    .eq("status", "activo")
+    .order("name", { ascending: true });
+
+  assertQueryOk(error, "No se pudieron cargar los voluntarios activos");
+  return data ?? [];
 }
 
 export async function getPublicWorkshopsPage({

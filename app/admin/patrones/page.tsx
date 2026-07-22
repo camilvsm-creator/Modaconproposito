@@ -7,6 +7,7 @@ import { AdminPageHeader } from "@/components/admin-page-header";
 import { AdminPagination } from "@/components/admin-pagination";
 import { UploadPatternForm } from "@/components/admin-upload-pattern-form";
 import { EmptyState } from "@/components/empty-state";
+import { Modal } from "@/components/modal";
 import { Button } from "@/components/ui";
 import { WorkshopStatusBadge } from "@/components/workshop-status-badge";
 import {
@@ -105,7 +106,11 @@ export default async function AdminPatronesPage({
         </div>
       </div>
 
-      <UploadPatternForm />
+      <div className="flex justify-end">
+        <Modal triggerLabel="Nuevo patron" title="Subir nuevo patrón" description="Carga un patrón estandarizado con sus archivos y metadatos." size="lg">
+          <UploadPatternForm />
+        </Modal>
+      </div>
 
       {result.items.length ? (
         <div className="space-y-4">
@@ -124,8 +129,6 @@ export default async function AdminPatronesPage({
               </thead>
               <tbody className="divide-y divide-stone-200">
                 {result.items.map((pattern) => {
-                  const statusFormId = `pattern-status-${pattern.id}`;
-                  const editFormId = `pattern-edit-${pattern.id}`;
                   const downloadUrl = getPatternDownloadUrl(pattern.file_path);
                   const imageUrl = getPatternImageUrl(pattern.image_path);
                   return (
@@ -134,40 +137,13 @@ export default async function AdminPatronesPage({
                         <span className="font-semibold text-ink">{pattern.title}</span>
                       </td>
                       <td className="px-4 py-3 align-top leading-tight">
-                        <form id={editFormId} action={handleUpdatePattern}>
-                          <input type="hidden" name="id" value={pattern.id} />
-                          <select
-                            name="difficulty"
-                            defaultValue={pattern.difficulty ?? ""}
-                            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
-                          >
-                            <option value="">Sin especificar</option>
-                            {PATTERN_DIFFICULTIES.map((d) => (
-                              <option key={d} value={d}>
-                                {PATTERN_DIFFICULTY_LABELS[d]}
-                              </option>
-                            ))}
-                          </select>
-                        </form>
+                        {pattern.difficulty ? PATTERN_DIFFICULTY_LABELS[pattern.difficulty] ?? pattern.difficulty : "—"}
                       </td>
                       <td className="px-4 py-3 align-top leading-tight">
                         <span className="text-stone-700">{pattern.category || "—"}</span>
                       </td>
                       <td className="px-4 py-3 align-top leading-tight">
-                        <form id={statusFormId} action={handleUpdateStatus}>
-                          <input type="hidden" name="id" value={pattern.id} />
-                          <select
-                            name="status"
-                            defaultValue={pattern.status}
-                            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
-                          >
-                            {PATTERN_STATUSES.map((s) => (
-                              <option key={s} value={s}>
-                                {s.charAt(0).toUpperCase() + s.slice(1)}
-                              </option>
-                            ))}
-                          </select>
-                        </form>
+                        <WorkshopStatusBadge value={pattern.status} />
                       </td>
                       <td className="px-4 py-3 align-top leading-tight">
                         <div className="flex items-center gap-2">
@@ -197,14 +173,29 @@ export default async function AdminPatronesPage({
                         {formatDate(pattern.created_at)}
                       </td>
                       <td className="px-4 py-3 align-top leading-tight">
-                        <div className="flex flex-col gap-2">
-                          <Button form={statusFormId} type="submit" variant="secondary" className="w-full text-sm">
-                            Cambiar estado
-                          </Button>
-                          <Button form={editFormId} type="submit" variant="ghost" className="w-full text-sm">
-                            Guardar cambios
-                          </Button>
-                        </div>
+                        <Modal triggerLabel="Gestionar" title={pattern.title} description="Edita dificultad y estado del patrón.">
+                          <div className="space-y-6">
+                            <form action={handleUpdatePattern} className="space-y-3">
+                              <input type="hidden" name="id" value={pattern.id} />
+                              <select name="difficulty" defaultValue={pattern.difficulty ?? ""} className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm">
+                                <option value="">Sin especificar</option>
+                                {PATTERN_DIFFICULTIES.map((d) => (
+                                  <option key={d} value={d}>{PATTERN_DIFFICULTY_LABELS[d]}</option>
+                                ))}
+                              </select>
+                              <Button type="submit" variant="secondary" className="text-sm">Guardar dificultad</Button>
+                            </form>
+                            <form action={handleUpdateStatus} className="space-y-3">
+                              <input type="hidden" name="id" value={pattern.id} />
+                              <select name="status" defaultValue={pattern.status} className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm">
+                                {PATTERN_STATUSES.map((s) => (
+                                  <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                                ))}
+                              </select>
+                              <Button type="submit" variant="ghost" className="text-sm">Guardar estado</Button>
+                            </form>
+                          </div>
+                        </Modal>
                       </td>
                     </tr>
                   );
@@ -252,19 +243,29 @@ export default async function AdminPatronesPage({
                     ) : null}
                   </div>
 
-                  <form action={handleUpdateStatus} className="space-y-3">
-                    <input type="hidden" name="id" value={pattern.id} />
-                    <select name="status" defaultValue={pattern.status} className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm">
-                      {PATTERN_STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                          {s.charAt(0).toUpperCase() + s.slice(1)}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="flex gap-2">
-                      <Button type="submit" variant="secondary" className="flex-1 text-sm">Cambiar estado</Button>
+                  <Modal triggerLabel="Gestionar" title={pattern.title} description="Edita dificultad y estado del patrón.">
+                    <div className="space-y-6">
+                      <form action={handleUpdatePattern} className="space-y-3">
+                        <input type="hidden" name="id" value={pattern.id} />
+                        <select name="difficulty" defaultValue={pattern.difficulty ?? ""} className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm">
+                          <option value="">Sin especificar</option>
+                          {PATTERN_DIFFICULTIES.map((d) => (
+                            <option key={d} value={d}>{PATTERN_DIFFICULTY_LABELS[d]}</option>
+                          ))}
+                        </select>
+                        <Button type="submit" variant="secondary" className="text-sm">Guardar dificultad</Button>
+                      </form>
+                      <form action={handleUpdateStatus} className="space-y-3">
+                        <input type="hidden" name="id" value={pattern.id} />
+                        <select name="status" defaultValue={pattern.status} className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm">
+                          {PATTERN_STATUSES.map((s) => (
+                            <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                          ))}
+                        </select>
+                        <Button type="submit" variant="ghost" className="text-sm">Guardar estado</Button>
+                      </form>
                     </div>
-                  </form>
+                  </Modal>
                 </div>
               );
             })}

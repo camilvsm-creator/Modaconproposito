@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { useState } from "react";
 
 import { createPatternAction } from "@/app/admin/patrones/actions";
-import { Button, InputShell, SectionCard, inputClassName } from "@/components/ui";
+import { Button, InputShell, compactInputClassName } from "@/components/ui";
 import { PATTERN_BUCKET, PATTERN_CATEGORIES, PATTERN_DIFFICULTIES, PATTERN_DIFFICULTY_LABELS } from "@/lib/constants";
 
 export function UploadPatternForm() {
@@ -94,23 +94,23 @@ export function UploadPatternForm() {
   }
 
   return (
-    <SectionCard className="p-6">
+    <div>
       <h2 className="mb-1 text-lg font-semibold text-ink">Subir nuevo patrón</h2>
       <p className="mb-4 text-sm text-stone-500">
         Subí un patrón estandarizado en formato PDF o imagen. Opcionalmente podés incluir una imagen de previsualización.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <InputShell label="Título *">
-          <input className={inputClassName} name="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <input className={compactInputClassName} name="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
         </InputShell>
 
         <InputShell label="Descripción">
-          <textarea className={inputClassName + " min-h-[80px]"} name="description" value={description} onChange={(e) => setDescription(e.target.value)} />
+          <textarea className={compactInputClassName + " min-h-[80px]"} name="description" value={description} onChange={(e) => setDescription(e.target.value)} />
         </InputShell>
 
         <div className="grid gap-4 md:grid-cols-2">
           <InputShell label="Dificultad">
-            <select className={inputClassName} name="difficulty" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+            <select className={compactInputClassName} name="difficulty" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
               <option value="">Sin especificar</option>
               {PATTERN_DIFFICULTIES.map((d) => (
                 <option key={d} value={d}>{PATTERN_DIFFICULTY_LABELS[d]}</option>
@@ -119,7 +119,7 @@ export function UploadPatternForm() {
           </InputShell>
 
           <InputShell label="Categoría">
-            <select className={inputClassName} name="category" value={category} onChange={(e) => setCategory(e.target.value)}>
+            <select className={compactInputClassName} name="category" value={category} onChange={(e) => setCategory(e.target.value)}>
               <option value="">Sin categoría</option>
               {PATTERN_CATEGORIES.map((c) => (
                 <option key={c} value={c}>{c}</option>
@@ -132,7 +132,7 @@ export function UploadPatternForm() {
           <input
             type="file"
             accept=".pdf,image/*"
-            className={inputClassName + " file:mr-3 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white"}
+            className={compactInputClassName + " file:mr-3 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white"}
             onChange={(e) => setPatternFile(e.target.files?.[0] ?? null)}
             required
           />
@@ -142,7 +142,7 @@ export function UploadPatternForm() {
           <input
             type="file"
             accept="image/*"
-            className={inputClassName + " file:mr-3 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white"}
+            className={compactInputClassName + " file:mr-3 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white"}
             onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
           />
         </InputShell>
@@ -154,6 +154,6 @@ export function UploadPatternForm() {
           {isPending ? "Subiendo..." : "Subir patrón"}
         </Button>
       </form>
-    </SectionCard>
+    </div>
   );
 }

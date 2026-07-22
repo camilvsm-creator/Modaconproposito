@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { AdminPageHeader } from "@/components/admin-page-header";
+import { Modal } from "@/components/modal";
 import { SectionCard, InputShell } from "@/components/ui";
 import { GenerateAccessButton } from "@/components/generate-access-button";
 import { deactivateWorkshopAction, reactivateWorkshopAction, updateWorkshopAction } from "@/app/admin/aliados/actions";
@@ -125,15 +126,19 @@ export default async function AdminTallerDetailPage({
               <GenerateAccessButton workshopId={taller.id} workshopName={taller.name} />
             ) : null}
             {taller.status === "desactivado" ? (
-              <form action={handleReactivate}>
-                <input type="hidden" name="id" value={taller.id} />
-                <button type="submit" className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-green-600 ring-1 ring-green-300 hover:bg-green-50 transition">Reactivar</button>
-              </form>
+              <Modal triggerLabel="Reactivar" title="Reactivar aliado" description="Confirma la reactivación de este aliado." triggerClassName="px-3 py-1.5 text-green-600 ring-1 ring-green-300 bg-white hover:bg-green-50">
+                <form action={handleReactivate}>
+                  <input type="hidden" name="id" value={taller.id} />
+                  <button type="submit" className="inline-flex items-center justify-center rounded-full bg-[#F74897] px-5 py-3 text-sm font-semibold text-white">Confirmar reactivacion</button>
+                </form>
+              </Modal>
             ) : taller.status === "activo" || taller.status === "pausado" ? (
-              <form action={handleDeactivate}>
-                <input type="hidden" name="id" value={taller.id} />
-                <button type="submit" className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-red-600 ring-1 ring-red-300 hover:bg-red-50 transition">Desactivar</button>
-              </form>
+              <Modal triggerLabel="Desactivar" title="Desactivar aliado" description="Confirma la desactivación de este aliado." triggerClassName="px-3 py-1.5 text-red-600 ring-1 ring-red-300 bg-white hover:bg-red-50">
+                <form action={handleDeactivate}>
+                  <input type="hidden" name="id" value={taller.id} />
+                  <button type="submit" className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-3 text-sm font-semibold text-white">Confirmar desactivacion</button>
+                </form>
+              </Modal>
             ) : null}
             <Link href={tabHref("editar")} className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-[#F74897] ring-1 ring-[#F74897]/40 hover:bg-[#F74897]/5 transition">Editar</Link>
           </div>

@@ -173,6 +173,20 @@ export type CollaboratorOfferWithRelations = CollaboratorOffer & {
   } | null;
 };
 
+export type Collaborator = {
+  id: string;
+  name: string;
+  type: string;
+  contact_name: string | null;
+  email: string | null;
+  phone: string | null;
+  location: string | null;
+  notes: string | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type CartucheraDonation = {
   id: string;
   donor_name: string;
@@ -223,6 +237,15 @@ export type AllyVolunteerAssignment = {
   notes: string | null;
   created_at: string | null;
   updated_at: string | null;
+};
+
+export type AllyVolunteerAssignmentWithRelations = AllyVolunteerAssignment & {
+  ally?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  volunteer?: Volunteer | null;
 };
 
 export type Volunteer = {

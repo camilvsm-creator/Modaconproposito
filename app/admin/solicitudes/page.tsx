@@ -1,7 +1,8 @@
 import { AdminPageHeader } from "@/components/admin-page-header";
 import { EmptyState } from "@/components/empty-state";
 import { GenerateRequesterAccessButton } from "@/components/generate-requester-access-button";
-import { Button, SectionCard, inputClassName } from "@/components/ui";
+import { Modal } from "@/components/modal";
+import { Button, SectionCard, compactInputClassName } from "@/components/ui";
 import {
   AID_REQUEST_STATUSES,
   AID_REQUEST_STATUS_LABELS,
@@ -63,49 +64,49 @@ export default async function AdminSolicitudesPage({
           navigation={{ baseHref: "/admin/entregas", baseLabel: "Entregas", currentLabel: "Solicitudes" }}
         />
 
-        <SectionCard className="p-6">
-          <h2 className="text-lg font-semibold text-ink">Organización</h2>
-          <form action={updateAidRequesterAction} className="mt-4 grid gap-4 md:grid-cols-2">
-            <input type="hidden" name="requesterId" value={requester.id} />
-            <input className={inputClassName} name="name" defaultValue={requester.name} required />
-            <select className={inputClassName} name="type" defaultValue={requester.type}>
-              {AID_REQUESTER_TYPES.map((type) => (
-                <option key={type} value={type}>{AID_REQUESTER_TYPE_LABELS[type]}</option>
-              ))}
-            </select>
-            <input className={inputClassName} name="contactName" defaultValue={requester.contact_name ?? ""} required />
-            <input className={inputClassName} name="email" type="email" defaultValue={requester.email ?? ""} />
-            <input className={inputClassName} name="phone" defaultValue={requester.phone ?? ""} />
-            <input className={inputClassName} name="location" defaultValue={requester.location ?? ""} />
-            <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="notes" defaultValue={requester.notes ?? ""} />
-            <div className="md:col-span-2 flex flex-wrap items-center gap-3">
-              <Button type="submit" variant="secondary">Actualizar organización</Button>
-              <span className={cn("inline-flex rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide", AID_REQUESTER_STATUS_TONES[requester.status] ?? "bg-stone-100 text-stone-600")}>{AID_REQUESTER_STATUS_LABELS[requester.status] ?? requester.status}</span>
-            </div>
-          </form>
-        </SectionCard>
+        <div className="flex flex-wrap justify-end gap-3">
+          <Modal triggerLabel="Editar organizacion" title="Organización" description="Actualiza los datos principales de tu organización.">
+            <form action={updateAidRequesterAction} className="grid gap-4 md:grid-cols-2">
+              <input type="hidden" name="requesterId" value={requester.id} />
+              <input className={compactInputClassName} name="name" defaultValue={requester.name} required />
+              <select className={compactInputClassName} name="type" defaultValue={requester.type}>
+                {AID_REQUESTER_TYPES.map((type) => (
+                  <option key={type} value={type}>{AID_REQUESTER_TYPE_LABELS[type]}</option>
+                ))}
+              </select>
+              <input className={compactInputClassName} name="contactName" defaultValue={requester.contact_name ?? ""} required />
+              <input className={compactInputClassName} name="email" type="email" defaultValue={requester.email ?? ""} />
+              <input className={compactInputClassName} name="phone" defaultValue={requester.phone ?? ""} />
+              <input className={compactInputClassName} name="location" defaultValue={requester.location ?? ""} />
+              <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="notes" defaultValue={requester.notes ?? ""} />
+              <div className="md:col-span-2 flex flex-wrap items-center gap-3">
+                <Button type="submit" variant="secondary">Actualizar organización</Button>
+                <span className={cn("inline-flex rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide", AID_REQUESTER_STATUS_TONES[requester.status] ?? "bg-stone-100 text-stone-600")}>{AID_REQUESTER_STATUS_LABELS[requester.status] ?? requester.status}</span>
+              </div>
+            </form>
+          </Modal>
 
-        <SectionCard className="p-6">
-          <h2 className="text-lg font-semibold text-ink">Nueva solicitud</h2>
-          <form action={createAidRequestAction} className="mt-4 grid gap-4 md:grid-cols-2">
-            <input className={inputClassName} name="title" required placeholder="Título" />
-            <select className={inputClassName} name="urgency" defaultValue="">
-              <option value="">Urgencia</option>
-              {URGENCY_LEVELS.map((level) => (
-                <option key={level} value={level}>{URGENCY_LABELS[level]}</option>
-              ))}
-            </select>
-            <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="description" placeholder="Describe la necesidad" />
-            <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="requestedItems" placeholder="Ej. 10 franelas talla mixta para refugio temporal" />
-            <div className="md:col-span-2">
-              <Button type="submit">Registrar solicitud</Button>
-            </div>
-          </form>
-        </SectionCard>
+          <Modal triggerLabel="Nueva solicitud" title="Nueva solicitud" description="Registra una nueva necesidad para tu organización.">
+            <form action={createAidRequestAction} className="grid gap-4 md:grid-cols-2">
+              <input className={compactInputClassName} name="title" required placeholder="Título" />
+              <select className={compactInputClassName} name="urgency" defaultValue="">
+                <option value="">Urgencia</option>
+                {URGENCY_LEVELS.map((level) => (
+                  <option key={level} value={level}>{URGENCY_LABELS[level]}</option>
+                ))}
+              </select>
+              <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="description" placeholder="Describe la necesidad" />
+              <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="requestedItems" placeholder="Ej. 10 franelas talla mixta para refugio temporal" />
+              <div className="md:col-span-2">
+                <Button type="submit">Registrar solicitud</Button>
+              </div>
+            </form>
+          </Modal>
+        </div>
 
         <form action="/admin/solicitudes" method="get" className="grid gap-3 md:grid-cols-[1fr_220px_auto]">
-          <input className={inputClassName} name="q" defaultValue={q ?? ""} placeholder="Buscar por título o descripción" />
-          <select className={inputClassName} name="status" defaultValue={status ?? "all"}>
+          <input className={compactInputClassName} name="q" defaultValue={q ?? ""} placeholder="Buscar por título o descripción" />
+          <select className={compactInputClassName} name="status" defaultValue={status ?? "all"}>
             <option value="all">Todos los estados</option>
             {AID_REQUEST_STATUSES.map((item) => (
               <option key={item} value={item}>{AID_REQUEST_STATUS_LABELS[item]}</option>
@@ -132,21 +133,23 @@ export default async function AdminSolicitudesPage({
                   </div>
 
                   {canEdit ? (
-                    <form action={updateAidRequestAction} className="grid gap-3 rounded-lg border border-stone-200 p-4 md:grid-cols-2">
-                      <input type="hidden" name="requestId" value={request.id} />
-                      <input className={inputClassName} name="title" defaultValue={request.title} required />
-                      <select className={inputClassName} name="urgency" defaultValue={request.urgency ?? ""}>
-                        <option value="">Urgencia</option>
-                        {URGENCY_LEVELS.map((level) => (
-                          <option key={level} value={level}>{URGENCY_LABELS[level]}</option>
-                        ))}
-                      </select>
-                      <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="description" defaultValue={request.description ?? ""} />
-                      <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="requestedItems" defaultValue={request.requested_items ?? ""} />
-                      <div className="md:col-span-2">
-                        <Button type="submit" variant="secondary">Actualizar solicitud</Button>
-                      </div>
-                    </form>
+                    <Modal triggerLabel="Editar solicitud" title={request.title} description="Actualiza esta solicitud mientras siga abierta o en revisión.">
+                      <form action={updateAidRequestAction} className="grid gap-3 md:grid-cols-2">
+                        <input type="hidden" name="requestId" value={request.id} />
+                        <input className={compactInputClassName} name="title" defaultValue={request.title} required />
+                        <select className={compactInputClassName} name="urgency" defaultValue={request.urgency ?? ""}>
+                          <option value="">Urgencia</option>
+                          {URGENCY_LEVELS.map((level) => (
+                            <option key={level} value={level}>{URGENCY_LABELS[level]}</option>
+                          ))}
+                        </select>
+                        <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="description" defaultValue={request.description ?? ""} />
+                        <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="requestedItems" defaultValue={request.requested_items ?? ""} />
+                        <div className="md:col-span-2">
+                          <Button type="submit" variant="secondary">Actualizar solicitud</Button>
+                        </div>
+                      </form>
+                    </Modal>
                   ) : null}
 
                   {request.tasks?.length ? (
@@ -192,68 +195,68 @@ export default async function AdminSolicitudesPage({
         navigation={{ baseHref: "/admin/aliados", baseLabel: "Aliados", currentLabel: "Solicitudes" }}
       />
 
-      <SectionCard className="p-6">
-        <h2 className="text-lg font-semibold text-ink">Crear solicitante</h2>
-        <form action={createAidRequesterAction} className="mt-4 grid gap-4 md:grid-cols-2">
-          <input className={inputClassName} name="name" required placeholder="Nombre de la organización" />
-          <select className={inputClassName} name="type" defaultValue="institucion">
+      <div className="flex flex-wrap justify-end gap-3">
+        <Modal triggerLabel="Nuevo solicitante" title="Crear solicitante" description="Registra una nueva organización solicitante.">
+        <form action={createAidRequesterAction} className="grid gap-4 md:grid-cols-2">
+          <input className={compactInputClassName} name="name" required placeholder="Nombre de la organización" />
+          <select className={compactInputClassName} name="type" defaultValue="institucion">
             {AID_REQUESTER_TYPES.map((type) => (
               <option key={type} value={type}>{AID_REQUESTER_TYPE_LABELS[type]}</option>
             ))}
           </select>
-          <input className={inputClassName} name="contactName" required placeholder="Persona responsable" />
-          <input className={inputClassName} name="email" type="email" placeholder="Correo de contacto" />
-          <input className={inputClassName} name="phone" placeholder="Teléfono" />
-          <input className={inputClassName} name="location" placeholder="Ubicación" />
-          <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="notes" placeholder="Notas" />
+          <input className={compactInputClassName} name="contactName" required placeholder="Persona responsable" />
+          <input className={compactInputClassName} name="email" type="email" placeholder="Correo de contacto" />
+          <input className={compactInputClassName} name="phone" placeholder="Teléfono" />
+          <input className={compactInputClassName} name="location" placeholder="Ubicación" />
+          <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="notes" placeholder="Notas" />
           <div className="md:col-span-2">
             <Button type="submit">Guardar solicitante</Button>
           </div>
         </form>
-      </SectionCard>
+        </Modal>
 
-      <SectionCard className="p-6">
-        <h2 className="text-lg font-semibold text-ink">Crear solicitud desde admin</h2>
-        <form action={createAidRequestAction} className="mt-4 grid gap-4 md:grid-cols-2">
-          <select className={inputClassName} name="requesterId" required defaultValue="">
+        <Modal triggerLabel="Nueva solicitud" title="Crear solicitud desde admin" description="Registra una solicitud en nombre de un solicitante existente.">
+        <form action={createAidRequestAction} className="grid gap-4 md:grid-cols-2">
+          <select className={compactInputClassName} name="requesterId" required defaultValue="">
             <option value="" disabled>Selecciona solicitante</option>
             {requesters.map((requester) => (
               <option key={requester.id} value={requester.id}>{requester.name}</option>
             ))}
           </select>
-          <input className={inputClassName} name="title" required placeholder="Título" />
-          <select className={inputClassName} name="urgency" defaultValue="">
+          <input className={compactInputClassName} name="title" required placeholder="Título" />
+          <select className={compactInputClassName} name="urgency" defaultValue="">
             <option value="">Urgencia</option>
             {URGENCY_LEVELS.map((level) => (
               <option key={level} value={level}>{URGENCY_LABELS[level]}</option>
             ))}
           </select>
           <div className="hidden md:block" />
-          <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="description" placeholder="Describe la necesidad" />
-          <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="requestedItems" placeholder="Resultado esperado o cantidades solicitadas" />
+          <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="description" placeholder="Describe la necesidad" />
+          <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="requestedItems" placeholder="Resultado esperado o cantidades solicitadas" />
           <div className="md:col-span-2">
             <Button type="submit">Registrar solicitud</Button>
           </div>
         </form>
-      </SectionCard>
+        </Modal>
+      </div>
 
       <SectionCard className="p-6">
         <h2 className="text-lg font-semibold text-ink">Filtros</h2>
         <form action="/admin/solicitudes" method="get" className="mt-4 grid gap-3 md:grid-cols-5">
-          <input className={inputClassName} name="q" defaultValue={q ?? ""} placeholder="Buscar texto" />
-          <select className={inputClassName} name="status" defaultValue={status ?? "all"}>
+          <input className={compactInputClassName} name="q" defaultValue={q ?? ""} placeholder="Buscar texto" />
+          <select className={compactInputClassName} name="status" defaultValue={status ?? "all"}>
             <option value="all">Estado solicitud</option>
             {AID_REQUEST_STATUSES.map((item) => (
               <option key={item} value={item}>{AID_REQUEST_STATUS_LABELS[item]}</option>
             ))}
           </select>
-          <select className={inputClassName} name="requesterStatus" defaultValue={requesterStatus ?? "all"}>
+          <select className={compactInputClassName} name="requesterStatus" defaultValue={requesterStatus ?? "all"}>
             <option value="all">Estado solicitante</option>
             <option value="activo">Activo</option>
             <option value="pausado">Pausado</option>
             <option value="inactivo">Inactivo</option>
           </select>
-          <select className={inputClassName} name="requesterType" defaultValue={requesterType ?? "all"}>
+          <select className={compactInputClassName} name="requesterType" defaultValue={requesterType ?? "all"}>
             <option value="all">Tipo solicitante</option>
             {AID_REQUESTER_TYPES.map((type) => (
               <option key={type} value={type}>{AID_REQUESTER_TYPE_LABELS[type]}</option>
@@ -274,24 +277,28 @@ export default async function AdminSolicitudesPage({
                 <span className="rounded-full bg-stone-100 px-2.5 py-1 text-sm font-semibold uppercase tracking-wide text-stone-700">{AID_REQUESTER_TYPE_LABELS[requester.type] ?? requester.type}</span>
               </div>
 
-              <form action={updateAidRequesterAction} className="grid gap-3 md:grid-cols-2 rounded-lg border border-stone-200 p-4">
-                <input type="hidden" name="requesterId" value={requester.id} />
-                <input className={inputClassName} name="name" defaultValue={requester.name} required />
-                <select className={inputClassName} name="type" defaultValue={requester.type}>
-                  {AID_REQUESTER_TYPES.map((type) => (
-                    <option key={type} value={type}>{AID_REQUESTER_TYPE_LABELS[type]}</option>
-                  ))}
-                </select>
-                <input className={inputClassName} name="contactName" defaultValue={requester.contact_name ?? ""} required />
-                <input className={inputClassName} name="email" type="email" defaultValue={requester.email ?? ""} />
-                <input className={inputClassName} name="phone" defaultValue={requester.phone ?? ""} />
-                <input className={inputClassName} name="location" defaultValue={requester.location ?? ""} />
-                <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="notes" defaultValue={requester.notes ?? ""} />
-                <div className="md:col-span-2 flex flex-wrap items-center gap-3">
-                  <Button type="submit" variant="secondary">Actualizar solicitante</Button>
-                  {!requester.user_id ? <GenerateRequesterAccessButton requesterId={requester.id} requesterName={requester.name} /> : <span className="text-sm text-stone-500">Cuenta vinculada</span>}
-                </div>
-              </form>
+              <div className="flex flex-wrap gap-3">
+                <Modal triggerLabel="Editar solicitante" title={requester.name} description="Actualiza los datos del solicitante.">
+                  <form action={updateAidRequesterAction} className="grid gap-3 md:grid-cols-2">
+                    <input type="hidden" name="requesterId" value={requester.id} />
+                    <input className={compactInputClassName} name="name" defaultValue={requester.name} required />
+                    <select className={compactInputClassName} name="type" defaultValue={requester.type}>
+                      {AID_REQUESTER_TYPES.map((type) => (
+                        <option key={type} value={type}>{AID_REQUESTER_TYPE_LABELS[type]}</option>
+                      ))}
+                    </select>
+                    <input className={compactInputClassName} name="contactName" defaultValue={requester.contact_name ?? ""} required />
+                    <input className={compactInputClassName} name="email" type="email" defaultValue={requester.email ?? ""} />
+                    <input className={compactInputClassName} name="phone" defaultValue={requester.phone ?? ""} />
+                    <input className={compactInputClassName} name="location" defaultValue={requester.location ?? ""} />
+                    <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="notes" defaultValue={requester.notes ?? ""} />
+                    <div className="md:col-span-2">
+                      <Button type="submit" variant="secondary">Actualizar solicitante</Button>
+                    </div>
+                  </form>
+                </Modal>
+                {!requester.user_id ? <GenerateRequesterAccessButton requesterId={requester.id} requesterName={requester.name} /> : <span className="text-sm text-stone-500">Cuenta vinculada</span>}
+              </div>
 
               <div className="flex flex-wrap gap-2">
                 {(["activo", "pausado", "inactivo"] as const).map((nextStatus) => (
@@ -323,28 +330,31 @@ export default async function AdminSolicitudesPage({
                 <p className="text-sm text-stone-500">Registrada: {formatDate(request.created_at)}</p>
               </div>
 
-              <form action={updateAidRequestAction} className="grid gap-3 rounded-lg border border-stone-200 p-4 md:grid-cols-2">
-                <input type="hidden" name="requestId" value={request.id} />
-                <input className={inputClassName} name="title" defaultValue={request.title} required />
-                <select className={inputClassName} name="status" defaultValue={request.status}>
-                  {AID_REQUEST_STATUSES.map((item) => (
-                    <option key={item} value={item}>{AID_REQUEST_STATUS_LABELS[item]}</option>
-                  ))}
-                </select>
-                <select className={inputClassName} name="urgency" defaultValue={request.urgency ?? ""}>
-                  <option value="">Urgencia</option>
-                  {URGENCY_LEVELS.map((level) => (
-                    <option key={level} value={level}>{URGENCY_LABELS[level]}</option>
-                  ))}
-                </select>
-                <div className="hidden md:block" />
-                <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="description" defaultValue={request.description ?? ""} />
-                <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="requestedItems" defaultValue={request.requested_items ?? ""} />
-                <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="adminNotes" defaultValue={request.admin_notes ?? ""} placeholder="Notas internas de revisión" />
-                <div className="md:col-span-2">
-                  <Button type="submit" variant="secondary">Actualizar solicitud</Button>
-                </div>
-              </form>
+              <div className="flex flex-wrap gap-3">
+                <Modal triggerLabel="Editar solicitud" title={request.title} description="Actualiza la solicitud y sus notas internas.">
+                  <form action={updateAidRequestAction} className="grid gap-3 md:grid-cols-2">
+                    <input type="hidden" name="requestId" value={request.id} />
+                    <input className={compactInputClassName} name="title" defaultValue={request.title} required />
+                    <select className={compactInputClassName} name="status" defaultValue={request.status}>
+                      {AID_REQUEST_STATUSES.map((item) => (
+                        <option key={item} value={item}>{AID_REQUEST_STATUS_LABELS[item]}</option>
+                      ))}
+                    </select>
+                    <select className={compactInputClassName} name="urgency" defaultValue={request.urgency ?? ""}>
+                      <option value="">Urgencia</option>
+                      {URGENCY_LEVELS.map((level) => (
+                        <option key={level} value={level}>{URGENCY_LABELS[level]}</option>
+                      ))}
+                    </select>
+                    <div className="hidden md:block" />
+                    <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="description" defaultValue={request.description ?? ""} />
+                    <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="requestedItems" defaultValue={request.requested_items ?? ""} />
+                    <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="adminNotes" defaultValue={request.admin_notes ?? ""} placeholder="Notas internas de revisión" />
+                    <div className="md:col-span-2">
+                      <Button type="submit" variant="secondary">Actualizar solicitud</Button>
+                    </div>
+                  </form>
+                </Modal>
 
               {request.tasks?.length ? (
                 <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
@@ -357,31 +367,34 @@ export default async function AdminSolicitudesPage({
                 </div>
               ) : null}
 
-              {request.status !== "cerrada" ? (
-                <form action={createTaskFromAidRequestAction} className="grid gap-3 rounded-lg border border-stone-200 p-4 md:grid-cols-2">
-                  <input type="hidden" name="requestId" value={request.id} />
-                  <select className={inputClassName} name="allyId" required defaultValue="">
-                    <option value="" disabled>Selecciona aliado</option>
-                    {allies.map((ally) => (
-                      <option key={ally.id} value={ally.id}>{ally.name}</option>
-                    ))}
-                  </select>
-                  <input className={inputClassName} name="title" required defaultValue={request.title} placeholder="Título de la tarea" />
-                  <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="description" defaultValue={request.description ?? ""} placeholder="Descripción de la tarea" />
-                  <input className={inputClassName} name="expectedOutput" defaultValue={request.requested_items ?? ""} placeholder="Resultado esperado" />
-                  <input className={inputClassName} name="dueDate" type="date" />
-                  <select className={inputClassName} name="urgency" defaultValue={request.urgency ?? ""}>
-                    <option value="">Urgencia</option>
-                    {URGENCY_LEVELS.map((level) => (
-                      <option key={level} value={level}>{URGENCY_LABELS[level]}</option>
-                    ))}
-                  </select>
-                  <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="adminNotes" defaultValue={request.admin_notes ?? ""} placeholder="Notas internas para la tarea" />
-                  <div className="md:col-span-2">
-                    <Button type="submit">Crear tarea desde solicitud</Button>
-                  </div>
-                </form>
-              ) : null}
+                {request.status !== "cerrada" ? (
+                  <Modal triggerLabel="Crear tarea" title="Crear tarea desde solicitud" description="Convierte esta solicitud en una tarea para un aliado.">
+                    <form action={createTaskFromAidRequestAction} className="grid gap-3 md:grid-cols-2">
+                      <input type="hidden" name="requestId" value={request.id} />
+                      <select className={compactInputClassName} name="allyId" required defaultValue="">
+                        <option value="" disabled>Selecciona aliado</option>
+                        {allies.map((ally) => (
+                          <option key={ally.id} value={ally.id}>{ally.name}</option>
+                        ))}
+                      </select>
+                      <input className={compactInputClassName} name="title" required defaultValue={request.title} placeholder="Título de la tarea" />
+                      <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="description" defaultValue={request.description ?? ""} placeholder="Descripción de la tarea" />
+                      <input className={compactInputClassName} name="expectedOutput" defaultValue={request.requested_items ?? ""} placeholder="Resultado esperado" />
+                      <input className={compactInputClassName} name="dueDate" type="date" />
+                      <select className={compactInputClassName} name="urgency" defaultValue={request.urgency ?? ""}>
+                        <option value="">Urgencia</option>
+                        {URGENCY_LEVELS.map((level) => (
+                          <option key={level} value={level}>{URGENCY_LABELS[level]}</option>
+                        ))}
+                      </select>
+                      <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="adminNotes" defaultValue={request.admin_notes ?? ""} placeholder="Notas internas para la tarea" />
+                      <div className="md:col-span-2">
+                        <Button type="submit">Crear tarea desde solicitud</Button>
+                      </div>
+                    </form>
+                  </Modal>
+                ) : null}
+              </div>
             </SectionCard>
           ))}
         </div>

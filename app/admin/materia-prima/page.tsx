@@ -2,7 +2,8 @@ import Link from "next/link";
 
 import { AdminPageHeader } from "@/components/admin-page-header";
 import { EmptyState } from "@/components/empty-state";
-import { Button, SectionCard, inputClassName } from "@/components/ui";
+import { Modal } from "@/components/modal";
+import { Button, SectionCard, compactInputClassName } from "@/components/ui";
 import {
   RAW_MATERIAL_ASSIGNMENT_STATUS_LABELS,
   RAW_MATERIAL_ASSIGNMENT_STATUS_TONES,
@@ -81,49 +82,50 @@ export default async function AdminMaterialesPage() {
         navigation={{ baseHref: "/admin/aliados", baseLabel: "Aliados", currentLabel: "Materia prima" }}
       />
 
-      <SectionCard className="p-6">
-        <h2 className="text-lg font-semibold text-ink">Cargar materia prima</h2>
-        <form action={createRawMaterialAction} className="mt-4 grid gap-4 md:grid-cols-2">
-          <input className={inputClassName} name="name" required placeholder="Nombre" />
-          <input className={inputClassName} name="category" placeholder="Categoría" />
-          <input className={inputClassName} name="unit" placeholder="Unidad (metros, conos, kg...)" />
-          <input className={inputClassName} name="stockQuantity" type="number" min="0" step="0.01" placeholder="Stock inicial" />
-          <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="description" placeholder="Descripción" />
-          <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="notes" placeholder="Notas" />
-          <div className="md:col-span-2">
-            <Button type="submit">Guardar materia prima</Button>
-          </div>
-        </form>
-      </SectionCard>
-
-      {materials.length ? (
-        <SectionCard className="p-6">
-          <h2 className="text-lg font-semibold text-ink">Registrar movimiento</h2>
-          <p className="mt-2 text-sm text-stone-500">
-            Usa entradas, devoluciones, mermas o ajustes para mantener el inventario real. En ajustes puedes usar valores positivos o negativos.
-          </p>
-          <form action={registerRawMaterialMovementAction} className="mt-4 grid gap-4 md:grid-cols-2">
-            <select className={inputClassName} name="rawMaterialId" required defaultValue="">
-              <option value="" disabled>Selecciona materia prima</option>
-              {materials.map((material) => (
-                <option key={material.id} value={material.id}>{material.name}</option>
-              ))}
-            </select>
-            <select className={inputClassName} name="movementType" required defaultValue="entrada">
-              <option value="entrada">Entrada</option>
-              <option value="devolucion">Devolución</option>
-              <option value="merma">Merma</option>
-              <option value="ajuste">Ajuste</option>
-            </select>
-            <input className={inputClassName} name="quantity" type="number" step="0.01" required placeholder="Cantidad" />
-            <div className="hidden md:block" />
-            <textarea className={`${inputClassName} min-h-[100px] md:col-span-2`} name="notes" placeholder="Motivo o detalle del movimiento" />
+      <div className="flex flex-wrap justify-end gap-3">
+        <Modal triggerLabel="Nueva materia prima" title="Cargar materia prima" description="Registra un nuevo insumo con stock inicial y datos base.">
+          <form action={createRawMaterialAction} className="grid gap-4 md:grid-cols-2">
+            <input className={compactInputClassName} name="name" required placeholder="Nombre" />
+            <input className={compactInputClassName} name="category" placeholder="Categoria" />
+            <input className={compactInputClassName} name="unit" placeholder="Unidad (metros, conos, kg...)" />
+            <input className={compactInputClassName} name="stockQuantity" type="number" min="0" step="0.01" placeholder="Stock inicial" />
+            <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="description" placeholder="Descripcion" />
+            <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="notes" placeholder="Notas" />
             <div className="md:col-span-2">
-              <Button type="submit" variant="secondary">Registrar movimiento</Button>
+              <Button type="submit">Guardar materia prima</Button>
             </div>
           </form>
-        </SectionCard>
-      ) : null}
+        </Modal>
+
+        {materials.length ? (
+          <Modal
+            triggerLabel="Registrar movimiento"
+            title="Registrar movimiento"
+            description="Usa entradas, devoluciones, mermas o ajustes para mantener el inventario real."
+          >
+            <form action={registerRawMaterialMovementAction} className="grid gap-4 md:grid-cols-2">
+              <select className={compactInputClassName} name="rawMaterialId" required defaultValue="">
+                <option value="" disabled>Selecciona materia prima</option>
+                {materials.map((material) => (
+                  <option key={material.id} value={material.id}>{material.name}</option>
+                ))}
+              </select>
+              <select className={compactInputClassName} name="movementType" required defaultValue="entrada">
+                <option value="entrada">Entrada</option>
+                <option value="devolucion">Devolucion</option>
+                <option value="merma">Merma</option>
+                <option value="ajuste">Ajuste</option>
+              </select>
+              <input className={compactInputClassName} name="quantity" type="number" step="0.01" required placeholder="Cantidad" />
+              <div className="hidden md:block" />
+              <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="notes" placeholder="Motivo o detalle del movimiento" />
+              <div className="md:col-span-2">
+                <Button type="submit" variant="secondary">Registrar movimiento</Button>
+              </div>
+            </form>
+          </Modal>
+        ) : null}
+      </div>
 
       {materials.length ? (
         <SectionCard className="overflow-hidden">
