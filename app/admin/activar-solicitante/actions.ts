@@ -73,10 +73,14 @@ export async function activateRequesterFromTokenAction(formData: FormData): Prom
     return { error: "Cuenta creada pero no se pudo vincular al solicitante. Contacta al equipo." };
   }
 
-  await admin
+  const { error: tokenError } = await admin
     .from("aid_requester_activation_tokens")
     .update({ used_at: now })
     .eq("id", activationToken.id);
+
+  if (tokenError) {
+    return { error: "Cuenta activada, pero no se pudo cerrar el enlace de activación. Contacta al equipo." };
+  }
 
   revalidatePath("/admin/solicitudes");
   revalidatePath("/admin/entregas");

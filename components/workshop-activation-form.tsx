@@ -72,7 +72,7 @@ export function WorkshopActivationForm({
         <p className="text-sm leading-6 text-stone-600">
           Tu acceso fue activado correctamente. Ya puedes entrar al panel con tu correo y la contraseña que acabas de definir.
         </p>
-        <Button type="button" onClick={() => (window.location.href = "/admin")}>Ir al acceso admin</Button>
+        <Button type="button" onClick={() => (window.location.href = "/admin")}>Ir al login</Button>
       </SectionCard>
     );
   }

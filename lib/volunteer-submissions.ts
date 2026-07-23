@@ -35,18 +35,20 @@ export async function submitVolunteerRegistration(
 
   const supabase = createSupabasePublicClient();
 
-  const { error } = await supabase.from("volunteer_submissions").insert({
-    full_name: fullName,
+  const { error } = await supabase.from("volunteers").insert({
+    name: fullName,
     email,
-    phone: phone || null,
-    whatsapp: whatsapp || null,
+    phone: whatsapp || phone || null,
     state,
     city,
-    municipality: municipality || null,
-    experience_area: experienceArea,
+    skills: experienceArea,
     availability,
-    experience_description: experienceDescription,
-    how_did_you_find_out: howDidYouFindOut || null,
+    notes: [
+      municipality ? `Municipio: ${municipality}` : null,
+      experienceDescription ? `Experiencia: ${experienceDescription}` : null,
+      howDidYouFindOut ? `Cómo se enteró: ${howDidYouFindOut}` : null,
+    ].filter(Boolean).join("\n\n") || null,
+    status: "activo",
   });
 
   if (error) {

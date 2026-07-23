@@ -133,12 +133,22 @@ export async function createAidRequestAction(formData: FormData): Promise<void> 
   if (!title) throw new Error("El título de la solicitud es obligatorio.");
 
   let requesterId = requesterIdFromForm;
+  let requesterStatus: string | null = null;
   if (role === "solicitante") {
     const requester = await getRequesterByUserId(user.id);
     if (!requester) throw new Error("Tu cuenta no está vinculada a un solicitante.");
     requesterId = requester.id;
+    requesterStatus = requester.status;
   } else if (!requesterId) {
     throw new Error("Selecciona un solicitante.");
+  } else {
+    const requester = await getAidRequesterById(requesterId);
+    if (!requester) throw new Error("El solicitante no existe.");
+    requesterStatus = requester.status;
+  }
+
+  if (requesterStatus !== "activo") {
+    throw new Error("Solo puedes crear solicitudes para solicitantes activos.");
   }
 
   const { error } = await admin.from("aid_requests").insert({
@@ -242,6 +252,22 @@ export async function createTaskFromAidRequestAction(formData: FormData): Promis
 
   if (!requestId || !allyId) throw new Error("Selecciona la solicitud y el aliado.");
   if (!title) throw new Error("El título de la tarea es obligatorio.");
+
+  const request = await getAidRequestById(requestId);
+  if (!request) throw new Error("La solicitud no existe.");
+  if (request.status === "cerrada") throw new Error("No puedes convertir una solicitud cerrada en tarea.");
+
+  const { data: ally, error: allyError } = await admin
+    .from("allies")
+    .select("id, status")
+    .eq("id", allyId)
+    .maybeSingle();
+
+  if (allyError) throw new Error(allyError.message);
+  if (!ally) throw new Error("El aliado no existe.");
+  if (!["activo", "pausado", "approved_pending_activation"].includes(ally.status)) {
+    throw new Error("Solo puedes crear tareas para aliados activos o aprobados.");
+  }
 
   const { error } = await admin.from("assigned_tasks").insert({
     ally_id: allyId,

@@ -101,16 +101,24 @@ export async function activateWorkshopFromTokenAction(formData: FormData): Promi
     return { error: "Cuenta creada pero no se pudo vincular al taller. Contacta al equipo." };
   }
 
-  await admin.from("user_allies").insert({
+  const { error: linkError } = await admin.from("user_allies").insert({
     user_id: createdUser.user.id,
     ally_id: workshop.id,
     ally_role: "owner",
   });
 
-  await admin
+  if (linkError) {
+    return { error: "Cuenta creada pero no se pudo vincular el acceso al aliado. Contacta al equipo." };
+  }
+
+  const { error: tokenError } = await admin
     .from("ally_activation_tokens")
     .update({ used_at: now })
     .eq("id", activationToken.id);
+
+  if (tokenError) {
+    return { error: "Cuenta activada, pero no se pudo cerrar el enlace de activación. Contacta al equipo." };
+  }
 
   revalidatePath("/admin/aliados");
   revalidatePath(`/admin/aliados/${workshop.id}`);

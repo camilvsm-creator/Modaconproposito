@@ -12,12 +12,16 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const hdrs = await headers();
   const pathname = hdrs.get("x-pathname") ?? "/admin";
   const context = getContextFromHeaders(hdrs);
+  const isPublicActivation = pathname.startsWith("/admin/activar-aliado") || pathname.startsWith("/admin/activar-solicitante");
+
+  if (isPublicActivation) return <>{children}</>;
+
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase.auth.getUser();
   const user = data.user;
 
   if (!user) {
-    if (pathname !== "/admin" && !pathname.startsWith("/admin/activar-aliado")) redirect("/admin");
+    if (pathname !== "/admin") redirect("/admin");
     return <>{children}</>;
   }
 
