@@ -13,6 +13,7 @@ type ModalProps = {
   triggerVariant?: "primary" | "secondary" | "ghost";
   triggerClassName?: string;
   size?: "md" | "lg" | "xl";
+  /** Deprecated: native server action forms must stay mounted while submitting. */
   closeOnSubmit?: boolean;
 };
 
@@ -30,7 +31,6 @@ export function Modal({
   triggerVariant = "secondary",
   triggerClassName,
   size = "lg",
-  closeOnSubmit = true,
 }: ModalProps) {
   const [open, setOpen] = useState(false);
 
@@ -60,14 +60,7 @@ export function Modal({
               </button>
             </div>
 
-            <div
-              className="mt-4 max-h-[75vh] overflow-y-auto pr-1"
-              onSubmitCapture={(event) => {
-                if (closeOnSubmit && event.target instanceof HTMLFormElement) {
-                  setOpen(false);
-                }
-              }}
-            >
+            <div className="mt-4 max-h-[75vh] overflow-y-auto pr-1">
               {children}
             </div>
           </div>
