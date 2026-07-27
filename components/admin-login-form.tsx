@@ -80,7 +80,7 @@ export function AdminLoginForm() {
           <h2 className="mt-3 text-2xl font-black tracking-[-0.03em] text-ink lg:text-3xl">
             Red de Aliados Promoda
           </h2>
-          <p className="mt-4 max-w-sm text-sm leading-relaxed text-stone-500">
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-gray-500">
             Plataforma para coordinar aliados, voluntarios y recursos de
             clasificación textil con aliados y voluntarios verificados.
           </p>
@@ -94,7 +94,7 @@ export function AdminLoginForm() {
             <h1 className="text-2xl font-bold text-ink">
               Panel de administración
             </h1>
-            <p className="mt-2 text-sm text-stone-500">
+            <p className="mt-2 text-sm text-gray-500">
               Ingresa para gestionar tu aliado y coordinar la ayuda textil.
             </p>
           </div>
@@ -102,7 +102,7 @@ export function AdminLoginForm() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1">
               <label
-                className="text-sm font-medium text-stone-700"
+                className="text-sm font-medium text-gray-700"
                 htmlFor="login-email"
               >
                 Correo electrónico
@@ -120,7 +120,7 @@ export function AdminLoginForm() {
 
             <div className="space-y-1">
               <label
-                className="text-sm font-medium text-stone-700"
+                className="text-sm font-medium text-gray-700"
                 htmlFor="login-password"
               >
                 Contraseña
@@ -137,7 +137,7 @@ export function AdminLoginForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   tabIndex={-1}
                 >
                   {showPassword ? (

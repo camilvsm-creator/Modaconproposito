@@ -21,6 +21,12 @@ async function verifyAllyAccess(
     return ally?.id === allyId ? ally : null;
   }
 
+  if (role === "admin") {
+    const { data: ally, error } = await admin.from("allies").select("id, slug").eq("id", allyId).maybeSingle();
+    if (error) throw new Error(error.message);
+    return ally;
+  }
+
   return null;
 }
 
@@ -96,6 +102,7 @@ export async function createWorkshopNeedAction(formData: FormData): Promise<Resu
   const description = String(formData.get("description") || "").trim();
   const requestedItems = String(formData.get("requestedItems") || "").trim();
   const urgency = String(formData.get("urgency") || "").trim();
+  const dueDate = String(formData.get("dueDate") || "").trim();
 
   if (!allyId) return { error: "ID de aliado no válido." };
   if (!title) return { error: "El título de la necesidad es obligatorio." };
@@ -109,7 +116,9 @@ export async function createWorkshopNeedAction(formData: FormData): Promise<Resu
     description: description || null,
     expected_output: requestedItems || null,
     urgency: urgency || null,
-    status: "pendiente",
+    due_date: dueDate || null,
+    status: "asignada",
+    assigned_at: new Date().toISOString(),
   });
 
   if (error) return { error: error.message };
@@ -137,6 +146,43 @@ export async function createWorkshopNeedAction(formData: FormData): Promise<Resu
   return { success: true };
 }
 
+export async function updateOwnTaskAction(formData: FormData): Promise<Result> {
+  const user = await requireWorkshopUser();
+  const admin = createSupabaseAdminClient();
+  const allyId = String(formData.get("workshopId") || "").trim();
+  const taskId = String(formData.get("taskId") || "").trim();
+  const title = String(formData.get("title") || "").trim();
+  const description = String(formData.get("description") || "").trim();
+  const requestedItems = String(formData.get("requestedItems") || "").trim();
+  const urgency = String(formData.get("urgency") || "").trim();
+  const dueDate = String(formData.get("dueDate") || "").trim();
+
+  if (!allyId || !taskId) return { error: "Solicitud inválida." };
+  if (!title) return { error: "El título de la tarea es obligatorio." };
+
+  const ally = await verifyAllyAccess(user, allyId, admin);
+  if (!ally) return { error: "No tienes permiso para editar esta tarea." };
+
+  const { error } = await admin
+    .from("assigned_tasks")
+    .update({
+      title,
+      description: description || null,
+      expected_output: requestedItems || null,
+      urgency: urgency || null,
+      due_date: dueDate || null,
+    })
+    .eq("id", taskId)
+    .eq("ally_id", allyId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/tareas");
+  revalidatePath(`/admin/tareas/${taskId}`);
+  revalidatePath("/admin/entregas");
+  return { success: true };
+}
+
 export async function closeWorkshopNeedAction(formData: FormData): Promise<Result> {
   const user = await requireWorkshopUser();
   const admin = createSupabaseAdminClient();
@@ -157,6 +203,7 @@ export async function closeWorkshopNeedAction(formData: FormData): Promise<Resul
   if (error) return { error: error.message };
 
   revalidatePath("/admin/tareas");
+  revalidatePath(`/admin/tareas/${taskId}`);
   revalidatePath("/necesidades");
   if (ally.slug) {
     revalidatePath(`/aliados/${ally.slug}`);

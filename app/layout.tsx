@@ -1,7 +1,7 @@
 import Link from "next/link";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { Source_Sans_3 } from "next/font/google";
+import { Poppins } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -10,9 +10,10 @@ import { PublicHeader } from "@/components/public-header";
 
 import "./globals.css";
 
-const sourceSans = Source_Sans_3({
+const poppins = Poppins({
   subsets: ["latin"],
-  variable: "--font-source-sans",
+  variable: "--font-poppins",
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -29,6 +30,12 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -36,24 +43,26 @@ export default async function RootLayout({
   const isAdminRoute = pathname.startsWith("/admin");
 
   return (
-    <html lang="es" className={sourceSans.variable}>
-      <body>
+    <html lang="es" className={poppins.variable}>
+      <body className={poppins.className}>
         <div className="flex min-h-screen flex-col">
           {isAdminRoute ? null : <PublicHeader />}
           <main className="flex w-full flex-1 flex-col">
             {children}
           </main>
-          <footer className="border-t border-stone-200 bg-white">
-            <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-8 sm:flex-row sm:px-6 lg:px-8">
-              <div className="flex items-center justify-center">
-                <img src="/promoda-logo.svg" alt="Promoda" className="h-7 w-auto" />
+          {isAdminRoute ? null : (
+            <footer className="border-t border-stone-200 bg-white">
+              <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-8 sm:flex-row sm:px-6 lg:px-8">
+                <div className="flex items-center justify-center">
+                  <img src="/promoda-logo.svg" alt="Promoda" className="h-7 w-auto" />
+                </div>
+                <div className="text-center sm:text-left">
+                  <p className="text-sm font-bold text-stone-700">Aliados Verificados</p>
+                  <p className="text-sm text-stone-400">Patrones estandarizados y coordinación de aliados de confección y apoyo textil.</p>
+                </div>
               </div>
-              <div className="text-center sm:text-left">
-                <p className="text-sm font-bold text-stone-700">Aliados Verificados</p>
-                <p className="text-sm text-stone-400">Patrones estandarizados y coordinación de aliados de confección y apoyo textil.</p>
-              </div>
-            </div>
-          </footer>
+            </footer>
+          )}
         </div>
         <Analytics />
         <SpeedInsights />

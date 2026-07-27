@@ -1,12 +1,9 @@
 import { redirect } from "next/navigation";
 import { AdminLoginForm } from "@/components/admin-login-form";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth";
 
 export default async function AdminPage() {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     return <AdminLoginForm />;
@@ -18,9 +15,9 @@ export default async function AdminPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
-      <div className="rounded-lg border border-stone-200 bg-paper p-8 text-center shadow-card">
+      <div className="rounded-xl bg-[#FCFCFC] p-8 text-center ring-1 ring-gray-200/70">
         <h1 className="text-xl font-semibold text-ink">Acceso restringido</h1>
-        <p className="mt-2 text-sm text-stone-600">Tu cuenta no tiene permisos para entrar al panel.</p>
+        <p className="mt-2 text-sm text-gray-600">Tu cuenta no tiene permisos para entrar al panel.</p>
       </div>
     </div>
   );

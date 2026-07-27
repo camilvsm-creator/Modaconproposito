@@ -1,5 +1,13 @@
 import type { ALLY_CATEGORIES, URGENCY_LEVELS } from "@/lib/constants";
 
+export type PagedResult<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  pageCount: number;
+};
+
 export type UrgencyLevel = (typeof URGENCY_LEVELS)[number];
 export type AllyCategory = (typeof ALLY_CATEGORIES)[number];
 
@@ -54,6 +62,52 @@ export type AidRequester = {
   status: string;
   created_at: string;
   updated_at: string;
+};
+
+export type MessageSenderRole = "admin" | "aliado" | "solicitante";
+
+export type Message = {
+  id: string;
+  thread_id: string;
+  sender_user_id: string | null;
+  sender_role: MessageSenderRole | string;
+  body: string;
+  created_at: string;
+};
+
+export type MessageParticipant = {
+  id: string;
+  thread_id: string;
+  user_id: string | null;
+  ally_id: string | null;
+  participant_role: MessageSenderRole | string;
+  last_read_at: string | null;
+  created_at: string;
+};
+
+export type MessageThread = {
+  id: string;
+  ally_id: string | null;
+  requester_id: string | null;
+  subject: string;
+  status: "open" | "closed" | string;
+  created_by_user_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MessageThreadListItem = MessageThread & {
+  ally?: Pick<Ally, "id" | "name" | "slug"> | null;
+  requester?: Pick<AidRequester, "id" | "name" | "type" | "user_id"> | null;
+  latest_message?: Message | null;
+  current_participant?: MessageParticipant | null;
+  is_unread: boolean;
+};
+
+export type MessageThreadDetail = MessageThread & {
+  ally?: Pick<Ally, "id" | "name" | "slug"> | null;
+  requester?: Pick<AidRequester, "id" | "name" | "type" | "contact_name" | "user_id"> | null;
+  participants: MessageParticipant[];
 };
 
 export type AidRequest = {
@@ -266,6 +320,7 @@ export type Volunteer = {
 
 export type RawMaterial = {
   id: string;
+  ally_id: string | null;
   name: string;
   category: string | null;
   unit: string | null;
@@ -275,6 +330,7 @@ export type RawMaterial = {
   status: string;
   created_at: string;
   updated_at: string;
+  ally?: Pick<Ally, "id" | "name" | "slug"> | null;
 };
 
 export type RawMaterialMovement = {
@@ -347,6 +403,18 @@ export type TaskMaterialAssignment = AllyRawMaterialAssignment & {
 export type DeliveryWithRelations = AllyDelivery & {
   ally?: Pick<Ally, "id" | "name" | "slug"> | null;
   task?: Pick<AssignedTask, "id" | "title" | "status" | "due_date"> | null;
+};
+
+export type RequesterDeliveryWithRelations = DeliveryWithRelations & {
+  task: Pick<AssignedTask, "id" | "title" | "status" | "due_date"> & { aid_request_id: string | null };
+  request: Pick<AidRequest, "id" | "title">;
+};
+
+export type DeliveryDetail = Omit<DeliveryWithRelations, "task"> & {
+  task?: (NonNullable<DeliveryWithRelations["task"]> & {
+    aid_request_id: string | null;
+    request?: Pick<AidRequest, "id" | "title" | "requester_id"> | null;
+  }) | null;
 };
 
 export type AidRequestWithRelations = AidRequest & {

@@ -1,5 +1,6 @@
 import { AdminPageHeader } from "@/components/admin-page-header";
 import { AdminPagination } from "@/components/admin-pagination";
+import { AdminRecordsSummary } from "@/components/admin-data-ui";
 import { EmptyState } from "@/components/empty-state";
 import { requireWorkshopAdminUser } from "@/lib/auth";
 import { formatDate } from "@/lib/utils";
@@ -45,20 +46,16 @@ export default async function AdminCartucheraPage({
         <AdminPageHeader
           eyebrow="Cartuchera"
           title="Tu Cartera, Mi Refugio"
-          meta={`${result.total} donaciones`}
-          navigation={{
-            baseHref: "/admin/aliados",
-            baseLabel: "Aliados",
-            currentLabel: "Cartuchera",
-          }}
         />
       </div>
 
+      <AdminRecordsSummary total={result.total} />
+
       {result.items.length ? (
         <div className="space-y-4">
-          <div className="hidden overflow-x-auto md:block">
-            <table className="min-w-[900px] w-full text-left text-sm">
-              <thead className="border-b border-stone-200 bg-stone-50/80 text-sm font-semibold text-stone-600">
+          <div className="overflow-x-auto">
+            <table className="admin-mobile-cards min-w-[900px] w-full text-left text-sm">
+              <thead className="border-b border-gray-200 bg-gray-50/80 text-sm font-semibold text-gray-600">
                 <tr>
                   <th className="px-4 py-3">Donante</th>
                   <th className="px-4 py-3">Contacto</th>
@@ -68,56 +65,36 @@ export default async function AdminCartucheraPage({
                   <th className="px-4 py-3">Fecha</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-200">
+              <tbody className="divide-y divide-gray-200">
                 {result.items.map((donation) => (
-                  <tr key={donation.id} className="hover:bg-stone-50 transition-colors">
-                    <td className="px-4 py-3 align-top font-semibold text-ink leading-tight">
+                  <tr key={donation.id} className="hover:bg-gray-50 transition-colors">
+                    <td data-mobile="primary" data-mobile-label="Donante" className="px-4 py-3 align-top font-semibold text-ink leading-tight">
                       {donation.donor_name}
                     </td>
-                    <td className="px-4 py-3 align-top text-stone-700 leading-tight">
+                    <td data-mobile-label="Contacto" className="px-4 py-3 align-top text-gray-700 leading-tight">
                       <p>{donation.donor_email}</p>
                       {donation.donor_phone ? (
-                        <p className="text-sm text-stone-500">{donation.donor_phone}</p>
+                        <p className="text-sm text-gray-500">{donation.donor_phone}</p>
                       ) : null}
                     </td>
-                    <td className="px-4 py-3 align-top text-stone-700 leading-tight">
-                      <span className="rounded-full bg-stone-100 px-2.5 py-0.5 text-sm font-semibold text-stone-600">
+                    <td data-mobile-label="Tipo" className="px-4 py-3 align-top text-gray-700 leading-tight">
+                      <span className="rounded-md bg-gray-100 px-2.5 py-1 text-sm font-semibold text-gray-600">
                         {HELP_TYPE_LABELS[donation.help_type] ?? donation.help_type}
                       </span>
                     </td>
-                    <td className="px-4 py-3 align-top text-stone-700 leading-tight">
-                      {donation.quantity || <span className="text-stone-400">—</span>}
+                    <td data-mobile-label="Cantidad" className="px-4 py-3 align-top text-gray-700 leading-tight">
+                      {donation.quantity || <span className="text-gray-400">—</span>}
                     </td>
-                    <td className="px-4 py-3 align-top text-stone-700 leading-tight">
+                    <td data-mobile="hidden" data-mobile-label="Descripción" className="px-4 py-3 align-top text-gray-700 leading-tight">
                       <p className="max-w-xs truncate">{donation.description}</p>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 align-top text-stone-500 leading-tight">
+                    <td data-mobile-label="Fecha" className="whitespace-nowrap px-4 py-3 align-top text-gray-500 leading-tight">
                       {formatDate(donation.created_at)}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-
-          <div className="grid gap-3 md:hidden">
-            {result.items.map((donation) => (
-              <div key={donation.id} className="rounded-xl border border-stone-200/80 bg-white/75 p-5 space-y-3">
-                <div className="space-y-1 text-sm text-stone-700">
-                  <p className="font-semibold text-ink">{donation.donor_name}</p>
-                  <p>{donation.donor_email}</p>
-                  {donation.donor_phone ? <p className="text-sm text-stone-500">{donation.donor_phone}</p> : null}
-                  <p>
-                    <span className="rounded-full bg-stone-100 px-2.5 py-0.5 text-sm font-semibold text-stone-600">
-                      {HELP_TYPE_LABELS[donation.help_type] ?? donation.help_type}
-                    </span>
-                    {donation.quantity ? <span className="ml-2 text-stone-500">Cant: {donation.quantity}</span> : null}
-                  </p>
-                  <p className="text-stone-600">{donation.description}</p>
-                  <p className="text-sm text-stone-500">{formatDate(donation.created_at)}</p>
-                </div>
-              </div>
-            ))}
           </div>
 
           <AdminPagination

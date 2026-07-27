@@ -11,7 +11,6 @@ export default async function AdminReportesPage() {
         eyebrow="Promoda"
         title="Reportes"
         description="Estadísticas generales de la plataforma."
-        navigation={{ baseHref: "/admin/aliados", baseLabel: "Aliados", currentLabel: "Reportes" }}
       />
       <EmptyState
         title="Reportes próximamente"

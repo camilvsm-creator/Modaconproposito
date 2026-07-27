@@ -1,9 +1,14 @@
 import { AdminPageHeader } from "@/components/admin-page-header";
 import { AdminPagination } from "@/components/admin-pagination";
+import { AdminActionItem, AdminRecordsSummary, AdminRowActions, AdminToolbar } from "@/components/admin-data-ui";
+import { AutoSubmitFilterForm } from "@/components/auto-submit-filter-form";
 import { EmptyState } from "@/components/empty-state";
+import { compactInputClassName } from "@/components/ui";
 import { requireWorkshopAdminUser } from "@/lib/auth";
 import { getAdminCollaboratorsPage } from "@/lib/workshops";
 import { formatDate } from "@/lib/utils";
+import { CollaboratorCreateButton, CollaboratorEditButton } from "./components/collaborator-admin-actions";
+import { updateCollaboratorStatusAction } from "./actions";
 
 const COLLABORATORS_PER_PAGE = 20;
 
@@ -16,7 +21,7 @@ const COLLABORATOR_STATUS_LABELS: Record<string, string> = {
 const COLLABORATOR_STATUS_BADGES: Record<string, string> = {
   activo: "bg-green-100 text-green-700",
   pausado: "bg-amber-100 text-amber-700",
-  inactivo: "bg-stone-100 text-stone-600",
+  inactivo: "bg-gray-100 text-gray-600",
 };
 
 const COLLABORATOR_TYPE_LABELS: Record<string, string> = {
@@ -76,32 +81,36 @@ export default async function AdminCollaboratorsPage({
         eyebrow="Promoda"
         title="Colaboradores"
         description="Listado de colaboradores registrados en la red."
-        meta={`${result.total} colaboradores`}
-        navigation={{ baseHref: "/admin/aliados", baseLabel: "Aliados", currentLabel: "Colaboradores" }}
       />
 
-      <form action="/admin/colaboradores" method="get" className="grid gap-3 md:grid-cols-[1fr_180px_180px_auto]">
-        <input name="q" defaultValue={q ?? ""} placeholder="Buscar por nombre, contacto o email" className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-sm" />
-        <select name="status" defaultValue={status} className="rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-700">
+      <AdminToolbar
+        filters={
+        <AutoSubmitFilterForm action="/admin/colaboradores" method="get" className="grid w-full gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px]">
+        <input name="q" defaultValue={q ?? ""} placeholder="Buscar por nombre, contacto o email" className={compactInputClassName} />
+        <select name="status" defaultValue={status} className={compactInputClassName}>
           <option value="all">Todos los estados</option>
           {Object.entries(COLLABORATOR_STATUS_LABELS).map(([value, label]) => (
             <option key={value} value={value}>{label}</option>
           ))}
         </select>
-        <select name="type" defaultValue={type} className="rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-700">
+        <select name="type" defaultValue={type} className={compactInputClassName}>
           <option value="all">Todos los tipos</option>
           {Object.entries(COLLABORATOR_TYPE_LABELS).map(([value, label]) => (
             <option key={value} value={value}>{label}</option>
           ))}
         </select>
-        <button className="rounded-lg bg-[#F74897] px-5 py-2.5 text-sm font-semibold text-white" type="submit">Buscar</button>
-      </form>
+        </AutoSubmitFilterForm>
+        }
+        actions={<CollaboratorCreateButton />}
+      />
+
+      <AdminRecordsSummary total={result.total} />
 
       {result.items.length ? (
         <div className="space-y-4">
-          <div className="hidden overflow-x-auto md:block">
-            <table className="min-w-[1040px] w-full text-left text-sm">
-              <thead className="border-b border-stone-200 bg-stone-50/80 text-sm font-semibold text-stone-600">
+          <div className="overflow-x-auto">
+            <table className="admin-mobile-cards min-w-[1040px] w-full text-left text-sm">
+              <thead className="border-b border-gray-200 bg-gray-50/80 text-sm font-semibold text-gray-600">
                 <tr>
                   <th className="px-4 py-2.5">Nombre</th>
                   <th className="px-4 py-2.5">Tipo</th>
@@ -110,58 +119,38 @@ export default async function AdminCollaboratorsPage({
                   <th className="px-4 py-2.5">Estado</th>
                   <th className="px-4 py-2.5">Notas</th>
                   <th className="px-4 py-2.5">Registro</th>
+                  <th className="px-4 py-2.5">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-200">
+              <tbody className="divide-y divide-gray-200">
                 {result.items.map((collaborator) => (
-                  <tr key={collaborator.id} className="hover:bg-stone-50 transition-colors">
-                    <td className="px-4 py-2.5 align-top leading-tight">
+                  <tr key={collaborator.id} className="hover:bg-gray-50 transition-colors">
+                    <td data-mobile="primary" data-mobile-label="Colaborador" className="px-4 py-2.5 align-top leading-tight">
                       <p className="font-semibold text-ink">{collaborator.name}</p>
                     </td>
-                    <td className="px-4 py-2.5 align-top leading-tight text-stone-700">
+                    <td data-mobile-label="Tipo" className="px-4 py-2.5 align-top leading-tight text-gray-700">
                       {COLLABORATOR_TYPE_LABELS[collaborator.type] ?? collaborator.type}
                     </td>
-                    <td className="px-4 py-2.5 align-top text-stone-700 leading-tight">
+                    <td data-mobile-label="Contacto" className="px-4 py-2.5 align-top text-gray-700 leading-tight">
                       <p>{collaborator.contact_name ?? "—"}</p>
-                      {collaborator.email ? <p className="text-sm text-stone-500">{collaborator.email}</p> : null}
-                      {collaborator.phone ? <p className="text-sm text-stone-500">{collaborator.phone}</p> : null}
+                      {collaborator.email ? <p className="text-sm text-gray-500">{collaborator.email}</p> : null}
+                      {collaborator.phone ? <p className="text-sm text-gray-500">{collaborator.phone}</p> : null}
                     </td>
-                    <td className="px-4 py-2.5 align-top text-stone-700 leading-tight">{collaborator.location ?? "—"}</td>
-                    <td className="px-4 py-2.5 align-top leading-tight">
-                      <span className={`inline-block rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide ${COLLABORATOR_STATUS_BADGES[collaborator.status] ?? "bg-stone-100 text-stone-600"}`}>
+                    <td data-mobile-label="Ubicación" className="px-4 py-2.5 align-top text-gray-700 leading-tight">{collaborator.location ?? "—"}</td>
+                    <td data-mobile-label="Estado" className="px-4 py-2.5 align-top leading-tight">
+                      <span className={`inline-block rounded-md px-2.5 py-1 text-sm font-semibold ${COLLABORATOR_STATUS_BADGES[collaborator.status] ?? "bg-gray-100 text-gray-600"}`}>
                         {COLLABORATOR_STATUS_LABELS[collaborator.status] ?? collaborator.status}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5 align-top text-stone-600 leading-tight">
+                    <td data-mobile="hidden" data-mobile-label="Notas" className="px-4 py-2.5 align-top text-gray-600 leading-tight">
                       <p className="max-w-xs whitespace-pre-wrap">{collaborator.notes ?? "—"}</p>
                     </td>
-                    <td className="px-4 py-2.5 align-top text-stone-500 leading-tight">{formatDate(collaborator.created_at)}</td>
+                    <td data-mobile-label="Registro" className="px-4 py-2.5 align-top text-gray-500 leading-tight">{formatDate(collaborator.created_at)}</td>
+                    <td data-mobile="actions" data-mobile-label="Acciones" className="px-4 py-2.5 align-top"><AdminRowActions><AdminActionItem><CollaboratorEditButton collaborator={collaborator} /></AdminActionItem>{collaborator.status !== "inactivo" ? <><AdminActionItem><form action={updateCollaboratorStatusAction}><input type="hidden" name="id" value={collaborator.id} /><input type="hidden" name="status" value={collaborator.status === "pausado" ? "activo" : "pausado"} /><button className="text-primary" type="submit">{collaborator.status === "pausado" ? "Reactivar" : "Pausar"}</button></form></AdminActionItem><AdminActionItem><form action={updateCollaboratorStatusAction}><input type="hidden" name="id" value={collaborator.id} /><input type="hidden" name="status" value="inactivo" /><button className="text-danger" type="submit">Desactivar</button></form></AdminActionItem></> : <AdminActionItem><form action={updateCollaboratorStatusAction}><input type="hidden" name="id" value={collaborator.id} /><input type="hidden" name="status" value="activo" /><button className="text-primary" type="submit">Reactivar</button></form></AdminActionItem>}</AdminRowActions></td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-
-          <div className="grid gap-3 md:hidden">
-            {result.items.map((collaborator) => (
-              <div key={collaborator.id} className="rounded-xl border border-stone-200/80 bg-white/75 p-5 space-y-3">
-                <div className="space-y-1 text-sm text-stone-700">
-                  <p className="font-semibold text-ink">{collaborator.name}</p>
-                  <p>{COLLABORATOR_TYPE_LABELS[collaborator.type] ?? collaborator.type}</p>
-                  <p>{collaborator.contact_name ?? "—"}</p>
-                  {collaborator.email ? <p className="text-stone-500">{collaborator.email}</p> : null}
-                  {collaborator.phone ? <p className="text-stone-500">{collaborator.phone}</p> : null}
-                  {collaborator.location ? <p className="text-stone-500">{collaborator.location}</p> : null}
-                  <p className="text-stone-500">{formatDate(collaborator.created_at)}</p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className={`inline-block rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide ${COLLABORATOR_STATUS_BADGES[collaborator.status] ?? "bg-stone-100 text-stone-600"}`}>
-                    {COLLABORATOR_STATUS_LABELS[collaborator.status] ?? collaborator.status}
-                  </span>
-                </div>
-                {collaborator.notes ? <p className="text-sm text-stone-600 whitespace-pre-wrap">{collaborator.notes}</p> : null}
-              </div>
-            ))}
           </div>
 
           <AdminPagination

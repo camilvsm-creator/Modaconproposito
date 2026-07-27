@@ -58,8 +58,9 @@ async function syncTaskAndRequestClosure(admin: ReturnType<typeof createSupabase
 }
 
 export async function createDeliveryAction(formData: FormData): Promise<void> {
-  const user = await requireWorkshopAdminUser();
+  const user = await requireOperationsUser();
   const admin = createSupabaseAdminClient();
+  const role = user.app_metadata?.role as string | undefined;
 
   const taskId = String(formData.get("taskId") || "").trim();
   const title = String(formData.get("title") || "").trim();
@@ -80,6 +81,13 @@ export async function createDeliveryAction(formData: FormData): Promise<void> {
   if (!task) throw new Error("La tarea no existe.");
   if (!["completada", "cerrada"].includes(task.status)) throw new Error("La tarea debe estar completada para crear una entrega.");
 
+  if (role === "aliado") {
+    const ally = await getWorkshopByUserId(user.id);
+    if (!ally || ally.id !== task.ally_id) throw new Error("No tienes acceso a esta tarea.");
+  } else {
+    await requireWorkshopAdminUser();
+  }
+
   const { data: delivery, error } = await admin
     .from("ally_deliveries")
     .insert({
@@ -99,7 +107,7 @@ export async function createDeliveryAction(formData: FormData): Promise<void> {
 
   await logAuditEvent({
     actor_id: user.id,
-    actor_role: "admin",
+    actor_role: role ?? "admin",
     actor_email: user.email,
     context_type: "platform",
     context_id: task.ally_id,
@@ -113,12 +121,44 @@ export async function createDeliveryAction(formData: FormData): Promise<void> {
 
   revalidatePath("/admin/entregas");
   revalidatePath("/admin/tareas");
+  revalidatePath(`/admin/tareas/${taskId}`);
   revalidatePath("/admin/solicitudes");
 }
 
-export async function updateDeliveryLogisticsAction(formData: FormData): Promise<void> {
-  const user = await requireWorkshopAdminUser();
+export async function getDeliveryTaskOptionsAction(allyId?: string): Promise<Array<{ id: string; title: string; ally?: { id: string; name: string } | null }>> {
+  const user = await requireOperationsUser();
   const admin = createSupabaseAdminClient();
+  const role = user.app_metadata?.role as string | undefined;
+  let targetAllyId = allyId || null;
+
+  if (role === "aliado") {
+    const ally = await getWorkshopByUserId(user.id);
+    if (!ally) throw new Error("No se encontró el aliado vinculado.");
+    targetAllyId = ally.id;
+  } else {
+    await requireWorkshopAdminUser();
+  }
+
+  let query = admin
+    .from("assigned_tasks")
+    .select("id, title, status, ally:allies(id, name)")
+    .in("status", ["completada", "cerrada"])
+    .order("created_at", { ascending: false });
+  if (targetAllyId) query = query.eq("ally_id", targetAllyId);
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((task) => ({
+    id: task.id,
+    title: task.title,
+    ally: Array.isArray(task.ally) ? task.ally[0] ?? null : task.ally ?? null,
+  }));
+}
+
+export async function updateDeliveryLogisticsAction(formData: FormData): Promise<void> {
+  const user = await requireOperationsUser();
+  const admin = createSupabaseAdminClient();
+  const role = user.app_metadata?.role as string | undefined;
 
   const deliveryId = String(formData.get("deliveryId") || "").trim();
   const title = String(formData.get("title") || "").trim();
@@ -132,7 +172,7 @@ export async function updateDeliveryLogisticsAction(formData: FormData): Promise
 
   const { data: delivery, error: deliveryError } = await admin
     .from("ally_deliveries")
-    .select("id, status")
+    .select("id, ally_id, task_id, status, ally:allies(id, user_id)")
     .eq("id", deliveryId)
     .maybeSingle();
 
@@ -140,6 +180,13 @@ export async function updateDeliveryLogisticsAction(formData: FormData): Promise
   if (!delivery) throw new Error("La entrega no existe.");
   if (["recibida", "cancelada"].includes(delivery.status)) {
     throw new Error("No puedes editar una entrega cerrada o cancelada.");
+  }
+
+  if (role === "aliado") {
+    const ally = await getWorkshopByUserId(user.id);
+    if (!ally || ally.id !== delivery.ally_id) throw new Error("No tienes acceso a esta entrega.");
+  } else {
+    await requireWorkshopAdminUser();
   }
 
   const { error } = await admin
@@ -157,7 +204,7 @@ export async function updateDeliveryLogisticsAction(formData: FormData): Promise
 
   await logAuditEvent({
     actor_id: user.id,
-    actor_role: "admin",
+    actor_role: role ?? "admin",
     actor_email: user.email,
     context_type: "platform",
     context_id: null,
@@ -169,6 +216,7 @@ export async function updateDeliveryLogisticsAction(formData: FormData): Promise
 
   revalidatePath("/admin/entregas");
   revalidatePath("/admin/tareas");
+  if (delivery.task_id) revalidatePath(`/admin/tareas/${delivery.task_id}`);
   revalidatePath("/admin/solicitudes");
 }
 
@@ -185,12 +233,13 @@ export async function updateDeliveryStatusAction(formData: FormData): Promise<vo
 
   const { data: delivery, error: deliveryError } = await admin
     .from("ally_deliveries")
-    .select("*, ally:allies(id, user_id, slug), task:assigned_tasks(id, aid_request_id)")
+    .select("id, ally_id, task_id, status, notes, ally:allies(id, user_id, slug), task:assigned_tasks(id, aid_request_id)")
     .eq("id", deliveryId)
     .maybeSingle();
 
   if (deliveryError) throw new Error(deliveryError.message);
   if (!delivery) throw new Error("La entrega no existe.");
+  const deliveryTask = Array.isArray(delivery.task) ? delivery.task[0] ?? null : delivery.task ?? null;
 
   const role = user.app_metadata?.role as string | undefined;
   if (role === "aliado") {
@@ -199,8 +248,8 @@ export async function updateDeliveryStatusAction(formData: FormData): Promise<vo
       throw new Error("No tienes acceso a esta entrega.");
     }
 
-    if (status !== "entregada") {
-      throw new Error("El aliado solo puede marcar la entrega como entregada.");
+    if (!["pendiente", "entregada", "cancelada"].includes(status)) {
+      throw new Error("El aliado solo puede gestionar estados de envío de su entrega.");
     }
   } else if (role === "solicitante") {
     const requester = await getRequesterByUserId(user.id);
@@ -208,14 +257,14 @@ export async function updateDeliveryStatusAction(formData: FormData): Promise<vo
     if (status !== "recibida") {
       throw new Error("El solicitante solo puede confirmar la recepción de la entrega.");
     }
-    if (!delivery.task?.aid_request_id) {
+    if (!deliveryTask?.aid_request_id) {
       throw new Error("Esta entrega no está vinculada a una solicitud de ayuda.");
     }
 
     const { data: request, error: requestError } = await admin
       .from("aid_requests")
       .select("id, requester_id")
-      .eq("id", delivery.task.aid_request_id)
+      .eq("id", deliveryTask.aid_request_id)
       .maybeSingle();
 
     if (requestError) throw new Error(requestError.message);
@@ -253,11 +302,12 @@ export async function updateDeliveryStatusAction(formData: FormData): Promise<vo
   if (error) throw new Error(error.message);
 
   if (["recibida", "cancelada", "pendiente"].includes(status) && delivery.task_id) {
-    await syncTaskAndRequestClosure(admin, delivery.task_id, delivery.task?.aid_request_id);
+    await syncTaskAndRequestClosure(admin, delivery.task_id, deliveryTask?.aid_request_id);
   }
 
   revalidatePath("/admin/entregas");
   revalidatePath("/admin/tareas");
+  if (delivery.task_id) revalidatePath(`/admin/tareas/${delivery.task_id}`);
   revalidatePath("/admin/materia-prima");
   revalidatePath("/admin/solicitudes");
 }

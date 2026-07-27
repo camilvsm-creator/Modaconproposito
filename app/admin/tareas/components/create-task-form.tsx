@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { createWorkshopNeedAction } from "@/app/admin/ally-actions";
-import { Button, InputShell, SectionCard, inputClassName } from "@/components/ui";
+import { Button, InputShell, compactInputClassName } from "@/components/ui";
 import { URGENCY_LABELS, URGENCY_LEVELS } from "@/lib/constants";
 
 export function CreateNeedForm({ workshopId }: { workshopId: string }) {
@@ -38,28 +38,28 @@ export function CreateNeedForm({ workshopId }: { workshopId: string }) {
   }
 
   return (
-    <SectionCard className="p-6">
-      <h2 className="mb-4 text-lg font-semibold text-ink">Nueva necesidad</h2>
-      <p className="mb-4 text-sm text-stone-500">
-        Las necesidades nuevas quedan pendientes de revisión por un administrador.
+    <div className="space-y-4">
+      <h2 className="mb-4 text-lg font-semibold text-ink">Nueva tarea</h2>
+      <p className="mb-4 text-sm text-gray-500">
+        La tarea queda activa inmediatamente para que puedas gestionarla desde tu panel.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input type="hidden" name="workshopId" value={workshopId} />
 
         <InputShell label="Título">
-          <input className={inputClassName} name="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <input className={compactInputClassName} name="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
         </InputShell>
 
         <InputShell label="Descripción">
-          <textarea className={inputClassName + " min-h-[80px]"} name="description" value={description} onChange={(e) => setDescription(e.target.value)} />
+          <textarea className={compactInputClassName + " min-h-[80px]"} name="description" value={description} onChange={(e) => setDescription(e.target.value)} />
         </InputShell>
 
         <InputShell label="Elementos solicitados">
-          <textarea className={inputClassName + " min-h-[80px]"} name="requestedItems" value={requestedItems} onChange={(e) => setRequestedItems(e.target.value)} />
+          <textarea className={compactInputClassName + " min-h-[80px]"} name="requestedItems" value={requestedItems} onChange={(e) => setRequestedItems(e.target.value)} />
         </InputShell>
 
         <InputShell label="Urgencia">
-          <select className={inputClassName} name="urgency" value={urgency} onChange={(e) => setUrgency(e.target.value)}>
+          <select className={compactInputClassName} name="urgency" value={urgency} onChange={(e) => setUrgency(e.target.value)}>
             <option value="">Sin especificar</option>
             {URGENCY_LEVELS.map((level) => (
               <option key={level} value={level}>{URGENCY_LABELS[level]}</option>
@@ -67,13 +67,17 @@ export function CreateNeedForm({ workshopId }: { workshopId: string }) {
           </select>
         </InputShell>
 
+        <InputShell label="Fecha esperada">
+          <input className={compactInputClassName} name="dueDate" type="date" />
+        </InputShell>
+
         {error ? <p className="text-sm text-danger">{error}</p> : null}
-        {success ? <p className="text-sm text-success">Necesidad creada correctamente.</p> : null}
+        {success ? <p className="text-sm text-success">Tarea creada correctamente.</p> : null}
 
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Creando..." : "Crear necesidad"}
+          {isPending ? "Creando..." : "Crear tarea"}
         </Button>
       </form>
-    </SectionCard>
+    </div>
   );
 }

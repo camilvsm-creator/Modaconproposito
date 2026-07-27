@@ -338,11 +338,14 @@
 |------|------|-------------|
 | `id` | `uuid` | Primary |
 | `ally_id` | `uuid` |  Nullable |
+| `requester_id` | `uuid` | Nullable; referencia `aid_requesters(id)` |
 | `subject` | `text` |  |
 | `status` | `text` |  |
 | `created_by_user_id` | `uuid` |  Nullable |
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
+
+Cada hilo debe tener exactamente uno de `ally_id` o `requester_id`.
 
 ## Table `message_thread_participants`
 
@@ -494,21 +497,25 @@
 
 | Policy | Command | Roles | Action | USING | WITH CHECK |
 |--------|---------|-------|--------|-------|------------|
-| `Admins can manage message threads` | ALL | authenticated | PERMISSIVE | `(((( SELECT auth.jwt() AS jwt) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)` | `(((( SELECT auth.jwt() AS jwt) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)` |
-| `Allies can read own message threads` | SELECT | authenticated | PERMISSIVE | `(EXISTS ( SELECT 1    FROM allies ally   WHERE ((ally.id = message_threads.ally_id) AND (ally.user_id = ( SELECT auth.uid() AS uid)))))` | — |
+| `Users can read own message threads` | SELECT | authenticated | PERMISSIVE | Admin o participante aliado/solicitante autenticado | — |
+| `Admins can create message threads` | INSERT | authenticated | PERMISSIVE | — | Rol `admin` |
+| `Admins can update message threads` | UPDATE | authenticated | PERMISSIVE | Rol `admin` | Rol `admin` |
+| `Admins can delete message threads` | DELETE | authenticated | PERMISSIVE | Rol `admin` | — |
 
 ### `message_thread_participants`
 
 | Policy | Command | Roles | Action | USING | WITH CHECK |
 |--------|---------|-------|--------|-------|------------|
-| `Admins can manage message participants` | ALL | authenticated | PERMISSIVE | `(((( SELECT auth.jwt() AS jwt) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)` | `(((( SELECT auth.jwt() AS jwt) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)` |
-| `Allies can read own message participants` | SELECT | authenticated | PERMISSIVE | `((user_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1    FROM allies ally   WHERE ((ally.id = message_thread_participants.ally_id) AND (ally.user_id = ( SELECT auth.uid() AS uid))))))` | — |
+| `Users can read own message participants` | SELECT | authenticated | PERMISSIVE | Admin o participante autenticado | — |
+| `Users can update own message participants` | UPDATE | authenticated | PERMISSIVE | Admin o participante autenticado | Admin o participante autenticado |
+| `Admins can insert message participants` | INSERT | authenticated | PERMISSIVE | — | Rol `admin` |
+| `Admins can delete message participants` | DELETE | authenticated | PERMISSIVE | Rol `admin` | — |
 
 ### `messages`
 
 | Policy | Command | Roles | Action | USING | WITH CHECK |
 |--------|---------|-------|--------|-------|------------|
-| `Admins can manage messages` | ALL | authenticated | PERMISSIVE | `(((( SELECT auth.jwt() AS jwt) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)` | `(((( SELECT auth.jwt() AS jwt) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)` |
-| `Allies can read own messages` | SELECT | authenticated | PERMISSIVE | `(EXISTS ( SELECT 1    FROM (message_threads thread      JOIN allies ally ON ((ally.id = thread.ally_id)))   WHERE ((thread.id = messages.thread_id) AND (ally.user_id = ( SELECT auth.uid() AS uid)))))` | — |
-| `Allies can send own messages` | INSERT | authenticated | PERMISSIVE | — | `((sender_user_id = ( SELECT auth.uid() AS uid)) AND (sender_role = 'aliado'::text) AND (EXISTS ( SELECT 1    FROM (message_threads thread      JOIN allies ally ON ((ally.id = thread.ally_id)))   WHERE ((thread.id = messages.thread_id) AND (ally.user_id = ( SELECT auth.uid() AS uid)) AND (thread.status = 'open'::text)))))` |
-
+| `Users can read own messages` | SELECT | authenticated | PERMISSIVE | Admin o participante autenticado | — |
+| `Users can send own messages` | INSERT | authenticated | PERMISSIVE | — | Admin o aliado/solicitante participante en hilo abierto |
+| `Admins can update messages` | UPDATE | authenticated | PERMISSIVE | Rol `admin` | Rol `admin` |
+| `Admins can delete messages` | DELETE | authenticated | PERMISSIVE | Rol `admin` | — |

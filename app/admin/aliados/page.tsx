@@ -2,7 +2,9 @@ import Link from "next/link";
 
 import { AdminPageHeader } from "@/components/admin-page-header";
 import { AdminPagination } from "@/components/admin-pagination";
-import { SectionCard } from "@/components/ui";
+import { AdminActionItem, AdminRecordsSummary, AdminRowActions, AdminTabs, AdminTableFrame, AdminToolbar } from "@/components/admin-data-ui";
+import { AutoSubmitFilterForm } from "@/components/auto-submit-filter-form";
+import { SectionCard, compactInputClassName } from "@/components/ui";
 import { GenerateAccessButton } from "@/components/generate-access-button";
 import { requireWorkshopAdminUser } from "@/lib/auth";
 import { ALLY_CATEGORIES, ALLY_CATEGORY_LABELS } from "@/lib/constants";
@@ -44,7 +46,7 @@ const ACTIVE_STATUS_OPTIONS = [
 const STATUS_BADGES: Record<string, string> = {
   activo: "bg-green-100 text-green-700",
   pendiente: "bg-amber-100 text-amber-700",
-  pausado: "bg-stone-100 text-stone-600",
+  pausado: "bg-gray-100 text-gray-600",
   rechazado: "bg-red-100 text-red-700",
   approved_pending_activation: "bg-blue-100 text-blue-700",
   desactivado: "bg-red-100 text-red-700",
@@ -95,9 +97,7 @@ export default async function AdminInicioPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const user = await requireWorkshopAdminUser();
-  const isPromoda = user.app_metadata?.role === "admin";
-  const activeBg = isPromoda ? "bg-[#F74897]" : "bg-primary";
+  await requireWorkshopAdminUser();
 
   const params = await searchParams;
   const tab = getStringParam(params, "tab") || "aliados";
@@ -143,90 +143,53 @@ export default async function AdminInicioPage({
         eyebrow="Promoda"
         title="Inicio"
         description="Resumen general de la red de aliados."
-        actions={
-          <Link
-            href="/admin/aliados/crear"
-            className="inline-flex items-center justify-center rounded-full bg-[#F74897] px-5 py-3 text-sm font-semibold text-white hover:bg-[#D6003F] transition"
-          >
-            Crear aliado
-          </Link>
-        }
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
-          <SectionCard key={stat.label} className="p-4">
+          <SectionCard key={stat.label} className="bg-[#FCFCFC] p-4 ring-1 ring-gray-200/70">
             <p className="text-3xl font-bold text-ink">{stat.value}</p>
-            <p className="mt-1 text-sm text-stone-500">{stat.label}</p>
+            <p className="mt-1 text-sm text-gray-500">{stat.label}</p>
           </SectionCard>
         ))}
       </div>
 
       <div className="space-y-5">
-        <div className="flex flex-wrap gap-2 border-b border-stone-200 pb-3">
-          {TABS.map((t) => {
-            const href = pageHref({ ...params, tab: t.value, status: undefined, page: undefined }, 1);
-            const isActive = tab === t.value;
-            return (
-              <Link
-                key={t.value}
-                href={href}
-                className={`rounded-t-lg px-5 py-2.5 text-sm font-semibold transition ${
-                  isActive ? `${activeBg} text-white` : "bg-white text-stone-600 hover:text-stone-900"
-                }`}
-              >
-                {t.label}
-                {t.value === "postulaciones" && (postulacionesPendientes ?? 0) > 0 && (
-                  <span className={`ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
-                    isActive ? "bg-white text-[#F74897]" : "bg-[#F74897] text-white"
-                  }`}>
-                    {postulacionesPendientes}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </div>
+        <AdminTabs
+          tabs={TABS.map((t) => ({
+            href: pageHref({ ...params, tab: t.value, status: undefined, page: undefined }, 1),
+            label: t.label,
+            count: t.value === "postulaciones" ? postulacionesPendientes ?? 0 : undefined,
+            active: tab === t.value,
+          }))}
+        />
 
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap gap-3">
-            {statusOptions.map((opt) => {
-              const href = pageHref({ ...params, status: opt.value === "all" ? undefined : opt.value, page: undefined }, 1);
-              const isActive = opt.value === "all" ? !status || status === "all" : status === opt.value;
-              return (
-                <Link
-                  key={opt.value}
-                  href={href}
-                  className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                    isActive ? `${activeBg} text-white` : "bg-white text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50"
-                  }`}
-                >
-                  {opt.label}
-                </Link>
-              );
-            })}
-          </div>
-          <form action="/admin/aliados" method="get" className="flex w-full flex-col gap-3 sm:flex-row lg:max-w-[640px]">
-            <input name="q" defaultValue={q ?? ""} placeholder="Buscar por nombre, responsable o ciudad" className="w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm" />
-            <select name="category" defaultValue={category} className="rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-700">
-              <option value="all">Todas las categorías</option>
-              {ALLY_CATEGORIES.map((value) => (
-                <option key={value} value={value}>{ALLY_CATEGORY_LABELS[value]}</option>
-              ))}
-            </select>
-            <input type="hidden" name="page" value="1" />
-            <input type="hidden" name="tab" value={tab} />
-            {status !== "all" ? <input type="hidden" name="status" value={status} /> : null}
-            <button className={`rounded-lg ${activeBg} px-5 py-2.5 text-sm font-semibold text-white`} type="submit">Buscar</button>
-          </form>
-        </div>
+        <AdminToolbar
+          filters={
+            <AutoSubmitFilterForm id="allies-filter" action="/admin/aliados" method="get" className="flex w-full flex-col gap-3 sm:flex-row">
+              <input name="q" defaultValue={q ?? ""} placeholder="Buscar por nombre, responsable o ciudad" className={`${compactInputClassName} min-w-0 flex-1`} />
+              <select name="status" defaultValue={status} className={compactInputClassName}>
+                {statusOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              </select>
+              <select name="category" defaultValue={category} className={compactInputClassName}>
+                <option value="all">Todas las categorías</option>
+                {ALLY_CATEGORIES.map((value) => <option key={value} value={value}>{ALLY_CATEGORY_LABELS[value]}</option>)}
+              </select>
+              <input type="hidden" name="page" value="1" />
+              <input type="hidden" name="tab" value={tab} />
+            </AutoSubmitFilterForm>
+          }
+          actions={<Link href="/admin/aliados/crear" className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark">Crear aliado</Link>}
+        />
       </div>
+
+      <AdminRecordsSummary total={result.total} />
 
       {result.items.length ? (
         <div className="space-y-4">
-          <div className="hidden overflow-x-auto md:block">
-            <table className="min-w-[900px] w-full text-left text-sm">
-              <thead className="border-b border-stone-200 bg-stone-50/80 text-sm font-semibold text-stone-600">
+          <AdminTableFrame>
+            <table className="admin-mobile-cards min-w-[900px] w-full text-left text-sm">
+              <thead className="border-b border-gray-200 bg-gray-50/80 text-sm font-semibold text-gray-600">
                 <tr>
                   <th className="px-4 py-3">Nombre</th>
                   <th className="px-4 py-3">Categoría</th>
@@ -236,117 +199,59 @@ export default async function AdminInicioPage({
                   <th className="px-4 py-3">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-200">
+              <tbody className="divide-y divide-gray-200">
                 {result.items.map((w) => (
-                  <tr key={w.id} className="hover:bg-stone-50 transition-colors">
-                    <td className="px-4 py-3 align-top leading-tight">
+                  <tr key={w.id} className="hover:bg-gray-50 transition-colors">
+                    <td data-mobile="primary" data-mobile-label="Aliado" className="px-4 py-3 align-top leading-tight">
                       <Link href={`/admin/aliados/${w.id}`} className="font-semibold text-[#F74897] hover:underline">
                         {w.name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 align-top leading-tight">
-                      <span className="inline-flex rounded-full bg-[#FFE4EC] px-2.5 py-1 text-sm font-semibold text-[#D6003F]">
+                    <td data-mobile-label="Categoría" className="px-4 py-3 align-top leading-tight">
+                      <span className="inline-flex rounded-md bg-[#FFE4EC] px-2.5 py-1 text-sm font-semibold text-[#D6003F]">
                         {ALLY_CATEGORY_LABELS[w.category] ?? w.category}
                       </span>
                     </td>
-                    <td className="px-4 py-3 align-top text-stone-700 leading-tight">{w.responsible_name ?? "—"}</td>
-                    <td className="px-4 py-3 align-top leading-tight">
-                      <span className={`inline-block rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide ${STATUS_BADGES[w.status] || "bg-stone-100 text-stone-600"}`}>
+                    <td data-mobile-label="Responsable" className="px-4 py-3 align-top text-gray-700 leading-tight">{w.responsible_name ?? "—"}</td>
+                    <td data-mobile-label="Estado" className="px-4 py-3 align-top leading-tight">
+                        <span className={`inline-block rounded-md px-2.5 py-1 text-sm font-semibold ${STATUS_BADGES[w.status] || "bg-gray-100 text-gray-600"}`}>
                         {STATUS_LABELS[w.status] || w.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 align-top text-stone-600 leading-tight text-sm">{w.city ?? "—"}, {w.state}</td>
-                    <td className="px-4 py-3 align-top leading-tight">
-                      <div className="flex flex-wrap gap-1.5">
+                    <td data-mobile-label="Ubicación" className="px-4 py-3 align-top text-gray-600 leading-tight text-sm">{w.city ?? "—"}, {w.state}</td>
+                    <td data-mobile="actions" data-mobile-label="Acciones" className="px-4 py-3 align-top leading-tight">
+                      <AdminRowActions>
                         <Link
-                           href={`/admin/aliados/${w.id}`}
-                          className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-[#F74897] ring-1 ring-stone-300 hover:bg-stone-50 transition"
+                          href={`/admin/aliados/${w.id}`}
+                          className="block w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
                         >
                           Detalle
                         </Link>
                         {canGenerateAccessLink(w) && (
-                          <GenerateAccessButton workshopId={w.id} workshopName={w.name} />
+                          <AdminActionItem><GenerateAccessButton workshopId={w.id} workshopName={w.name} /></AdminActionItem>
                         )}
                   {w.status === "desactivado" ? (
-                    <form action={reactivateAction}>
-                      <input type="hidden" name="id" value={w.id} />
-                      <button
-                        type="submit"
-                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-green-600 ring-1 ring-green-300 hover:bg-green-50 transition"
-                      >
-                        Reactivar
-                      </button>
-                    </form>
+                    <AdminActionItem>
+                      <form action={reactivateAction}>
+                        <input type="hidden" name="id" value={w.id} />
+                        <button type="submit" className="text-green-700">Reactivar</button>
+                      </form>
+                    </AdminActionItem>
                   ) : w.status === "activo" || w.status === "pausado" ? (
-                    <form action={deactivateAction}>
-                      <input type="hidden" name="id" value={w.id} />
-                      <button
-                        type="submit"
-                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-red-600 ring-1 ring-red-300 hover:bg-red-50 transition"
-                      >
-                        Desactivar
-                      </button>
-                    </form>
+                    <AdminActionItem>
+                      <form action={deactivateAction}>
+                        <input type="hidden" name="id" value={w.id} />
+                        <button type="submit" className="text-red-700">Desactivar</button>
+                      </form>
+                    </AdminActionItem>
                   ) : null}
-                      </div>
+                      </AdminRowActions>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-
-          <div className="grid gap-3 md:hidden">
-            {result.items.map((w) => (
-              <div key={w.id} className="rounded-xl border border-stone-200/80 bg-white/75 p-5 space-y-4">
-                <div className="space-y-1 text-sm text-stone-700">
-                  <Link href={`/admin/aliados/${w.id}`} className="font-semibold text-[#F74897] hover:underline">{w.name}</Link>
-                  <p className="text-stone-600">{w.responsible_name ?? "—"}</p>
-                  <p>
-                    <span className="inline-flex rounded-full bg-[#FFE4EC] px-2.5 py-1 text-sm font-semibold text-[#D6003F]">
-                      {ALLY_CATEGORY_LABELS[w.category] ?? w.category}
-                    </span>
-                  </p>
-                  <p className="text-stone-400">{w.city ?? "—"}, {w.state}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className={`inline-block rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide ${STATUS_BADGES[w.status]}`}>{STATUS_LABELS[w.status]}</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  <Link
-                    href={`/admin/aliados/${w.id}`}
-                    className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-[#F74897] ring-1 ring-stone-300 hover:bg-stone-50 transition"
-                  >
-                    Ver detalle
-                  </Link>
-                  {canGenerateAccessLink(w) && (
-                    <GenerateAccessButton workshopId={w.id} workshopName={w.name} />
-                  )}
-                  {w.status === "desactivado" ? (
-                    <form action={reactivateAction}>
-                      <input type="hidden" name="id" value={w.id} />
-                      <button
-                        type="submit"
-                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-green-600 ring-1 ring-green-300 hover:bg-green-50 transition"
-                      >
-                        Reactivar
-                      </button>
-                    </form>
-                  ) : w.status === "activo" || w.status === "pausado" ? (
-                    <form action={deactivateAction}>
-                      <input type="hidden" name="id" value={w.id} />
-                      <button
-                        type="submit"
-                        className="inline-flex items-center justify-center rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-red-600 ring-1 ring-red-300 hover:bg-red-50 transition"
-                      >
-                        Desactivar
-                      </button>
-                    </form>
-                  ) : null}
-                </div>
-              </div>
-            ))}
-          </div>
+          </AdminTableFrame>
 
           <AdminPagination
             page={result.page}
@@ -357,8 +262,8 @@ export default async function AdminInicioPage({
           />
         </div>
       ) : (
-        <div className="rounded-xl border border-stone-200/80 bg-white/75 p-12 text-center">
-          <p className="text-stone-500 font-medium">No hay aliados que coincidan con los filtros.</p>
+        <div className="bg-white p-12 text-center">
+          <p className="text-gray-500 font-medium">No hay aliados que coincidan con los filtros.</p>
         </div>
       )}
     </div>

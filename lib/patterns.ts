@@ -39,7 +39,7 @@ export async function getAdminPatternsPage({
 
   let query = admin
     .from("sewing_patterns")
-    .select("*", { count: "exact" })
+    .select("id, title, description, difficulty, category, subgroup, file_path, file_size_bytes, image_path, status, created_by_user_id, created_at, updated_at", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -66,7 +66,7 @@ export async function getAdminPatternById(
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
     .from("sewing_patterns")
-    .select("*")
+    .select("id, title, description, difficulty, category, subgroup, file_path, file_size_bytes, image_path, status, created_by_user_id, created_at, updated_at")
     .eq("id", id)
     .maybeSingle();
   assertQueryOk(error, "No se pudo cargar el patrón");

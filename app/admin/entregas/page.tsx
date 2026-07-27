@@ -1,280 +1,255 @@
+import Link from "next/link";
+
+import { AdminActionItem, AdminRecordsSummary, AdminRowActions, AdminTableFrame, AdminToolbar } from "@/components/admin-data-ui";
 import { AdminPageHeader } from "@/components/admin-page-header";
+import { AdminPagination } from "@/components/admin-pagination";
+import { AutoSubmitFilterForm } from "@/components/auto-submit-filter-form";
 import { EmptyState } from "@/components/empty-state";
+import { LazyDeliveryTaskSelect } from "@/components/lazy-delivery-task-select";
 import { Modal } from "@/components/modal";
-import { Button, SectionCard, compactInputClassName } from "@/components/ui";
-import { DELIVERY_STATUS_LABELS, DELIVERY_STATUS_TONES } from "@/lib/constants";
+import { Button, compactInputClassName } from "@/components/ui";
+import { ALLY_DELIVERY_STATUSES, DELIVERY_STATUS_LABELS, DELIVERY_STATUS_TONES } from "@/lib/constants";
 import { requireOperationsUser, requireWorkshopAdminUser } from "@/lib/auth";
-import { getRequesterAidRequests } from "@/lib/requesters";
-import { cn, formatDate, formatDateTime } from "@/lib/utils";
+import { getDeliveriesPage, getRequesterDeliveriesPage } from "@/lib/production";
+import type { DeliveryWithRelations, RequesterDeliveryWithRelations } from "@/lib/types";
+import { cn, formatDate } from "@/lib/utils";
 
 import { requireCurrentAlly } from "../ally-scope";
 import { requireCurrentRequester } from "../requester-scope";
-import { createDeliveryAction, updateDeliveryLogisticsAction, updateDeliveryStatusAction } from "./actions";
-import { saveTaskMaterialUsageAction } from "../tareas/actions";
-import { getAdminDeliveries, getAllyDeliveries, getAllyTaskBoard, getTaskOptionsForDelivery } from "@/lib/production";
+import { createDeliveryAction } from "./actions";
 
-function isUsageEditable(deliveryStatus: string) {
-  return !["recibida", "cancelada"].includes(deliveryStatus);
+const PAGE_SIZE = 20;
+
+function getStringParam(params: Record<string, string | string[] | undefined>, key: string) {
+  const value = params[key];
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
-export default async function AdminEntregasPage() {
-  const user = await requireOperationsUser();
+function getPageParam(params: Record<string, string | string[] | undefined>) {
+  const value = Number(getStringParam(params, "page"));
+  return Number.isFinite(value) && value > 0 ? Math.floor(value) : 1;
+}
 
-  if (user.app_metadata?.role === "aliado") {
+function pageHref(page: number, status: string) {
+  const params = new URLSearchParams();
+  if (status !== "all") params.set("status", status);
+  if (page > 1) params.set("page", String(page));
+  const query = params.toString();
+  return query ? `/admin/entregas?${query}` : "/admin/entregas";
+}
+
+function deliveryDate(delivery: DeliveryWithRelations) {
+  return delivery.received_at ?? delivery.delivered_at ?? delivery.scheduled_for ?? delivery.created_at;
+}
+
+function DeliveryStatus({ status }: { status: string }) {
+  return (
+    <span className={cn("inline-flex rounded-md px-2.5 py-1 text-sm font-semibold", DELIVERY_STATUS_TONES[status] ?? "bg-gray-100 text-gray-600")}>
+      {DELIVERY_STATUS_LABELS[status] ?? status}
+    </span>
+  );
+}
+
+function DeliveryActions({ deliveryId }: { deliveryId: string }) {
+  return (
+    <AdminRowActions>
+      <AdminActionItem>
+        <Link href={`/admin/entregas/${deliveryId}`} className="block px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">
+          Ver detalle
+        </Link>
+      </AdminActionItem>
+    </AdminRowActions>
+  );
+}
+
+function AllyDeliveryTable({ deliveries }: { deliveries: DeliveryWithRelations[] }) {
+  return (
+    <AdminTableFrame className="border-y border-gray-200">
+      <table className="admin-mobile-cards min-w-[780px] w-full text-left text-sm">
+        <thead className="bg-gray-50 text-sm font-semibold text-gray-600">
+          <tr>
+            <th className="px-4 py-3">Entrega</th>
+            <th className="px-4 py-3">Tarea</th>
+            <th className="px-4 py-3">Estado</th>
+            <th className="px-4 py-3">Último movimiento</th>
+            <th className="px-4 py-3 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200">
+          {deliveries.map((delivery) => (
+            <tr key={delivery.id} className="hover:bg-gray-50">
+              <td data-mobile="primary" data-mobile-label="Entrega" className="px-4 py-3">
+                <Link href={`/admin/entregas/${delivery.id}`} className="font-semibold text-ink hover:text-primary">
+                  {delivery.title}
+                </Link>
+                {delivery.quantity ? <p className="mt-1 text-sm text-gray-500">Cantidad: {delivery.quantity}</p> : null}
+              </td>
+              <td data-mobile-label="Tarea" className="px-4 py-3 text-gray-600">{delivery.task?.title ?? "Sin tarea"}</td>
+              <td data-mobile-label="Estado" className="px-4 py-3"><DeliveryStatus status={delivery.status} /></td>
+              <td data-mobile-label="Fecha" className="px-4 py-3 text-gray-500">{formatDate(deliveryDate(delivery))}</td>
+              <td data-mobile="actions" data-mobile-label="Acciones" className="px-4 py-3 text-right"><DeliveryActions deliveryId={delivery.id} /></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </AdminTableFrame>
+  );
+}
+
+function AdminDeliveryTable({ deliveries }: { deliveries: DeliveryWithRelations[] }) {
+  return (
+    <AdminTableFrame className="border-y border-gray-200">
+      <table className="admin-mobile-cards min-w-[900px] w-full text-left text-sm">
+        <thead className="bg-gray-50 text-sm font-semibold text-gray-600">
+          <tr>
+            <th className="px-4 py-3">Entrega</th>
+            <th className="px-4 py-3">Aliado</th>
+            <th className="px-4 py-3">Tarea</th>
+            <th className="px-4 py-3">Estado</th>
+            <th className="px-4 py-3">Fecha</th>
+            <th className="px-4 py-3 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200">
+          {deliveries.map((delivery) => (
+            <tr key={delivery.id} className="hover:bg-gray-50">
+              <td data-mobile="primary" data-mobile-label="Entrega" className="px-4 py-3">
+                <Link href={`/admin/entregas/${delivery.id}`} className="font-semibold text-ink hover:text-primary">
+                  {delivery.title}
+                </Link>
+                {delivery.quantity ? <p className="mt-1 text-sm text-gray-500">Cantidad: {delivery.quantity}</p> : null}
+              </td>
+              <td data-mobile-label="Aliado" className="px-4 py-3 text-gray-600">{delivery.ally?.name ?? "Sin aliado"}</td>
+              <td data-mobile-label="Tarea" className="px-4 py-3 text-gray-600">{delivery.task?.title ?? "Sin tarea"}</td>
+              <td data-mobile-label="Estado" className="px-4 py-3"><DeliveryStatus status={delivery.status} /></td>
+              <td data-mobile-label="Fecha" className="px-4 py-3 text-gray-500">{formatDate(deliveryDate(delivery))}</td>
+              <td data-mobile="actions" data-mobile-label="Acciones" className="px-4 py-3 text-right"><DeliveryActions deliveryId={delivery.id} /></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </AdminTableFrame>
+  );
+}
+
+function RequesterDeliveryTable({ deliveries }: { deliveries: RequesterDeliveryWithRelations[] }) {
+  return (
+    <AdminTableFrame className="border-y border-gray-200">
+      <table className="admin-mobile-cards min-w-[820px] w-full text-left text-sm">
+        <thead className="bg-gray-50 text-sm font-semibold text-gray-600">
+          <tr>
+            <th className="px-4 py-3">Entrega</th>
+            <th className="px-4 py-3">Solicitud / tarea</th>
+            <th className="px-4 py-3">Estado</th>
+            <th className="px-4 py-3">Fecha</th>
+            <th className="px-4 py-3 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200">
+          {deliveries.map((delivery) => (
+            <tr key={delivery.id} className="hover:bg-gray-50">
+              <td data-mobile="primary" data-mobile-label="Entrega" className="px-4 py-3">
+                <Link href={`/admin/entregas/${delivery.id}`} className="font-semibold text-ink hover:text-primary">
+                  {delivery.title}
+                </Link>
+                {delivery.quantity ? <p className="mt-1 text-sm text-gray-500">Cantidad: {delivery.quantity}</p> : null}
+              </td>
+              <td data-mobile-label="Solicitud / tarea" className="px-4 py-3 text-gray-600">
+                <p>{delivery.request.title}</p>
+                <p className="mt-1 text-sm text-gray-500">{delivery.task.title}</p>
+              </td>
+              <td data-mobile-label="Estado" className="px-4 py-3"><DeliveryStatus status={delivery.status} /></td>
+              <td data-mobile-label="Fecha" className="px-4 py-3 text-gray-500">{formatDate(deliveryDate(delivery))}</td>
+              <td data-mobile="actions" data-mobile-label="Acciones" className="px-4 py-3 text-right"><DeliveryActions deliveryId={delivery.id} /></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </AdminTableFrame>
+  );
+}
+
+function DeliveryStatusFilter({ status }: { status: string }) {
+  return (
+    <AutoSubmitFilterForm action="/admin/entregas" method="get" className="flex w-full max-w-xs gap-3">
+      <select name="status" defaultValue={status} className={compactInputClassName}>
+        <option value="all">Todos los estados</option>
+        {ALLY_DELIVERY_STATUSES.map((value) => <option key={value} value={value}>{DELIVERY_STATUS_LABELS[value]}</option>)}
+      </select>
+    </AutoSubmitFilterForm>
+  );
+}
+
+function CreateDeliveryModal({ allyId }: { allyId?: string }) {
+  return (
+    <Modal
+      triggerLabel="Nueva entrega"
+      triggerVariant="primary"
+      title="Crear entrega"
+      description="Registra una entrega desde una tarea terminada."
+    >
+      <form action={createDeliveryAction} className="grid gap-4 md:grid-cols-2">
+        <LazyDeliveryTaskSelect allyId={allyId} />
+        <input className={compactInputClassName} name="title" placeholder="Título de la entrega" />
+        <input className={compactInputClassName} name="scheduledFor" type="datetime-local" />
+        <input className={compactInputClassName} name="quantity" placeholder="Cantidad o resumen" />
+        <textarea className={`${compactInputClassName} min-h-[80px] md:col-span-2`} name="description" placeholder="Descripción" />
+        <textarea className={`${compactInputClassName} min-h-[80px] md:col-span-2`} name="notes" placeholder="Notas" />
+        <div className="md:col-span-2"><Button type="submit">Crear entrega</Button></div>
+      </form>
+    </Modal>
+  );
+}
+
+export default async function AdminEntregasPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const user = await requireOperationsUser();
+  const params = await searchParams;
+  const page = getPageParam(params);
+  const status = getStringParam(params, "status") ?? "all";
+  const role = user.app_metadata?.role;
+
+  if (role === "aliado") {
     const ally = await requireCurrentAlly();
     if (!ally) return null;
-
-    const [deliveries, tasks] = await Promise.all([getAllyDeliveries(ally.id), getAllyTaskBoard(ally.id)]);
-    const tasksById = new Map(tasks.map((task) => [task.id, task]));
+    const deliveries = await getDeliveriesPage({ allyId: ally.id, page, limit: PAGE_SIZE, status });
 
     return (
       <div className="space-y-6">
-        <AdminPageHeader
-          eyebrow="Cuenta"
-          title="Entregas"
-          description="Marca tus entregas como enviadas y, si hace falta, corrige el consumo reportado antes del cierre final."
-          navigation={{ baseHref: "/admin/tareas", baseLabel: "Tareas", currentLabel: "Entregas" }}
-        />
-
-        {deliveries.length ? (
-          <div className="space-y-4">
-            {deliveries.map((delivery) => {
-              const task = delivery.task_id ? tasksById.get(delivery.task_id) : null;
-
-              return (
-                <SectionCard key={delivery.id} className="space-y-4 p-6">
-                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-lg font-semibold text-ink">{delivery.title}</h2>
-                        <span className={cn("inline-flex rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide", DELIVERY_STATUS_TONES[delivery.status] ?? "bg-stone-100 text-stone-600")}>{DELIVERY_STATUS_LABELS[delivery.status] ?? delivery.status}</span>
-                      </div>
-                      {delivery.description ? <p className="text-sm text-stone-600">{delivery.description}</p> : null}
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-500">
-                        {delivery.quantity ? <span>Cantidad: {delivery.quantity}</span> : null}
-                        <span>Registrada: {formatDate(delivery.created_at)}</span>
-                        {delivery.scheduled_for ? <span>Programada: {formatDateTime(delivery.scheduled_for)}</span> : null}
-                        {delivery.delivered_at ? <span>Entregada: {formatDate(delivery.delivered_at)}</span> : null}
-                        {delivery.received_at ? <span>Recibida: {formatDate(delivery.received_at)}</span> : null}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3">
-                      {delivery.status === "pendiente" ? (
-                        <form action={updateDeliveryStatusAction}>
-                          <input type="hidden" name="deliveryId" value={delivery.id} />
-                          <input type="hidden" name="status" value="entregada" />
-                          <Button type="submit">Marcar entregada</Button>
-                        </form>
-                      ) : null}
-
-                      {task && isUsageEditable(delivery.status) && task.material_assignments?.length ? (
-                        <Modal triggerLabel="Ajustar consumo" title="Ajustar consumo de materia prima" description="Corrige el consumo reportado antes del cierre final.">
-                          <form action={saveTaskMaterialUsageAction} className="space-y-4">
-                            <input type="hidden" name="taskId" value={task.id} />
-                            <div className="space-y-3">
-                              {task.material_assignments.map((assignment) => (
-                                <label key={assignment.id} className="block space-y-2">
-                                  <span className="text-sm font-medium text-stone-800">{assignment.name_snapshot}</span>
-                                  <input className={compactInputClassName} name={`usedQuantity:${assignment.id}`} type="number" min="0" step="0.01" defaultValue={assignment.used_quantity ?? ""} />
-                                </label>
-                              ))}
-                            </div>
-                            <label className="block space-y-2">
-                              <span className="text-sm font-medium text-stone-800">Notas del taller</span>
-                              <textarea className={`${compactInputClassName} min-h-[96px]`} name="allyNotes" defaultValue={task.ally_notes ?? ""} />
-                            </label>
-                            <Button type="submit" name="intent" value="save" variant="secondary">Guardar ajuste</Button>
-                          </form>
-                        </Modal>
-                      ) : null}
-                    </div>
-                  </div>
-                </SectionCard>
-              );
-            })}
-          </div>
-        ) : (
-          <EmptyState title="Sin entregas registradas" description="Las entregas de tus tareas completadas aparecerán aquí." />
-        )}
+        <AdminPageHeader eyebrow="Cuenta" title="Entregas" description="Consulta el estado de tus entregas y abre el detalle para gestionarlas." />
+        <AdminToolbar filters={<DeliveryStatusFilter status={status} />} actions={<CreateDeliveryModal allyId={ally.id} />} />
+        <AdminRecordsSummary total={deliveries.total} />
+        {deliveries.items.length ? <><AllyDeliveryTable deliveries={deliveries.items} /><AdminPagination page={deliveries.page} pageCount={deliveries.pageCount} total={deliveries.total} limit={deliveries.limit} hrefForPage={(nextPage) => pageHref(nextPage, status)} /></> : <EmptyState title="Sin entregas registradas" description="Las entregas de tus tareas completadas aparecerán aquí." />}
       </div>
     );
   }
 
-  if (user.app_metadata?.role === "solicitante") {
+  if (role === "solicitante") {
     const requester = await requireCurrentRequester();
-    const requests = await getRequesterAidRequests(requester.id);
-    const deliveries = requests.flatMap((request) =>
-      (request.tasks ?? []).flatMap((task) =>
-        (task.deliveries ?? []).map((delivery) => ({
-          ...delivery,
-          task,
-          request,
-        })),
-      ),
-    );
+    const deliveries = await getRequesterDeliveriesPage({ requesterId: requester.id, page, limit: PAGE_SIZE, status });
 
     return (
       <div className="space-y-6">
-        <AdminPageHeader
-          eyebrow="Cuenta"
-          title="Entregas"
-          description="Confirma la recepción final de las entregas asociadas a tus solicitudes."
-          navigation={{ baseHref: "/admin/solicitudes", baseLabel: "Solicitudes", currentLabel: "Entregas" }}
-        />
-
-        {deliveries.length ? (
-          <div className="space-y-4">
-            {deliveries.map((delivery) => (
-              <SectionCard key={delivery.id} className="space-y-4 p-6">
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-lg font-semibold text-ink">{delivery.title}</h2>
-                    <span className={cn("inline-flex rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide", DELIVERY_STATUS_TONES[delivery.status] ?? "bg-stone-100 text-stone-600")}>{DELIVERY_STATUS_LABELS[delivery.status] ?? delivery.status}</span>
-                  </div>
-                  <p className="text-sm text-stone-600">Solicitud: {delivery.request.title}</p>
-                  <p className="text-sm text-stone-600">Tarea: {delivery.task.title}</p>
-                  {delivery.quantity ? <p className="text-sm text-stone-500">Cantidad: {delivery.quantity}</p> : null}
-                  {delivery.description ? <p className="text-sm text-stone-500">{delivery.description}</p> : null}
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-500">
-                    <span>Registrada: {formatDate(delivery.created_at)}</span>
-                    {delivery.scheduled_for ? <span>Programada: {formatDateTime(delivery.scheduled_for)}</span> : null}
-                    {delivery.delivered_at ? <span>Entregada: {formatDate(delivery.delivered_at)}</span> : null}
-                    {delivery.received_at ? <span>Recibida: {formatDate(delivery.received_at)}</span> : null}
-                  </div>
-                </div>
-
-                {delivery.status === "entregada" ? (
-                  <Modal triggerLabel="Confirmar recepcion" title="Confirmar recepción" description="Registra la recepción final de esta entrega.">
-                    <form action={updateDeliveryStatusAction} className="space-y-3">
-                      <input type="hidden" name="deliveryId" value={delivery.id} />
-                      <input type="hidden" name="status" value="recibida" />
-                      <input className={compactInputClassName} name="receivedBy" placeholder="Recibido por" defaultValue={requester.contact_name ?? requester.name} />
-                      <textarea className={`${compactInputClassName} min-h-[80px]`} name="notes" defaultValue={delivery.notes ?? ""} placeholder="Notas de recepción" />
-                      <Button type="submit">Confirmar recepción</Button>
-                    </form>
-                  </Modal>
-                ) : null}
-              </SectionCard>
-            ))}
-          </div>
-        ) : (
-          <EmptyState title="Sin entregas registradas" description="Las entregas asociadas a tus solicitudes aparecerán aquí para confirmar su recepción." />
-        )}
+        <AdminPageHeader eyebrow="Cuenta" title="Entregas" description="Consulta las entregas asociadas a tus solicitudes y abre el detalle para confirmar su recepción." />
+        <AdminToolbar filters={<DeliveryStatusFilter status={status} />} />
+        <AdminRecordsSummary total={deliveries.total} />
+        {deliveries.items.length ? <><RequesterDeliveryTable deliveries={deliveries.items} /><AdminPagination page={deliveries.page} pageCount={deliveries.pageCount} total={deliveries.total} limit={deliveries.limit} hrefForPage={(nextPage) => pageHref(nextPage, status)} /></> : <EmptyState title="Sin entregas registradas" description="Las entregas asociadas a tus solicitudes aparecerán aquí." />}
       </div>
     );
   }
 
   await requireWorkshopAdminUser();
-  const [deliveries, taskOptions] = await Promise.all([getAdminDeliveries(), getTaskOptionsForDelivery()]);
+  const deliveries = await getDeliveriesPage({ page, limit: PAGE_SIZE, status });
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        eyebrow="Promoda"
-        title="Entregas"
-        description="Abre entregas desde tareas completadas y marca su recepción final para cerrar el flujo."
-        navigation={{ baseHref: "/admin/aliados", baseLabel: "Aliados", currentLabel: "Entregas" }}
-      />
-
-      <div className="flex justify-end">
-        <Modal triggerLabel="Nueva entrega" title="Crear entrega" description="Abre una entrega nueva o parcial desde una tarea completada.">
-          <form action={createDeliveryAction} className="grid gap-4 md:grid-cols-2">
-            <select className={compactInputClassName} name="taskId" required defaultValue="">
-              <option value="" disabled>Selecciona una tarea completada</option>
-              {taskOptions.map((task) => (
-                <option key={task.id} value={task.id}>{task.title} {task.ally?.name ? `- ${task.ally.name}` : ""}</option>
-              ))}
-            </select>
-            <input className={compactInputClassName} name="title" placeholder="Titulo de la entrega" />
-            <input className={compactInputClassName} name="scheduledFor" type="datetime-local" />
-            <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="description" placeholder="Descripcion" />
-            <input className={compactInputClassName} name="quantity" placeholder="Cantidad o resumen" />
-            <textarea className={`${compactInputClassName} min-h-[96px] md:col-span-2`} name="notes" placeholder="Notas" />
-            <div className="md:col-span-2">
-              <Button type="submit">Crear entrega o parcial</Button>
-            </div>
-          </form>
-        </Modal>
-      </div>
-
-      {deliveries.length ? (
-        <div className="space-y-4">
-          {deliveries.map((delivery) => (
-            <SectionCard key={delivery.id} className="space-y-4 p-6">
-              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-lg font-semibold text-ink">{delivery.title}</h2>
-                    <span className={cn("inline-flex rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide", DELIVERY_STATUS_TONES[delivery.status] ?? "bg-stone-100 text-stone-600")}>{DELIVERY_STATUS_LABELS[delivery.status] ?? delivery.status}</span>
-                  </div>
-                  {delivery.description ? <p className="text-sm text-stone-600">{delivery.description}</p> : null}
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-500">
-                    {delivery.ally?.name ? <span>Aliado: {delivery.ally.name}</span> : null}
-                    {delivery.task?.title ? <span>Tarea: {delivery.task.title}</span> : null}
-                    {delivery.quantity ? <span>Cantidad: {delivery.quantity}</span> : null}
-                    <span>Registrada: {formatDate(delivery.created_at)}</span>
-                    {delivery.scheduled_for ? <span>Programada: {formatDateTime(delivery.scheduled_for)}</span> : null}
-                    {delivery.delivered_at ? <span>Entregada: {formatDate(delivery.delivered_at)}</span> : null}
-                    {delivery.received_at ? <span>Recibida: {formatDate(delivery.received_at)}</span> : null}
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-3">
-                  {! ["recibida", "cancelada"].includes(delivery.status) ? (
-                    <Modal triggerLabel="Editar logistica" title="Editar logística" description="Actualiza la programación y los datos operativos de la entrega.">
-                      <form action={updateDeliveryLogisticsAction} className="space-y-3">
-                        <input type="hidden" name="deliveryId" value={delivery.id} />
-                        <input className={compactInputClassName} name="title" defaultValue={delivery.title} />
-                        <input className={compactInputClassName} name="scheduledFor" type="datetime-local" defaultValue={delivery.scheduled_for ? new Date(delivery.scheduled_for).toISOString().slice(0, 16) : ""} />
-                        <input className={compactInputClassName} name="quantity" defaultValue={delivery.quantity ?? ""} placeholder="Cantidad o resumen" />
-                        <textarea className={`${compactInputClassName} min-h-[80px]`} name="description" defaultValue={delivery.description ?? ""} placeholder="Descripción" />
-                        <textarea className={`${compactInputClassName} min-h-[80px]`} name="notes" defaultValue={delivery.notes ?? ""} placeholder="Notas logísticas" />
-                        <Button type="submit" variant="secondary">Guardar logística</Button>
-                      </form>
-                    </Modal>
-                  ) : null}
-
-                  {(delivery.status === "pendiente" || delivery.status === "entregada") ? (
-                    <Modal triggerLabel="Marcar recibida" title="Marcar recibida" description="Confirma la recepción interna de esta entrega.">
-                      <form action={updateDeliveryStatusAction} className="space-y-3">
-                        <input type="hidden" name="deliveryId" value={delivery.id} />
-                        <input type="hidden" name="status" value="recibida" />
-                        <input className={compactInputClassName} name="receivedBy" placeholder="Recibido por" defaultValue={delivery.received_by ?? "Promoda"} />
-                        <textarea className={`${compactInputClassName} min-h-[80px]`} name="notes" defaultValue={delivery.notes ?? ""} placeholder="Notas de recepción" />
-                        <Button type="submit">Marcar recibida</Button>
-                      </form>
-                    </Modal>
-                  ) : null}
-
-                  {delivery.status === "entregada" ? (
-                    <Modal triggerLabel="Reprogramar" title="Reprogramar a pendiente" description="Devuelve la entrega al estado pendiente.">
-                      <form action={updateDeliveryStatusAction} className="space-y-3">
-                        <input type="hidden" name="deliveryId" value={delivery.id} />
-                        <input type="hidden" name="status" value="pendiente" />
-                        <Button type="submit" variant="secondary">Confirmar reprogramacion</Button>
-                      </form>
-                    </Modal>
-                  ) : null}
-
-                  {delivery.status !== "cancelada" && delivery.status !== "recibida" ? (
-                    <Modal triggerLabel="Cancelar" title="Cancelar entrega" description="Cancela esta entrega y saca la acción del flujo principal.">
-                      <form action={updateDeliveryStatusAction} className="space-y-3">
-                        <input type="hidden" name="deliveryId" value={delivery.id} />
-                        <input type="hidden" name="status" value="cancelada" />
-                        <input type="hidden" name="notes" value={delivery.notes ?? ""} />
-                        <Button type="submit" variant="secondary">Confirmar cancelacion</Button>
-                      </form>
-                    </Modal>
-                  ) : null}
-                </div>
-              </div>
-            </SectionCard>
-          ))}
-        </div>
-      ) : (
-        <EmptyState title="Sin entregas registradas" description="Crea una entrega desde una tarea completada para cerrar el flujo." />
-      )}
+      <AdminPageHeader eyebrow="Promoda" title="Entregas" description="Consulta el flujo de entregas y abre el detalle para gestionar logística y recepción." />
+      <AdminToolbar filters={<DeliveryStatusFilter status={status} />} actions={<CreateDeliveryModal />} />
+      <AdminRecordsSummary total={deliveries.total} />
+      {deliveries.items.length ? <><AdminDeliveryTable deliveries={deliveries.items} /><AdminPagination page={deliveries.page} pageCount={deliveries.pageCount} total={deliveries.total} limit={deliveries.limit} hrefForPage={(nextPage) => pageHref(nextPage, status)} /></> : <EmptyState title="Sin entregas registradas" description="Crea una entrega desde una tarea completada para cerrar el flujo." />}
     </div>
   );
 }

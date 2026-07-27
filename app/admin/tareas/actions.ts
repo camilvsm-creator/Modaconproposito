@@ -3,10 +3,17 @@
 import { revalidatePath } from "next/cache";
 
 import { logAuditEvent } from "@/lib/audit";
+import { closeWorkshopNeedAction } from "@/app/admin/ally-actions";
 import { requireWorkshopAdminUser, requireWorkshopUser } from "@/lib/auth";
 import { applyRawMaterialMovement } from "@/lib/raw-materials";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getWorkshopByUserId } from "@/lib/workshops";
+
+const TASK_ACTION_FIELDS = `
+  id, ally_id, aid_request_id, title, description, expected_output,
+  urgency, status, admin_notes, ally_notes, assigned_at, due_date, completed_at,
+  published_at, closed_at, created_at, updated_at, ally:allies(id, name, slug)
+`;
 
 function toNumberOrNull(value: FormDataEntryValue | null) {
   if (typeof value !== "string") return null;
@@ -16,6 +23,11 @@ function toNumberOrNull(value: FormDataEntryValue | null) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+export async function closeOwnTaskAction(formData: FormData): Promise<void> {
+  const result = await closeWorkshopNeedAction(formData);
+  if (result.error) throw new Error(result.error);
+}
+
 async function getTaskForAlly(userId: string, taskId: string) {
   const admin = createSupabaseAdminClient();
   const ally = await getWorkshopByUserId(userId);
@@ -23,7 +35,7 @@ async function getTaskForAlly(userId: string, taskId: string) {
 
   const { data, error } = await admin
     .from("assigned_tasks")
-    .select("*, ally:allies(id, name, slug)")
+    .select(TASK_ACTION_FIELDS)
     .eq("id", taskId)
     .eq("ally_id", ally.id)
     .maybeSingle();
@@ -37,7 +49,7 @@ async function getTaskForAdmin(taskId: string) {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("assigned_tasks")
-    .select("*, ally:allies(id, name, slug)")
+    .select(TASK_ACTION_FIELDS)
     .eq("id", taskId)
     .maybeSingle();
 
@@ -192,6 +204,7 @@ export async function updateAssignedTaskAdminAction(formData: FormData): Promise
   });
 
   revalidatePath("/admin/tareas");
+  revalidatePath(`/admin/tareas/${taskId}`);
   revalidatePath("/admin/entregas");
   revalidatePath("/admin/solicitudes");
 }
@@ -273,6 +286,7 @@ export async function assignMaterialToTaskAction(formData: FormData): Promise<vo
   });
 
   revalidatePath("/admin/tareas");
+  revalidatePath(`/admin/tareas/${taskId}`);
   revalidatePath("/admin/materia-prima");
   revalidatePath("/admin/entregas");
 }
@@ -299,6 +313,7 @@ export async function startAssignedTaskAction(formData: FormData): Promise<void>
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/tareas");
+  revalidatePath(`/admin/tareas/${taskId}`);
 }
 
 export async function saveTaskMaterialUsageAction(formData: FormData): Promise<void> {
@@ -348,6 +363,7 @@ export async function saveTaskMaterialUsageAction(formData: FormData): Promise<v
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/tareas");
+  revalidatePath(`/admin/tareas/${taskId}`);
   revalidatePath("/admin/materia-prima");
   revalidatePath("/admin/entregas");
 }
@@ -377,6 +393,7 @@ export async function createTaskIncidentAction(formData: FormData): Promise<void
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/tareas");
+  revalidatePath(`/admin/tareas/${taskId}`);
 }
 
 export async function resolveTaskIncidentAction(formData: FormData): Promise<void> {
@@ -407,4 +424,5 @@ export async function resolveTaskIncidentAction(formData: FormData): Promise<voi
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/tareas");
+  revalidatePath(`/admin/tareas/${taskId}`);
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { EmptyState } from "@/components/empty-state";
+import { AutoSubmitFilterForm } from "@/components/auto-submit-filter-form";
 import { WorkshopCard } from "@/components/workshop-card";
 import { LinkButton } from "@/components/ui";
 import { ALLY_CATEGORIES, ALLY_CATEGORY_LABELS } from "@/lib/constants";
@@ -96,7 +97,7 @@ export default async function AlliesPage({
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="space-y-6">
             <div className="rounded-2xl border border-stone-200 bg-white p-4">
-              <form action="/aliados" method="get" className="grid gap-3 md:grid-cols-[1fr_220px_auto]">
+              <AutoSubmitFilterForm action="/aliados" method="get" className="grid gap-3 md:grid-cols-[1fr_220px]">
                 <input name="q" defaultValue={getStringParam(filters, "q") ?? ""} placeholder="Buscar por nombre, ciudad o actividad" className="rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm" />
                 <select name="category" defaultValue={getStringParam(filters, "category") ?? ""} className="rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-700">
                   <option value="">Todas las categorías</option>
@@ -104,8 +105,7 @@ export default async function AlliesPage({
                     <option key={value} value={value}>{ALLY_CATEGORY_LABELS[value]}</option>
                   ))}
                 </select>
-                <button className="rounded-lg bg-[#F74897] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#D6003F]" type="submit">Filtrar</button>
-              </form>
+              </AutoSubmitFilterForm>
             </div>
             <div id="allies-list" className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {allies.length ? (

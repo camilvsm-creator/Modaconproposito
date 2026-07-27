@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        canvas: "#FBF7F3",
+        canvas: "#FFFFFF",
         paper: "#FFFFFF",
         ink: "#1F1A17",
         primary: {
@@ -41,7 +41,7 @@ const config: Config = {
         xl2: "1.5rem",
       },
       fontFamily: {
-        sans: ["var(--font-source-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["var(--font-poppins)", "ui-sans-serif", "system-ui", "sans-serif"],
       },
     },
   },

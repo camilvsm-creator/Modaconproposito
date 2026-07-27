@@ -14,7 +14,7 @@ export default async function AdminActivarTallerPage({
     return (
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <SectionCard className="p-8">
-          <p className="text-sm text-stone-600">No encontramos un token de activación válido.</p>
+          <p className="text-sm text-gray-600">No encontramos un token de activación válido.</p>
         </SectionCard>
       </div>
     );
@@ -32,7 +32,7 @@ export default async function AdminActivarTallerPage({
       {!isValid || !workshop ? (
         <SectionCard className="space-y-3 p-8">
           <h1 className="text-2xl font-semibold text-ink">No pudimos activar tu cuenta</h1>
-          <p className="text-sm leading-6 text-stone-600">
+          <p className="text-sm leading-6 text-gray-600">
             Este enlace ya no está disponible. Si lo necesitas, pide al equipo que te envíe un enlace nuevo.
           </p>
         </SectionCard>

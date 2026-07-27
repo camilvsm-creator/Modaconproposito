@@ -15,6 +15,8 @@ import type {
   WorkshopNeedWithWorkshopName,
   WorkshopPhoto,
   WorkshopVolunteer,
+  Volunteer,
+  PagedResult,
 } from "@/lib/types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
@@ -22,19 +24,31 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getSiteUrl } from "@/lib/site-url";
 import { HELP_TYPE_GROUPS } from "@/lib/constants";
 
-type PagedResult<T> = {
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
-  pageCount: number;
-};
-
 function assertQueryOk(error: { message: string } | null, context: string) {
   if (error) {
     throw new Error(`${context}: ${error.message}`);
   }
 }
+
+const ALLY_DETAIL_FIELDS = `
+  id, user_id, category, name, slug, responsible_name, email, phone, whatsapp,
+  instagram, state, city, municipality, public_location, description, what_they_do,
+  initial_photo_path, avatar_path, identity_document, public_name_allowed,
+  public_location_allowed, public_instagram_allowed, public_whatsapp_allowed,
+  status, admin_notes, approved_by, approved_at, rejected_at, created_at, updated_at
+`;
+
+const TASK_FIELDS = `
+  id, ally_id, aid_request_id, title, description, expected_output,
+  urgency, status, admin_notes, ally_notes, assigned_at, due_date, completed_at,
+  published_at, closed_at, created_at, updated_at
+`;
+
+const OFFER_FIELDS = `
+  id, ally_id, collaborator_id, aid_request_id, need_id, donor_name, donor_contact,
+  donor_email, donor_phone, help_type, description, quantity, availability, location,
+  status, admin_notes, created_at, updated_at
+`;
 
 function normalizeTask<T extends Record<string, unknown>>(task: T): T & {
   requested_items: string | null;
@@ -141,7 +155,7 @@ export const getAdminAlliesPage = getAdminWorkshopsPage;
 
 export async function getAdminWorkshopById(id: string) {
   const admin = await createSupabaseServerClient();
-  const { data, error } = await admin.from("allies").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await admin.from("allies").select(ALLY_DETAIL_FIELDS).eq("id", id).maybeSingle();
   assertQueryOk(error, "No se pudo cargar el aliado");
   return (data ?? null) as Workshop | null;
 }
@@ -152,11 +166,44 @@ export async function getAdminWorkshopNeeds(allyId: string): Promise<WorkshopNee
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
     .from("assigned_tasks")
-    .select("*")
+    .select(TASK_FIELDS)
     .eq("ally_id", allyId)
     .order("created_at", { ascending: false });
   assertQueryOk(error, "No se pudieron cargar las tareas del aliado");
   return normalizeTasks(data) as unknown as WorkshopNeed[];
+}
+
+export async function getAdminWorkshopNeedsPage({
+  allyId,
+  page = 1,
+  limit = 20,
+}: {
+  allyId: string;
+  page?: number;
+  limit?: number;
+}): Promise<PagedResult<WorkshopNeed>> {
+  const admin = await createSupabaseServerClient();
+  page = Math.max(page, 1);
+  limit = Math.min(Math.max(limit, 1), 100);
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  const { data, count, error } = await admin
+    .from("assigned_tasks")
+    .select(TASK_FIELDS, { count: "exact" })
+    .eq("ally_id", allyId)
+    .order("created_at", { ascending: false })
+    .range(from, to);
+  assertQueryOk(error, "No se pudieron cargar las tareas del aliado");
+
+  const total = count ?? 0;
+  return {
+    items: normalizeTasks(data) as unknown as WorkshopNeed[],
+    total,
+    page,
+    limit,
+    pageCount: Math.max(Math.ceil(total / limit), 1),
+  };
 }
 
 export const getAdminAllyTasks = getAdminWorkshopNeeds;
@@ -165,11 +212,44 @@ export async function getAdminWorkshopPhotos(allyId: string): Promise<WorkshopPh
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
     .from("ally_photos")
-    .select("*")
+    .select("id, ally_id, title, description, storage_path, status, uploaded_by, reviewed_by, reviewed_at, created_at, updated_at")
     .eq("ally_id", allyId)
     .order("created_at", { ascending: false });
   assertQueryOk(error, "No se pudieron cargar las fotos del aliado");
   return (data ?? []) as WorkshopPhoto[];
+}
+
+export async function getAdminWorkshopPhotosPage({
+  allyId,
+  page = 1,
+  limit = 20,
+}: {
+  allyId: string;
+  page?: number;
+  limit?: number;
+}): Promise<PagedResult<WorkshopPhoto>> {
+  const admin = await createSupabaseServerClient();
+  page = Math.max(page, 1);
+  limit = Math.min(Math.max(limit, 1), 100);
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  const { data, count, error } = await admin
+    .from("ally_photos")
+    .select("id, ally_id, title, description, storage_path, status, uploaded_by, reviewed_by, reviewed_at, created_at, updated_at", { count: "exact" })
+    .eq("ally_id", allyId)
+    .order("created_at", { ascending: false })
+    .range(from, to);
+  assertQueryOk(error, "No se pudieron cargar las fotos del aliado");
+
+  const total = count ?? 0;
+  return {
+    items: (data ?? []) as WorkshopPhoto[],
+    total,
+    page,
+    limit,
+    pageCount: Math.max(Math.ceil(total / limit), 1),
+  };
 }
 
 export async function getAdminNeedsPage({
@@ -189,7 +269,7 @@ export async function getAdminNeedsPage({
 
   let query = admin
     .from("assigned_tasks")
-    .select("*, ally:allies(id, name)", { count: "exact" })
+    .select(`${TASK_FIELDS}, ally:allies(id, name)`, { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -226,7 +306,7 @@ export async function getAdminHelpOffersPage({
 
   let query = admin
     .from("collaborator_offers")
-    .select("*, ally:allies(id, name, slug), task:assigned_tasks(id, title)", { count: "exact" })
+    .select(`${OFFER_FIELDS}, ally:allies(id, name, slug), task:assigned_tasks(id, title)`, { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -280,7 +360,7 @@ export async function getAdminVolunteersPageFromClient(
 
   let query = client
     .from("ally_volunteer_assignments")
-    .select("*", { count: "exact" })
+    .select("id, ally_id, volunteer_id, name, role, phone, instagram, status, assigned_at, notes, created_at, updated_at", { count: "exact" })
     .order("name", { ascending: true })
     .range(from, to);
 
@@ -319,7 +399,7 @@ export async function getAdminCollaboratorsPage({
 
   let query = admin
     .from("collaborators")
-    .select("*", { count: "exact" })
+    .select("id, name, type, contact_name, email, phone, location, notes, status, created_at, updated_at", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -357,15 +437,103 @@ export async function getAdminVolunteerAssignments(): Promise<AllyVolunteerAssig
   return (data ?? []) as AllyVolunteerAssignmentWithRelations[];
 }
 
+export async function getAdminVolunteerAssignmentsPage({
+  page = 1,
+  limit = 20,
+  q,
+  allyId,
+}: {
+  page?: number;
+  limit?: number;
+  q?: string;
+  allyId?: string;
+} = {}): Promise<PagedResult<AllyVolunteerAssignmentWithRelations>> {
+  const admin = await createSupabaseServerClient();
+  page = Math.max(page, 1);
+  limit = Math.min(Math.max(limit, 1), 100);
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+  let query = admin
+    .from("ally_volunteer_assignments")
+    .select(`
+      id, ally_id, volunteer_id, name, role, phone, instagram, status,
+      assigned_at, notes, created_at, updated_at,
+      ally:allies(id, name, slug)
+    `, { count: "exact" })
+    .eq("status", "activo")
+    .order("assigned_at", { ascending: false })
+    .range(from, to);
+  if (allyId) query = query.eq("ally_id", allyId);
+  if (q) query = query.or(`name.ilike.%${q}%,role.ilike.%${q}%,phone.ilike.%${q}%,instagram.ilike.%${q}%`);
+
+  const { data, count, error } = await query;
+  assertQueryOk(error, "No se pudieron cargar las asignaciones de voluntarios");
+  const total = count ?? 0;
+  return {
+    items: (data ?? []) as unknown as AllyVolunteerAssignmentWithRelations[],
+    total,
+    page,
+    limit,
+    pageCount: Math.max(Math.ceil(total / limit), 1),
+  };
+}
+
+export async function getAdminVolunteerListPage({
+  page = 1,
+  limit = 20,
+  q,
+  statuses,
+}: {
+  page?: number;
+  limit?: number;
+  q?: string;
+  statuses?: string[];
+} = {}): Promise<PagedResult<Volunteer>> {
+  const admin = await createSupabaseServerClient();
+  page = Math.max(page, 1);
+  limit = Math.min(Math.max(limit, 1), 100);
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+  let query = admin
+    .from("volunteers")
+    .select("id, name, email, phone, instagram, skills, availability, state, city, notes, status, created_at, updated_at", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+  if (statuses?.length) query = query.in("status", statuses);
+  if (q) query = query.or(`name.ilike.%${q}%,email.ilike.%${q}%,phone.ilike.%${q}%,skills.ilike.%${q}%`);
+
+  const { data, count, error } = await query;
+  assertQueryOk(error, "No se pudieron cargar los voluntarios");
+  const total = count ?? 0;
+  return {
+    items: (data ?? []) as Volunteer[],
+    total,
+    page,
+    limit,
+    pageCount: Math.max(Math.ceil(total / limit), 1),
+  };
+}
+
 export async function getActiveVolunteers() {
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
     .from("volunteers")
-    .select("*")
+    .select("id, name, email, phone, instagram, skills, availability, state, city, notes, status, created_at, updated_at")
     .eq("status", "activo")
     .order("name", { ascending: true });
 
   assertQueryOk(error, "No se pudieron cargar los voluntarios activos");
+  return data ?? [];
+}
+
+export async function getAllVolunteers() {
+  const admin = await createSupabaseServerClient();
+  const { data, error } = await admin
+    .from("volunteers")
+    .select("id, name, email, phone, instagram, skills, availability, state, city, notes, status, created_at, updated_at")
+    .order("created_at", { ascending: false });
+
+  assertQueryOk(error, "No se pudieron cargar los voluntarios");
   return data ?? [];
 }
 
@@ -392,7 +560,7 @@ export async function getPublicWorkshopsPage({
 
   let query = supabase
     .from("allies")
-    .select("*", { count: "exact" })
+    .select(ALLY_DETAIL_FIELDS, { count: "exact" })
     .eq("status", "activo")
     .order("name", { ascending: true })
     .range(from, to);
@@ -435,7 +603,7 @@ export async function getPublicWorkshopBySlug(slug: string) {
   const supabase = createSupabasePublicClient();
   const { data, error } = await supabase
     .from("allies")
-    .select("*")
+    .select(ALLY_DETAIL_FIELDS)
     .eq("slug", slug)
     .eq("status", "activo")
     .maybeSingle();
@@ -486,7 +654,7 @@ export async function getPublicNeedsPage({
 
   const { data, count, error } = await supabase
     .from("assigned_tasks")
-    .select("*, ally:allies!inner(id, name, slug, status)", { count: "exact" })
+    .select(`${TASK_FIELDS}, ally:allies!inner(id, name, slug, status)`, { count: "exact" })
     .eq("status", "publicada")
     .eq("ally.status", "activo")
     .order("created_at", { ascending: false })
@@ -506,7 +674,7 @@ export const getWorkshopByUserId = cache(async (userId: string) => {
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
     .from("allies")
-    .select("*")
+    .select(ALLY_DETAIL_FIELDS)
     .eq("user_id", userId)
     .maybeSingle();
   assertQueryOk(error, "No se pudo cargar el aliado del usuario");
@@ -545,7 +713,7 @@ export const getWorkshopById = cache(async (allyId: string) => {
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
     .from("allies")
-    .select("*")
+    .select(ALLY_DETAIL_FIELDS)
     .eq("id", allyId)
     .maybeSingle();
   assertQueryOk(error, "No se pudo cargar el aliado");
@@ -558,7 +726,7 @@ export async function getWorkshopNeeds(allyId: string): Promise<WorkshopNeed[]> 
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
     .from("assigned_tasks")
-    .select("*")
+    .select(TASK_FIELDS)
     .eq("ally_id", allyId)
     .order("created_at", { ascending: false });
   assertQueryOk(error, "No se pudieron cargar las tareas del panel");
@@ -571,7 +739,7 @@ export async function getWorkshopPhotos(allyId: string): Promise<WorkshopPhoto[]
   const admin = await createSupabaseServerClient();
   const { data, error } = await admin
     .from("ally_photos")
-    .select("*")
+    .select("id, ally_id, title, description, storage_path, status, uploaded_by, reviewed_by, reviewed_at, created_at, updated_at")
     .eq("ally_id", allyId)
     .order("created_at", { ascending: false });
   assertQueryOk(error, "No se pudieron cargar las fotos del panel");
@@ -619,7 +787,7 @@ export async function findWorkshopActivationToken(rawToken: string) {
 
   const { data, error } = await admin
     .from("ally_activation_tokens")
-    .select("*, ally:allies(*)")
+    .select(`id, ally_id, token_hash, expires_at, used_at, created_by_user_id, created_at, ally:allies(${ALLY_DETAIL_FIELDS})`)
     .eq("token_hash", tokenHash)
     .maybeSingle();
   assertQueryOk(error, "No se pudo cargar el token de activación");
@@ -645,7 +813,7 @@ export async function getAdminCartucheraDonationsPage({
 
   const { data, count, error } = await admin
     .from("cartuchera_donations")
-    .select("*", { count: "exact" })
+    .select("id, donor_name, donor_email, donor_phone, help_type, description, quantity, created_at", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
   assertQueryOk(error, "No se pudieron cargar las donaciones de cartuchera");

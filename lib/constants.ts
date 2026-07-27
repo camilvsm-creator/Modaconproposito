@@ -29,7 +29,7 @@ export const PATTERN_STATUS_LABELS: Record<string, string> = {
 export const PATTERN_STATUS_TONES: Record<string, string> = {
   pendiente: "bg-warning-soft text-warning",
   publicado: "bg-success-soft text-success",
-  archivado: "bg-stone-200 text-stone-600",
+  archivado: "bg-gray-200 text-gray-600",
 };
 
 export const PATTERN_DIFFICULTIES = ["principiante", "intermedio", "avanzado"] as const;
@@ -90,10 +90,10 @@ export const ASSIGNED_TASK_STATUS_TONES: Record<string, string> = {
   pendiente: "bg-warning-soft text-warning",
   publicada: "bg-success-soft text-success",
   cubierta: "bg-info-soft text-info",
-  asignada: "bg-info-soft text-info",
+  asignada: "bg-primary-soft text-primary-dark",
   en_progreso: "bg-blue-100 text-blue-700",
   completada: "bg-success-soft text-success",
-  cerrada: "bg-stone-200 text-stone-600",
+  cerrada: "bg-gray-200 text-gray-600",
 };
 
 export const WORKSHOP_STATUS_LABELS: Record<string, string> = {
@@ -109,7 +109,7 @@ export const WORKSHOP_STATUS_TONES: Record<string, string> = {
   pendiente: "bg-warning-soft text-warning",
   approved_pending_activation: "bg-blue-100 text-blue-700",
   activo: "bg-success-soft text-success",
-  pausado: "bg-stone-200 text-stone-600",
+  pausado: "bg-gray-200 text-gray-600",
   rechazado: "bg-danger-soft text-danger",
   desactivado: "bg-danger-soft text-danger",
 };
@@ -125,7 +125,7 @@ export const WORKSHOP_NEED_STATUS_TONES: Record<string, string> = {
   pendiente: "bg-warning-soft text-warning",
   publicada: "bg-success-soft text-success",
   cubierta: "bg-info-soft text-info",
-  cerrada: "bg-stone-200 text-stone-600",
+  cerrada: "bg-gray-200 text-gray-600",
 };
 
 export const WORKSHOP_PHOTO_STATUS_LABELS: Record<string, string> = {
@@ -149,7 +149,7 @@ export const WORKSHOP_HELP_STATUS_LABELS: Record<string, string> = {
 export const WORKSHOP_HELP_STATUS_TONES: Record<string, string> = {
   recibida: "bg-info-soft text-info",
   gestionada: "bg-success-soft text-success",
-  cerrada: "bg-stone-200 text-stone-600",
+  cerrada: "bg-gray-200 text-gray-600",
 };
 
 export const HELP_TYPE_GROUPS = [
@@ -201,6 +201,24 @@ export const RAW_MATERIAL_STATUSES = ["disponible", "agotado", "archivado"] as c
 export const ALLY_RAW_MATERIAL_ASSIGNMENT_STATUSES = ["asignada", "entregada", "usada", "cancelada"] as const;
 export const ALLY_DELIVERY_STATUSES = ["pendiente", "entregada", "recibida", "cancelada"] as const;
 
+export const VOLUNTEER_STATUSES = ["postulado", "revisado", "activo", "asignado", "inactivo"] as const;
+
+export const VOLUNTEER_STATUS_LABELS: Record<string, string> = {
+  postulado: "Postulado",
+  revisado: "Revisado",
+  activo: "Activo",
+  asignado: "Asignado",
+  inactivo: "Inactivo",
+};
+
+export const VOLUNTEER_STATUS_TONES: Record<string, string> = {
+  postulado: "bg-warning-soft text-warning",
+  revisado: "bg-info-soft text-info",
+  activo: "bg-success-soft text-success",
+  asignado: "bg-blue-100 text-blue-700",
+  inactivo: "bg-gray-200 text-gray-600",
+};
+
 export const AID_REQUEST_STATUS_LABELS: Record<string, string> = {
   recibida: "Recibida",
   en_revision: "En revisión",
@@ -234,7 +252,7 @@ export const AID_REQUESTER_STATUS_LABELS: Record<string, string> = {
 export const AID_REQUESTER_STATUS_TONES: Record<string, string> = {
   activo: "bg-success-soft text-success",
   pausado: "bg-warning-soft text-warning",
-  inactivo: "bg-stone-200 text-stone-600",
+  inactivo: "bg-gray-200 text-gray-600",
 };
 
 export const RAW_MATERIAL_STATUS_LABELS: Record<string, string> = {
@@ -246,7 +264,7 @@ export const RAW_MATERIAL_STATUS_LABELS: Record<string, string> = {
 export const RAW_MATERIAL_STATUS_TONES: Record<string, string> = {
   disponible: "bg-success-soft text-success",
   agotado: "bg-warning-soft text-warning",
-  archivado: "bg-stone-200 text-stone-600",
+  archivado: "bg-gray-200 text-gray-600",
 };
 
 export const RAW_MATERIAL_ASSIGNMENT_STATUS_LABELS: Record<string, string> = {
@@ -260,7 +278,7 @@ export const RAW_MATERIAL_ASSIGNMENT_STATUS_TONES: Record<string, string> = {
   asignada: "bg-info-soft text-info",
   entregada: "bg-blue-100 text-blue-700",
   usada: "bg-success-soft text-success",
-  cancelada: "bg-stone-200 text-stone-600",
+  cancelada: "bg-gray-200 text-gray-600",
 };
 
 export const DELIVERY_STATUS_LABELS: Record<string, string> = {
@@ -274,7 +292,7 @@ export const DELIVERY_STATUS_TONES: Record<string, string> = {
   pendiente: "bg-warning-soft text-warning",
   entregada: "bg-info-soft text-info",
   recibida: "bg-success-soft text-success",
-  cancelada: "bg-stone-200 text-stone-600",
+  cancelada: "bg-gray-200 text-gray-600",
 };
 
 export const TASK_INCIDENT_STATUS_LABELS: Record<string, string> = {
@@ -303,6 +321,6 @@ export const RAW_MATERIAL_MOVEMENT_TYPE_TONES: Record<string, string> = {
   entrada: "bg-success-soft text-success",
   devolucion: "bg-info-soft text-info",
   merma: "bg-danger-soft text-danger",
-  ajuste: "bg-stone-200 text-stone-700",
+  ajuste: "bg-gray-200 text-gray-700",
   asignacion_tarea: "bg-blue-100 text-blue-700",
 };

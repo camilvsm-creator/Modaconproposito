@@ -69,7 +69,7 @@ export function RequesterActivationForm({
     return (
       <SectionCard className="space-y-4 p-8">
         <h2 className="text-2xl font-semibold text-ink">Cuenta activada</h2>
-        <p className="text-sm leading-6 text-stone-600">
+        <p className="text-sm leading-6 text-gray-600">
           Tu acceso fue activado correctamente. Ya puedes entrar al panel con tu correo y la contraseña que acabas de definir.
         </p>
         <Button type="button" onClick={() => (window.location.href = "/admin")}>Ir al login</Button>
@@ -82,7 +82,7 @@ export function RequesterActivationForm({
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-1">
           <h2 className="text-xl font-bold text-primary">Activa tu acceso</h2>
-          <p className="text-sm text-stone-600">Completa tus datos para habilitar la cuenta de tu organización solicitante.</p>
+          <p className="text-sm text-gray-600">Completa tus datos para habilitar la cuenta de tu organización solicitante.</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">

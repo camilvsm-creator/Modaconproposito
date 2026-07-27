@@ -73,7 +73,8 @@ Despues de tocar DB:
 - `materia prima`: inventario y asignaciones a aliados.
 - `entregas`: entregas asociadas a aliados y opcionalmente a tareas.
 - `solicitudes`: solicitudes hechas por instituciones/comunidades/ONG.
-- `mensajes`: hilos admin-aliado.
+- `solicitantes`: instituciones, comunidades u ONG que registran solicitudes y sus accesos.
+- `mensajes`: hilos entre administracion, aliados y solicitantes.
 - `patrones`: patrones de costura publicados.
 
 ### Rutas publicas
@@ -114,10 +115,12 @@ Protegido por middleware y guards en layouts con `lib/auth.ts`.
 | `/admin/colaboradores` | Ofertas de colaboradores | Parcial/DB real |
 | `/admin/patrones` | Gestion de patrones | DB real |
 | `/admin/cartuchera` | Donaciones Cartuchera | DB real |
+| `/admin/solicitantes` | Gestion administrativa de solicitantes, filtros, estados y accesos | Parcial/DB real |
 | `/admin/solicitudes` | Solicitudes de ayuda | UI pendiente, DB existe |
 | `/admin/materia-prima` | Admin: inventario consolidado. Aliado: sus asignaciones | UI pendiente, DB existe |
 | `/admin/entregas` | Admin: entregas globales. Aliado: sus entregas | UI pendiente, DB existe |
-| `/admin/mensajes` | Admin: todos los hilos. Aliado: sus hilos | UI pendiente, DB existe |
+| `/admin/mensajes` | Bandeja paginada. Admin: todos los hilos; aliado y solicitante: sus hilos | Listado, filtros, realtime y permisos por rol |
+| `/admin/mensajes/[id]` | Detalle, lectura, envio y cierre/reapertura del hilo | Implementado |
 | `/admin/reportes` | Estadisticas | UI pendiente |
 
 ### Estructura de modulos
@@ -127,7 +130,7 @@ Las carpetas de `app/admin` representan modulos de dominio, nunca roles ni perfi
 - `app/admin/aliados/`: gestion administrativa de la entidad aliado. Incluye listado, detalle, creacion y sus acciones.
 - `app/admin/tareas/`: tareas. La pagina decide el alcance con el rol autenticado; los componentes de tareas del aliado viven en `components/` dentro de este modulo.
 - `app/admin/perfil/`: perfil del aliado autenticado y sus componentes.
-- `app/admin/{voluntarios,colaboradores,materia-prima,entregas,mensajes,patrones,cartuchera,solicitudes,reportes}/`: un modulo por dominio.
+- `app/admin/{voluntarios,colaboradores,solicitantes,materia-prima,entregas,mensajes,patrones,cartuchera,solicitudes,reportes}/`: un modulo por dominio.
 - `app/admin/ally-scope.ts`: resuelve el aliado vinculado al usuario autenticado con rol `aliado`.
 - `app/admin/ally-actions.ts`: acciones que un aliado puede ejecutar exclusivamente sobre sus propios recursos.
 
@@ -139,6 +142,7 @@ No crear rutas, layouts ni carpetas como `/admin/aliado`, `/admin/talleres`, `/a
 |-----|--------|-----------|
 | `admin` | Todos los recursos de los modulos administrativos | `/admin/*` segun cada modulo |
 | `aliado` | Solo sus recursos y asignaciones | `/admin/perfil`, `/admin/tareas`, `/admin/voluntarios`, `/admin/materia-prima`, `/admin/entregas`, `/admin/mensajes` |
+| `solicitante` | Sus solicitudes, entregas y conversaciones | `/admin/solicitudes`, `/admin/entregas`, `/admin/mensajes` |
 
 Roles asignados via `app_metadata.role` en JWT. Nunca usar `user_metadata` para autorizacion.
 
@@ -238,7 +242,7 @@ Estados principales: `pendiente`, `approved_pending_activation`, `activo`, `paus
 | `raw_materials` | Inventario de materia prima |
 | `ally_raw_material_assignments` | Materia prima asignada a aliados |
 | `ally_deliveries` | Entregas de aliados |
-| `message_threads` | Hilos de mensajes entre admin y aliados |
+| `message_threads` | Hilos de mensajes entre administracion, aliados y solicitantes |
 | `message_thread_participants` | Participantes de hilos de mensajes |
 | `messages` | Mensajes enviados en cada hilo |
 | `sewing_patterns` | Patrones de costura |
@@ -261,6 +265,7 @@ No crear buckets nuevos sin verificar existencia. No hacer `DROP BUCKET`.
 | `app/admin/aliados/actions.ts` | Acciones administrativas de aliados, tareas relacionadas, fotos y ofertas. |
 | `app/admin/ally-actions.ts` | Acciones limitadas al aliado autenticado. Siempre valida que el recurso pertenezca a su `user_id`. |
 | `app/admin/patrones/actions.ts` | Acciones de patrones. |
+| `app/admin/solicitantes/actions.ts` | Acciones administrativas de solicitantes, estados y accesos. |
 | `app/admin/activar-aliado/actions.ts` | Activacion de aliado por token. |
 | `lib/workshops.ts` | Data layer principal de aliados. Las queries nuevas deben apuntar a tablas `allies` y relacionadas. |
 | `lib/workshop-submissions.ts` | Registro publico de aliados y ofertas de ayuda. |

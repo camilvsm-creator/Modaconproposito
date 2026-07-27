@@ -1,13 +1,20 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export async function requireUserRoles(roles: string[]) {
+export const getCurrentUser = cache(async () => {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  return user;
+});
+
+export async function requireUserRoles(roles: string[]) {
+  const user = await getCurrentUser();
 
   const role = user?.app_metadata?.role;
 

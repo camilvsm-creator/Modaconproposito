@@ -28,27 +28,13 @@ export default function NuestraMisionPage() {
             </h2>
             <div className="space-y-4 text-sm leading-6 text-stone-700">
               <p>
-                Esta iniciativa nace para conectar a aliados textiles, escuelas y academias de confección,
-                costureros, diseñadores, patronistas, docentes, estudiantes y
-                voluntarios con un propósito común: apoyar a las comunidades
-                afectadas por el terremoto ocurrido en Venezuela el 24 de junio
-                de 2026.
+                Nuestro propósito central es conectar a la industria de la moda, escuelas de confección, costureros, diseñadores, patronistas, docentes y voluntarios en una red colaborativa nacional. Buscamos transformar conocimientos, mano de obra e insumos en artículos textiles esenciales para apoyar a las comunidades afectadas por el terremoto ocurrido el 24 de junio de 2026, mediante jornadas de voluntariado a largo plazo que no afecten la operatividad comercial habitual de los aliados.
               </p>
               <p>
-                Desde nuestra experiencia dentro del sector moda, identificamos
-                una forma de aportar: unir la capacidad productiva de aliados
-                e institutos a nivel nacional para confeccionar artículos textiles
-                necesarios como ropa interior, sábanas, toallas y otros productos
-                esenciales que muchas veces no forman parte de las donaciones
-                tradicionales.
+                Desde nuestra experiencia dentro del sector moda, identificamos una necesidad crítica: la escasez de insumos textiles de primera necesidad (ropa interior, sábanas, toallas, bolsos de traslado e indumentaria básica) que frecuentemente quedan fuera de las donaciones tradicionales.
               </p>
               <p>
-                A través de esta plataforma creamos una red colaborativa que
-                conecta aliados, voluntarios y colaboradores para transformar
-                conocimientos, manos de trabajo y materiales en soluciones
-                concretas. Los productos elaborados serán entregados mediante
-                las entidades correspondientes, buscando garantizar que lleguen
-                a quienes más los necesitan.
+                A través de esta plataforma creamos una red colaborativa que conecta aliados y voluntarios para transformar materia prima y talento en soluciones concretas y dignas. Los productos elaborados serán entregados mediante las entidades correspondientes para garantizar que lleguen directamente a quienes más los necesitan.
               </p>
             </div>
           </section>
@@ -82,6 +68,65 @@ export default function NuestraMisionPage() {
                   materiales textiles como telas, cierres, hilos, elásticos u
                   otros insumos necesarios para la producción.
                 </p>
+              </SectionCard>
+            </div>
+          </section>
+
+          <section id="voluntariado" className="space-y-6">
+            <div className="max-w-3xl space-y-3">
+              <h2 className="text-2xl font-black tracking-[-0.02em] text-ink">
+                ¿A quiénes buscamos como voluntarios?
+              </h2>
+              <p className="text-sm leading-6 text-stone-700 sm:text-base">
+                Para construir una red sólida y sostenible, no solo necesitamos manos frente a las máquinas de coser, sino también talento en comunicación, logística y gestión. Buscamos perfiles comprometidos en las siguientes áreas:
+              </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <SectionCard className="p-5 ring-1 ring-stone-200/80">
+                <h3 className="text-base font-black text-[#F74897]">Área Técnica y Académica</h3>
+                <ul className="mt-4 space-y-4 text-sm leading-6 text-stone-700">
+                  <li>
+                    <strong className="font-bold text-ink">Academias y escuelas de moda y diseño:</strong>{" "}
+                    Para sumar a sus comunidades estudiantiles y docentes en jornadas de práctica formativa con impacto social.
+                  </li>
+                  <li>
+                    <strong className="font-bold text-ink">Voluntarios en costura:</strong>{" "}
+                    Costureros, patronistas y confeccionistas para hacer equipo con las academias y escuelas.
+                  </li>
+                </ul>
+              </SectionCard>
+
+              <SectionCard className="p-5 ring-1 ring-stone-200/80">
+                <h3 className="text-base font-black text-[#F74897]">Área de Comunicación y Medios</h3>
+                <ul className="mt-4 space-y-4 text-sm leading-6 text-stone-700">
+                  <li>
+                    <strong className="font-bold text-ink">Creadores de contenido:</strong>{" "}
+                    Para visibilizar las jornadas, contar las historias de los voluntarios y mantener informada a la comunidad.
+                  </li>
+                  <li>
+                    <strong className="font-bold text-ink">Diseñadores gráficos:</strong>{" "}
+                    Para la creación de material visual de campaña, fichas técnicas simplificadas, infografías e instructivos.
+                  </li>
+                </ul>
+              </SectionCard>
+
+              <SectionCard className="p-5 ring-1 ring-stone-200/80 md:col-span-2">
+                <h3 className="text-base font-black text-[#F74897]">🚚 Área Operativa, Logística y Servicios</h3>
+                <ul className="mt-4 grid gap-4 text-sm leading-6 text-stone-700 md:grid-cols-3 md:gap-5">
+                  <li>
+                    <strong className="font-bold text-ink">Atención de usuarios y coordinación de voluntariado:</strong>{" "}
+                    Para gestionar las convocatorias, responder dudas de los aliados y hacer seguimiento a las entregas.
+                  </li>
+                  <li>
+                    <strong className="font-bold text-ink">Distribución, envíos y transporte:</strong>{" "}
+                    Aliados logísticos y conductores voluntarios para trasladar los kits precortados hacia los talleres y llevar el producto terminado al centro o refugio.
+                  </li>
+                  <li>
+                    <strong className="font-bold text-ink">Papelería e impresión:</strong>{" "}
+                    Imprentas o aliados que puedan donar o facilitar la impresión de etiquetas de talla, empaques, fichas técnicas y material informativo.
+                  </li>
+                </ul>
               </SectionCard>
             </div>
           </section>

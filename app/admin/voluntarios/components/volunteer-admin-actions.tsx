@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-import { assignVolunteerToAllyAction, createVolunteerAction } from "@/app/admin/voluntarios/actions";
+import { assignVolunteerToAllyAction, createVolunteerAction, getVolunteerOptionsAction } from "@/app/admin/voluntarios/actions";
+import { getAllyOptionsAction } from "@/app/admin/aliados/actions";
 import { Modal } from "@/components/modal";
 import { Button, compactInputClassName } from "@/components/ui";
 
@@ -18,17 +19,25 @@ type AllyOption = {
   name: string;
 };
 
-export function VolunteerAdminActions({
-  volunteers,
-  allies,
-}: {
-  volunteers: VolunteerOption[];
-  allies: AllyOption[];
-}) {
+export function VolunteerAdminActions() {
   const router = useRouter();
   const [createState, setCreateState] = useState<{ error?: string; success?: string }>({});
   const [assignState, setAssignState] = useState<{ error?: string; success?: string }>({});
+  const [volunteers, setVolunteers] = useState<VolunteerOption[]>([]);
+  const [allies, setAllies] = useState<AllyOption[]>([]);
+  const [optionsLoaded, setOptionsLoaded] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  function loadAssignOptions() {
+    if (optionsLoaded) return;
+    setOptionsLoaded(true);
+    Promise.all([getVolunteerOptionsAction(), getAllyOptionsAction()])
+      .then(([loadedVolunteers, loadedAllies]) => {
+        setVolunteers(loadedVolunteers);
+        setAllies(loadedAllies);
+      })
+      .catch(() => setAssignState({ error: "No se pudieron cargar los datos para asignar." }));
+  }
 
   function handleCreateSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -68,7 +77,7 @@ export function VolunteerAdminActions({
 
   return (
     <div className="flex flex-wrap gap-3">
-      <Modal triggerLabel="Dar de alta voluntario" title="Dar de alta voluntario" description="Registra un nuevo voluntario para que luego pueda asignarse a un aliado.">
+      <Modal triggerLabel="Dar de alta voluntario" triggerVariant="primary" title="Dar de alta voluntario" description="Registra un nuevo voluntario para que luego pueda asignarse a un aliado.">
         <form onSubmit={handleCreateSubmit} className="grid gap-4 md:grid-cols-2">
           <input className={compactInputClassName} name="name" required placeholder="Nombre" />
           <input className={compactInputClassName} name="email" type="email" placeholder="Correo" />
@@ -87,10 +96,10 @@ export function VolunteerAdminActions({
         </form>
       </Modal>
 
-      <Modal triggerLabel="Asignar voluntario" title="Asignar voluntario" description="Vincula un voluntario disponible con un aliado.">
+      <Modal triggerLabel="Asignar voluntario" title="Asignar voluntario" description="Vincula un voluntario disponible con un aliado." onOpen={loadAssignOptions}>
         <form onSubmit={handleAssignSubmit} className="space-y-4">
           <label className="block space-y-2">
-            <span className="text-sm font-medium text-stone-800">Voluntario</span>
+            <span className="text-sm font-medium text-gray-800">Voluntario</span>
             <select className={compactInputClassName} name="volunteerId" required defaultValue="">
               <option value="" disabled>Selecciona un voluntario</option>
               {volunteers.map((volunteer) => (
@@ -100,7 +109,7 @@ export function VolunteerAdminActions({
           </label>
 
           <label className="block space-y-2">
-            <span className="text-sm font-medium text-stone-800">Aliado</span>
+            <span className="text-sm font-medium text-gray-800">Aliado</span>
             <select className={compactInputClassName} name="allyId" required defaultValue="">
               <option value="" disabled>Selecciona un aliado</option>
               {allies.map((ally) => (
@@ -110,12 +119,12 @@ export function VolunteerAdminActions({
           </label>
 
           <label className="block space-y-2">
-            <span className="text-sm font-medium text-stone-800">Rol o función</span>
+            <span className="text-sm font-medium text-gray-800">Rol o función</span>
             <input className={compactInputClassName} name="role" placeholder="Ej. Costurera, logística, patronista" />
           </label>
 
           <label className="block space-y-2">
-            <span className="text-sm font-medium text-stone-800">Notas</span>
+            <span className="text-sm font-medium text-gray-800">Notas</span>
             <textarea className={`${compactInputClassName} min-h-[96px]`} name="notes" placeholder="Notas de asignación" />
           </label>
 

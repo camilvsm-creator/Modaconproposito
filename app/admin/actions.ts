@@ -4,17 +4,14 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth";
 import { CONTEXT_COOKIE, CONTEXT_PLATFORM } from "@/lib/context";
 import { logContextSwitch } from "@/lib/audit";
 
 type Result = { error?: string };
 
 export async function switchContextAction(workshopId: string | null): Promise<Result> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) return { error: "No autenticado" };
 

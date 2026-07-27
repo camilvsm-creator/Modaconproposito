@@ -455,3 +455,16 @@ export async function createWorkshopAction(formData: FormData): Promise<Result> 
   revalidatePath("/aliados");
   return { activationLink, allyId: workshop.id };
 }
+
+export async function getAllyOptionsAction(): Promise<Array<{ id: string; name: string }>> {
+  await requireWorkshopAdminUser();
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("allies")
+    .select("id, name")
+    .in("status", ["activo", "pausado", "approved_pending_activation"])
+    .order("name", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}

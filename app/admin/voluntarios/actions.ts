@@ -42,6 +42,20 @@ export async function createVolunteerAction(formData: FormData): Promise<ActionR
   return { success: true };
 }
 
+export async function updateVolunteerStatusAction(formData: FormData): Promise<void> {
+  await requireWorkshopAdminUser();
+  const admin = createSupabaseAdminClient();
+  const volunteerId = String(formData.get("volunteerId") || "").trim();
+  const status = String(formData.get("status") || "").trim();
+  if (!volunteerId || !["postulado", "revisado", "activo", "asignado", "inactivo"].includes(status)) {
+    throw new Error("Estado de voluntario no válido.");
+  }
+
+  const { error } = await admin.from("volunteers").update({ status }).eq("id", volunteerId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/voluntarios");
+}
+
 export async function assignVolunteerToAllyAction(formData: FormData): Promise<ActionResult> {
   await requireWorkshopAdminUser();
   const admin = createSupabaseAdminClient();
@@ -62,7 +76,7 @@ export async function assignVolunteerToAllyAction(formData: FormData): Promise<A
 
   if (volunteerError) return { error: volunteerError.message };
   if (!volunteer) return { error: "El voluntario no existe." };
-  if (volunteer.status !== "activo") return { error: "Solo puedes asignar voluntarios activos." };
+  if (!["activo", "asignado"].includes(volunteer.status)) return { error: "Primero revisa y activa la postulación." };
 
   const { data: existing, error: existingError } = await admin
     .from("ally_volunteer_assignments")
@@ -88,7 +102,38 @@ export async function assignVolunteerToAllyAction(formData: FormData): Promise<A
 
   if (error) return { error: error.message };
 
+  await admin.from("volunteers").update({ status: "asignado" }).eq("id", volunteerId);
+
   revalidatePath("/admin/voluntarios");
   revalidatePath("/admin/aliados");
   return { success: true };
+}
+
+export async function removeVolunteerAssignmentAction(formData: FormData): Promise<void> {
+  await requireWorkshopAdminUser();
+  const admin = createSupabaseAdminClient();
+  const assignmentId = String(formData.get("assignmentId") || "").trim();
+  const volunteerId = String(formData.get("volunteerId") || "").trim();
+  if (!assignmentId || !volunteerId) throw new Error("Asignación inválida.");
+
+  const { error } = await admin
+    .from("ally_volunteer_assignments")
+    .update({ status: "inactivo" })
+    .eq("id", assignmentId);
+  if (error) throw new Error(error.message);
+
+  await admin.from("volunteers").update({ status: "activo" }).eq("id", volunteerId);
+  revalidatePath("/admin/voluntarios");
+}
+
+export async function getVolunteerOptionsAction(): Promise<Array<{ id: string; name: string }>> {
+  await requireWorkshopAdminUser();
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("volunteers")
+    .select("id, name")
+    .in("status", ["activo", "asignado"])
+    .order("name", { ascending: true });
+  if (error) throw new Error(error.message);
+  return data ?? [];
 }

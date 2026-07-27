@@ -1,6 +1,9 @@
 import Link from "next/link";
 
 import { AdminPageHeader } from "@/components/admin-page-header";
+import { AdminActionItem, AdminRecordsSummary, AdminRowActions, AdminTableFrame, AdminToolbar } from "@/components/admin-data-ui";
+import { AdminPagination } from "@/components/admin-pagination";
+import { AutoSubmitFilterForm } from "@/components/auto-submit-filter-form";
 import { Modal } from "@/components/modal";
 import { EmptyState } from "@/components/empty-state";
 import { Button, SectionCard, compactInputClassName } from "@/components/ui";
@@ -19,25 +22,47 @@ import { cn, formatDate } from "@/lib/utils";
 import { requireCurrentAlly } from "../ally-scope";
 import { createDeliveryAction } from "../entregas/actions";
 import {
-  getActiveAlliesForSelect,
-  getAdminTaskBoard,
-  getAllyTaskBoard,
+  getAdminTaskBoardPage,
+  getAllyTaskBoardPage,
 } from "@/lib/production";
 import {
   createTaskIncidentAction,
+  closeOwnTaskAction,
   resolveTaskIncidentAction,
   saveTaskMaterialUsageAction,
   startAssignedTaskAction,
 } from "./actions";
 import { CreateAssignedTaskModal } from "./components/create-assigned-task-modal";
-import { UpdateAssignedTaskForm } from "./components/update-assigned-task-form";
+import { CreateNeedForm } from "./components/create-task-form";
 
-type AdminTask = Awaited<ReturnType<typeof getAdminTaskBoard>>[number];
+type AdminTask = Awaited<ReturnType<typeof getAdminTaskBoardPage>>["items"][number];
+type AllyTask = Awaited<ReturnType<typeof getAllyTaskBoardPage>>["items"][number];
 
 function getLatestDelivery(task: {
   deliveries?: Array<{ status: string; title: string; delivered_at: string | null }>;
 }) {
   return task.deliveries?.[0] ?? null;
+}
+
+function getStringParam(params: Record<string, string | string[] | undefined>, key: string) {
+  const value = params[key];
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function getPageParam(params: Record<string, string | string[] | undefined>) {
+  const value = Number(getStringParam(params, "page"));
+  return Number.isFinite(value) && value > 0 ? Math.floor(value) : 1;
+}
+
+function pageHref(params: Record<string, string | string[] | undefined>, page: number) {
+  const search = new URLSearchParams();
+  const q = getStringParam(params, "q");
+  const status = getStringParam(params, "status");
+  if (q) search.set("q", q);
+  if (status && status !== "all") search.set("status", status);
+  if (page > 1) search.set("page", String(page));
+  const query = search.toString();
+  return query ? `/admin/tareas?${query}` : "/admin/tareas";
 }
 
 function canEditUsage(task: {
@@ -59,29 +84,49 @@ function getTaskStatusSummary(status: string) {
   return "Asignada";
 }
 
-function EditTaskModal({ task }: { task: AdminTask }) {
+function AllyTaskTable({ tasks, workshopId }: { tasks: AllyTask[]; workshopId: string }) {
   return (
-    <Modal
-      triggerLabel="Editar"
-      title={task.title}
-      description="Actualiza los datos principales y el estado de esta tarea."
-      size="lg"
-      closeOnSubmit={false}
-      triggerClassName="px-3 py-1.5"
-    >
-      <UpdateAssignedTaskForm
-        task={{
-          id: task.id,
-          title: task.title,
-          status: task.status,
-          description: task.description ?? null,
-          requested_items: task.requested_items ?? null,
-          due_date: task.due_date ?? null,
-          urgency: task.urgency ?? null,
-          admin_notes: task.admin_notes ?? null,
-        }}
-      />
-    </Modal>
+    <div className="overflow-x-auto">
+      <table className="admin-mobile-cards min-w-[980px] w-full text-left text-sm">
+        <thead className="bg-gray-50 text-sm font-semibold text-gray-600">
+          <tr>
+            <th className="px-4 py-3">Tarea</th>
+            <th className="px-4 py-3">Estado</th>
+            <th className="px-4 py-3">Fechas</th>
+            <th className="px-4 py-3">Entrega</th>
+            <th className="px-4 py-3 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200">
+          {tasks.map((task) => {
+            const latestDelivery = getLatestDelivery(task);
+
+            return (
+              <tr key={task.id} className="align-top hover:bg-gray-50">
+                <td data-mobile="primary" data-mobile-label="Tarea" className="px-4 py-3">
+                  <Link href={`/admin/tareas/${task.id}`} className="font-semibold text-ink hover:text-primary">{task.title}</Link>
+                  {task.description ? <p className="mt-1 max-w-md text-sm text-gray-500">{task.description}</p> : null}
+                  {task.requested_items ? <p className="mt-1 max-w-md text-sm text-gray-500"><span className="font-medium text-gray-700">Objetivo:</span> {task.requested_items}</p> : null}
+                </td>
+                <td data-mobile-label="Estado" className="px-4 py-3"><span className={cn("inline-flex rounded-md px-2.5 py-1 text-sm font-semibold", ASSIGNED_TASK_STATUS_TONES[task.status] ?? "bg-gray-100 text-gray-600")}>{ASSIGNED_TASK_STATUS_LABELS[task.status] ?? task.status}</span></td>
+                <td data-mobile-label="Fechas" className="px-4 py-3 text-gray-500"><p>Creada: {formatDate(task.created_at)}</p>{task.due_date ? <p>Entrega: {formatDate(task.due_date)}</p> : null}</td>
+                <td data-mobile-label="Entrega" className="px-4 py-3 text-gray-600">{latestDelivery ? <><span className={cn("inline-flex rounded-md px-2.5 py-1 text-sm font-semibold", DELIVERY_STATUS_TONES[latestDelivery.status] ?? "bg-gray-100 text-gray-600")}>{DELIVERY_STATUS_LABELS[latestDelivery.status] ?? latestDelivery.status}</span><p className="mt-1">{latestDelivery.title}</p></> : "Sin entrega"}</td>
+                <td data-mobile="actions" data-mobile-label="Acciones" className="px-4 py-3 text-right">
+                  <AdminRowActions>
+                    <AdminActionItem><Link href={`/admin/tareas/${task.id}`} className="block w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Abrir detalle</Link></AdminActionItem>
+                    <AdminActionItem><TaskSummaryModal task={task} /></AdminActionItem>
+                    <AdminActionItem><Link href={`/admin/tareas/${task.id}?tab=produccion`} className="block w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Editar tarea</Link></AdminActionItem>
+                    <AdminActionItem><TaskIncidentsModal task={task} /></AdminActionItem>
+                    {task.status === "asignada" ? <AdminActionItem><form action={startAssignedTaskAction}><input type="hidden" name="taskId" value={task.id} /><button type="submit" className="text-primary">Iniciar tarea</button></form></AdminActionItem> : null}
+                    {task.status === "completada" ? <AdminActionItem><form action={closeOwnTaskAction}><input type="hidden" name="id" value={task.id} /><input type="hidden" name="workshopId" value={workshopId} /><button type="submit" className="text-primary">Cerrar tarea</button></form></AdminActionItem> : null}
+                  </AdminRowActions>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -99,31 +144,42 @@ function TaskIncidentsModal({ task }: { task: AdminTask }) {
       <div className="space-y-3">
         <h3 className="text-base font-semibold text-ink">Incidencias y bloqueos</h3>
         {incidents.length ? (
-          <div className="space-y-3">
-            {incidents.map((incident) => (
-              <div key={incident.id} className="rounded-lg border border-stone-200 p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className={cn("inline-flex rounded-full px-2 py-0.5 text-sm font-semibold uppercase tracking-wide", TASK_INCIDENT_STATUS_TONES[incident.status] ?? "bg-stone-100 text-stone-600")}>{TASK_INCIDENT_STATUS_LABELS[incident.status] ?? incident.status}</span>
-                  <span className="text-sm text-stone-500">Reportada por {incident.created_by_role} el {formatDate(incident.created_at)}</span>
-                </div>
-                <p className="mt-2 text-sm text-stone-700">{incident.description}</p>
-                {incident.resolution_notes ? <p className="mt-2 text-sm text-stone-500">Resolucion: {incident.resolution_notes}</p> : null}
-                {incident.status === "open" ? (
-                  <form action={resolveTaskIncidentAction} className="mt-3 space-y-3">
-                    <input type="hidden" name="incidentId" value={incident.id} />
-                    <input type="hidden" name="taskId" value={task.id} />
-                    <textarea className={`${compactInputClassName} min-h-[80px]`} name="resolutionNotes" placeholder="Como se resolvio esta incidencia" />
-                    <Button type="submit" variant="secondary">Marcar resuelta</Button>
-                  </form>
-                ) : null}
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="admin-mobile-cards min-w-[900px] w-full text-left text-sm">
+              <thead className="bg-gray-50 text-sm font-semibold text-gray-600">
+                <tr>
+                  <th className="px-4 py-3">Estado</th>
+                  <th className="px-4 py-3">Incidencia</th>
+                  <th className="px-4 py-3">Reportada</th>
+                  <th className="px-4 py-3">Acción</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {incidents.map((incident) => (
+                  <tr key={incident.id} className="align-top hover:bg-gray-50">
+                    <td data-mobile-label="Estado" className="px-4 py-4"><span className={cn("inline-flex rounded-md px-2.5 py-1 text-sm font-semibold", TASK_INCIDENT_STATUS_TONES[incident.status] ?? "bg-gray-100 text-gray-600")}>{TASK_INCIDENT_STATUS_LABELS[incident.status] ?? incident.status}</span></td>
+                    <td data-mobile="primary" data-mobile-label="Incidencia" className="px-4 py-4 text-gray-700"><p>{incident.description}</p>{incident.resolution_notes ? <p className="mt-2 text-sm text-gray-500">Resolución: {incident.resolution_notes}</p> : null}</td>
+                    <td data-mobile-label="Reportada" className="px-4 py-4 text-gray-500">{incident.created_by_role}<br />{formatDate(incident.created_at)}</td>
+                    <td data-mobile-label="Acción" className="px-4 py-4">
+                      {incident.status === "open" ? (
+                        <form action={resolveTaskIncidentAction} className="space-y-2">
+                          <input type="hidden" name="incidentId" value={incident.id} />
+                          <input type="hidden" name="taskId" value={task.id} />
+                          <textarea className={`${compactInputClassName} min-h-[64px]`} name="resolutionNotes" placeholder="Notas de resolución" />
+                          <Button type="submit" size="sm" variant="secondary">Marcar resuelta</Button>
+                        </form>
+                      ) : "-"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : (
-          <p className="text-sm text-stone-500">No hay incidencias registradas en esta tarea.</p>
+          <p className="text-sm text-gray-500">No hay incidencias registradas en esta tarea.</p>
         )}
 
-        <form action={createTaskIncidentAction} className="space-y-3 rounded-lg border border-stone-200 p-4">
+        <form action={createTaskIncidentAction} className="space-y-3">
           <input type="hidden" name="taskId" value={task.id} />
           <textarea className={`${compactInputClassName} min-h-[88px]`} name="description" placeholder="Registrar incidencia, bloqueo o riesgo de produccion" />
           <Button type="submit" variant="ghost">Registrar incidencia</Button>
@@ -146,7 +202,7 @@ function CreateTaskDeliveryModal({ task }: { task: AdminTask }) {
       size="lg"
       triggerClassName="px-3 py-1.5"
     >
-      <form action={createDeliveryAction} className="rounded-lg border border-stone-200 p-4">
+      <form action={createDeliveryAction} className="space-y-3">
         <input type="hidden" name="taskId" value={task.id} />
         <div className="space-y-3">
           <input className={compactInputClassName} name="title" defaultValue={task.title} placeholder="Titulo de la entrega" />
@@ -171,10 +227,10 @@ function TaskSummaryModal({ task }: { task: AdminTask }) {
       size="lg"
       triggerClassName="px-3 py-1.5"
     >
-      <div className="rounded-lg border border-stone-200 bg-stone-50 p-4 text-sm text-stone-600">
+      <div className="rounded-md border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
         <p className="font-semibold text-ink">Resumen</p>
         {task.description ? <p className="mt-2">{task.description}</p> : null}
-        {task.requested_items ? <p className="mt-2"><span className="font-medium text-stone-700">Resultado esperado:</span> {task.requested_items}</p> : null}
+        {task.requested_items ? <p className="mt-2"><span className="font-medium text-gray-700">Resultado esperado:</span> {task.requested_items}</p> : null}
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
           <span>Estado: {getTaskStatusSummary(task.status)}</span>
           <span>Urgencia: {task.urgency ? URGENCY_LABELS[task.urgency as keyof typeof URGENCY_LABELS] ?? task.urgency : "-"}</span>
@@ -186,14 +242,19 @@ function TaskSummaryModal({ task }: { task: AdminTask }) {
   );
 }
 
-export default async function AdminNecesidadesPage() {
+export default async function AdminNecesidadesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const user = await requireWorkshopUser();
+  const params = await searchParams;
+  const page = getPageParam(params);
+  const q = getStringParam(params, "q");
+  const status = getStringParam(params, "status") ?? "all";
 
   if (user.app_metadata?.role === "aliado") {
     const ally = await requireCurrentAlly();
     if (!ally) return null;
 
-    const tasks = await getAllyTaskBoard(ally.id);
+    const result = await getAllyTaskBoardPage(ally.id, { page, limit: 20, q, status });
+    const tasks = result.items;
 
     return (
       <div className="space-y-6">
@@ -201,121 +262,25 @@ export default async function AdminNecesidadesPage() {
           eyebrow="Cuenta"
           title="Tareas"
           description="Consulta tus tareas asignadas y completa la producción."
-          navigation={{ baseHref: "/admin/perfil", baseLabel: "Perfil", currentLabel: "Tareas" }}
         />
 
+        <CreateNeedForm workshopId={ally.id} />
+
+        <AdminRecordsSummary total={result.total} />
+
         {tasks.length ? (
-          <div className="space-y-4">
-            {tasks.map((task) => {
-              const latestDelivery = getLatestDelivery(task);
-              const editable = canEditUsage(task);
-              const incidents = sortIncidents(task.incidents);
-
-              return (
-                <SectionCard key={task.id} className="space-y-5 p-6">
-                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-lg font-semibold text-ink">{task.title}</h2>
-                        <span className={cn("inline-flex rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide", ASSIGNED_TASK_STATUS_TONES[task.status] ?? "bg-stone-100 text-stone-600")}>{ASSIGNED_TASK_STATUS_LABELS[task.status] ?? task.status}</span>
-                      </div>
-                      {task.description ? <p className="text-sm text-stone-600">{task.description}</p> : null}
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-500">
-                        <span>Creada: {formatDate(task.created_at)}</span>
-                        {task.due_date ? <span>Entrega esperada: {formatDate(task.due_date)}</span> : null}
-                        {task.urgency ? <span>Urgencia: {URGENCY_LABELS[task.urgency as keyof typeof URGENCY_LABELS] ?? task.urgency}</span> : null}
-                      </div>
-                      {task.requested_items ? (
-                        <p className="text-sm text-stone-500">
-                          <span className="font-medium text-stone-700">Objetivo de producción:</span> {task.requested_items}
-                        </p>
-                      ) : null}
-                    </div>
-
-                    {task.status === "asignada" ? (
-                      <form action={startAssignedTaskAction}>
-                        <input type="hidden" name="taskId" value={task.id} />
-                        <Button type="submit">Iniciar tarea</Button>
-                      </form>
-                    ) : null}
-                  </div>
-
-                  {latestDelivery ? (
-                    <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-medium text-stone-700">Entrega:</span>
-                        <span className={cn("inline-flex rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide", DELIVERY_STATUS_TONES[latestDelivery.status] ?? "bg-stone-100 text-stone-600")}>{DELIVERY_STATUS_LABELS[latestDelivery.status] ?? latestDelivery.status}</span>
-                      </div>
-                      <p className="mt-2 text-sm text-stone-600">{latestDelivery.title}</p>
-                    </div>
-                  ) : null}
-
-                  <div className="space-y-3">
-                    <h3 className="text-base font-semibold text-ink">Incidencias y bloqueos</h3>
-                    {incidents.length ? (
-                      <div className="space-y-3">
-                        {incidents.map((incident) => (
-                          <div key={incident.id} className="rounded-lg border border-stone-200 p-4">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className={cn("inline-flex rounded-full px-2 py-0.5 text-sm font-semibold uppercase tracking-wide", TASK_INCIDENT_STATUS_TONES[incident.status] ?? "bg-stone-100 text-stone-600")}>{TASK_INCIDENT_STATUS_LABELS[incident.status] ?? incident.status}</span>
-                              <span className="text-sm text-stone-500">Reportada por {incident.created_by_role} el {formatDate(incident.created_at)}</span>
-                            </div>
-                            <p className="mt-2 text-sm text-stone-700">{incident.description}</p>
-                            {incident.resolution_notes ? <p className="mt-2 text-sm text-stone-500">Resolución: {incident.resolution_notes}</p> : null}
-                            {incident.status === "open" ? (
-                              <form action={resolveTaskIncidentAction} className="mt-3 space-y-3">
-                                <input type="hidden" name="incidentId" value={incident.id} />
-                                <input type="hidden" name="taskId" value={task.id} />
-                                <textarea className={`${compactInputClassName} min-h-[80px]`} name="resolutionNotes" placeholder="Cómo resolviste la incidencia" />
-                                <Button type="submit" variant="secondary">Marcar resuelta</Button>
-                              </form>
-                            ) : null}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-stone-500">No hay incidencias registradas en esta tarea.</p>
-                    )}
-
-                    <form action={createTaskIncidentAction} className="rounded-lg border border-stone-200 p-4 space-y-3">
-                      <input type="hidden" name="taskId" value={task.id} />
-                      <textarea className={`${compactInputClassName} min-h-[88px]`} name="description" placeholder="Describe una incidencia, bloqueo o riesgo de producción" />
-                      <Button type="submit" variant="ghost">Reportar incidencia</Button>
-                    </form>
-                  </div>
-
-                  {/* MVP: gestión de materia prima pausada — secciones "Materia prima asignada" y "Reporte de consumo" ocultas temporalmente */}
-                  {editable ? (
-                    <form action={saveTaskMaterialUsageAction} className="space-y-4 rounded-lg border border-stone-200 bg-white p-5">
-                      <input type="hidden" name="taskId" value={task.id} />
-
-                      <label className="block space-y-2">
-                        <span className="text-sm font-medium text-stone-800">Notas del taller</span>
-                        <textarea className={`${compactInputClassName} min-h-[96px]`} name="allyNotes" defaultValue={task.ally_notes ?? ""} placeholder="Avances, incidencias o aclaratorias de producción" />
-                      </label>
-
-                      <div className="flex flex-wrap gap-3">
-                        <Button type="submit" name="intent" value="save" variant="secondary">Guardar notas</Button>
-                        {task.status !== "completada" ? <Button type="submit" name="intent" value="complete">Completar tarea</Button> : null}
-                      </div>
-                    </form>
-                  ) : null}
-                </SectionCard>
-              );
-            })}
-          </div>
+          <><AllyTaskTable tasks={tasks} workshopId={ally.id} /><AdminPagination page={result.page} pageCount={result.pageCount} total={result.total} limit={result.limit} hrefForPage={(nextPage) => pageHref(params, nextPage)} /></>
         ) : (
           <EmptyState title="Sin tareas asignadas" description="Cuando Promoda te asigne producción aparecerá aquí." />
         )}
+
       </div>
     );
   }
 
   await requireWorkshopAdminUser();
-  const [tasks, allies] = await Promise.all([
-    getAdminTaskBoard(),
-    getActiveAlliesForSelect(),
-  ]);
+  const result = await getAdminTaskBoardPage({ page, limit: 20, q, status });
+  const tasks = result.items;
 
   return (
     <div className="space-y-6">
@@ -323,20 +288,21 @@ export default async function AdminNecesidadesPage() {
         eyebrow="Promoda"
         title="Tareas"
         description="Crea tareas para los aliados y gestiona su producción."
-        meta={`${tasks.length} tareas`}
-        navigation={{ baseHref: "/admin/aliados", baseLabel: "Aliados", currentLabel: "Tareas" }}
       />
 
-      <div className="flex justify-end">
-        <CreateAssignedTaskModal allies={allies} />
-      </div>
+      <AdminToolbar
+        filters={<AutoSubmitFilterForm action="/admin/tareas" method="get" className="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(180px,1fr)_220px]"><input className={compactInputClassName} name="q" defaultValue={q ?? ""} placeholder="Buscar tarea" /><select className={compactInputClassName} name="status" defaultValue={status}><option value="all">Todos los estados</option>{Object.entries(ASSIGNED_TASK_STATUS_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></AutoSubmitFilterForm>}
+        actions={<CreateAssignedTaskModal />}
+      />
+
+      <AdminRecordsSummary total={result.total} />
 
       {tasks.length ? (
         <div className="space-y-4">
           <SectionCard className="overflow-hidden">
-            <div className="hidden overflow-x-auto md:block">
-              <table className="min-w-[760px] w-full text-left text-sm">
-                <thead className="border-b border-stone-200 bg-stone-50/80 text-sm font-semibold text-stone-600">
+            <AdminTableFrame>
+              <table className="admin-mobile-cards min-w-[760px] w-full text-left text-sm">
+                <thead className="border-b border-gray-200 bg-gray-50/80 text-sm font-semibold text-gray-600">
                   <tr>
                     <th className="px-4 py-2.5">Tarea asignada</th>
                     <th className="px-4 py-2.5">Aliado asignado</th>
@@ -344,72 +310,39 @@ export default async function AdminNecesidadesPage() {
                     <th className="px-4 py-2.5">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-200">
+                <tbody className="divide-y divide-gray-200">
                   {tasks.map((task) => (
-                    <tr key={task.id} className="hover:bg-stone-50 transition-colors">
-                      <td className="px-4 py-2.5 align-top leading-tight">
-                        <p className="font-semibold text-ink">{task.title}</p>
+                    <tr key={task.id} className="hover:bg-gray-50 transition-colors">
+                      <td data-mobile="primary" data-mobile-label="Tarea" className="px-4 py-2.5 align-top leading-tight">
+                        <Link href={`/admin/tareas/${task.id}`} className="font-semibold text-ink hover:text-primary">{task.title}</Link>
                       </td>
-                      <td className="px-4 py-2.5 align-top leading-tight">
+                      <td data-mobile-label="Aliado" className="px-4 py-2.5 align-top leading-tight">
                         {task.ally ? (
                           <Link href={`/admin/aliados/${task.ally.id}`} className="font-semibold text-[#F74897] hover:underline">{task.ally.name}</Link>
                         ) : (
-                          <span className="text-stone-400">Sin aliado</span>
+                          <span className="text-gray-400">Sin aliado</span>
                         )}
                       </td>
-                      <td className="px-4 py-2.5 align-top leading-tight">
-                        <span className={cn("inline-flex rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide", ASSIGNED_TASK_STATUS_TONES[task.status] ?? "bg-stone-100 text-stone-600")}>{getTaskStatusSummary(task.status)}</span>
+                      <td data-mobile-label="Estado" className="px-4 py-2.5 align-top leading-tight">
+                        <span className={cn("inline-flex rounded-md px-2.5 py-1 text-sm font-semibold", ASSIGNED_TASK_STATUS_TONES[task.status] ?? "bg-gray-100 text-gray-600")}>{getTaskStatusSummary(task.status)}</span>
                       </td>
-                      <td className="px-4 py-2.5 align-top leading-tight">
-                        <div className="flex flex-wrap gap-2">
-                          <TaskSummaryModal task={task} />
-                          <EditTaskModal task={task} />
-                          <TaskIncidentsModal task={task} />
-                          <CreateTaskDeliveryModal task={task} />
-                        </div>
+                      <td data-mobile="actions" data-mobile-label="Acciones" className="px-4 py-2.5 align-top leading-tight">
+                        <AdminRowActions>
+                          <AdminActionItem><Link href={`/admin/tareas/${task.id}`} className="block w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Abrir detalle</Link></AdminActionItem>
+                          <AdminActionItem><TaskSummaryModal task={task} /></AdminActionItem>
+                          <AdminActionItem><Link href={`/admin/tareas/${task.id}?tab=produccion`} className="block w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Editar tarea</Link></AdminActionItem>
+                          <AdminActionItem><TaskIncidentsModal task={task} /></AdminActionItem>
+                          <AdminActionItem><CreateTaskDeliveryModal task={task} /></AdminActionItem>
+                        </AdminRowActions>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
+            </AdminTableFrame>
 
-            <div className="grid gap-3 p-4 md:hidden">
-              {tasks.map((task) => {
-                return (
-                  <div key={task.id} className="rounded-xl border border-stone-200/80 bg-white/75 p-4">
-                    <div className="space-y-3">
-                      <div className="space-y-1">
-                        <p className="font-semibold text-ink">{task.title}</p>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className={cn("inline-flex rounded-full px-2.5 py-1 text-sm font-semibold uppercase tracking-wide", ASSIGNED_TASK_STATUS_TONES[task.status] ?? "bg-stone-100 text-stone-600")}>{getTaskStatusSummary(task.status)}</span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1 text-sm text-stone-600">
-                        <p>
-                          Aliado asignado:{" "}
-                          {task.ally ? (
-                            <Link href={`/admin/aliados/${task.ally.id}`} className="font-semibold text-[#F74897] hover:underline">{task.ally.name}</Link>
-                          ) : (
-                            <span className="text-stone-400">Sin aliado</span>
-                          )}
-                        </p>
-                        <p>Estado: {getTaskStatusSummary(task.status)}</p>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        <TaskSummaryModal task={task} />
-                        <EditTaskModal task={task} />
-                        <TaskIncidentsModal task={task} />
-                        <CreateTaskDeliveryModal task={task} />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           </SectionCard>
+          <AdminPagination page={result.page} pageCount={result.pageCount} total={result.total} limit={result.limit} hrefForPage={(nextPage) => pageHref(params, nextPage)} />
         </div>
       ) : (
         <EmptyState title="No hay tareas registradas." description="Crea una tarea para comenzar el flujo." />

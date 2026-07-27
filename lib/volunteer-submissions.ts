@@ -48,7 +48,7 @@ export async function submitVolunteerRegistration(
       experienceDescription ? `Experiencia: ${experienceDescription}` : null,
       howDidYouFindOut ? `Cómo se enteró: ${howDidYouFindOut}` : null,
     ].filter(Boolean).join("\n\n") || null,
-    status: "activo",
+    status: "postulado",
   });
 
   if (error) {

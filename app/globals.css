@@ -17,8 +17,72 @@
 }
 
 body {
-  @apply bg-canvas text-ink antialiased;
+  @apply bg-canvas font-sans text-ink antialiased;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+.admin-shell table thead {
+  background-color: #fcfcfc;
+}
+
+.admin-shell .bg-gray-50 {
+  background-color: #fcfcfc;
+}
+
+.admin-shell .admin-table-frame,
+.admin-shell .overflow-x-auto:has(> table) {
+  min-height: 184px;
+}
+
+.admin-shell .admin-table-frame > table,
+.admin-shell .overflow-x-auto:has(> table) > table {
+  min-height: 184px;
+}
+
+.admin-toolbar-actions > button,
+.admin-toolbar-actions > div > button:first-child {
+  background-color: rgb(var(--color-primary));
+  color: #ffffff;
+}
+
+.admin-toolbar-actions > button:hover,
+.admin-toolbar-actions > div > button:first-child:hover {
+  background-color: rgb(var(--color-primary-dark));
+}
+
+.admin-page-actions > button:last-child {
+  background-color: rgb(var(--color-primary));
+  color: #ffffff;
+}
+
+.admin-page-actions > button:last-child:hover {
+  background-color: rgb(var(--color-primary-dark));
+}
+
+.admin-modal-content form > * {
+  min-width: 0;
+}
+
+.admin-modal-content form {
+  padding-bottom: 0.75rem;
+}
+
+.admin-modal-content form > div:has(> button),
+.admin-modal-content form > button:last-child {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  margin-top: 0.25rem;
+  border-top: 1px solid rgb(229 231 235);
+  background: #ffffff;
+  padding-top: 0.75rem;
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+}
+
+.admin-modal-content form button,
+.admin-modal-content form a {
+  max-width: 100%;
 }
 
 a {
@@ -26,11 +90,226 @@ a {
 }
 
 input,
-textarea,
+textarea {
+  @apply outline-none;
+}
+
 select {
   @apply outline-none;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, rgb(107 114 128) 50%), linear-gradient(135deg, rgb(107 114 128) 50%, transparent 50%);
+  background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%;
+  background-repeat: no-repeat;
+  background-size: 5px 5px, 5px 5px;
+  padding-right: 2.5rem !important;
 }
 
 ::selection {
   @apply bg-primary text-white;
+}
+
+/* Mobile and tablet admin lists keep table semantics on desktop and become cards on touch layouts. */
+@media (max-width: 1023px) {
+  .admin-table-frame,
+  .admin-shell .overflow-x-auto {
+    overflow: visible !important;
+  }
+
+  .admin-shell .overflow-hidden:has(table):not(.admin-shell) {
+    overflow: visible !important;
+  }
+
+  .admin-shell details > div {
+    max-width: calc(100vw - 2rem);
+  }
+
+  .admin-mobile-cards,
+  .admin-table-frame table,
+  .admin-detail-panel table,
+  .admin-shell .overflow-x-auto > table {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+  }
+
+  .admin-mobile-cards thead,
+  .admin-table-frame table thead,
+  .admin-detail-panel table thead,
+  .admin-shell .overflow-x-auto > table thead {
+    display: none;
+  }
+
+  .admin-mobile-cards tbody,
+  .admin-table-frame table tbody,
+  .admin-detail-panel table tbody,
+  .admin-shell .overflow-x-auto > table tbody {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .admin-mobile-cards tr,
+  .admin-table-frame table tr,
+  .admin-detail-panel table tr,
+  .admin-shell .overflow-x-auto > table tr {
+    display: block;
+    overflow: visible;
+    border: 1px solid rgb(229 231 235);
+    border-radius: 0.75rem;
+    background: rgb(252 252 252);
+    padding: 0.5rem 1rem;
+  }
+
+  .admin-mobile-cards td,
+  .admin-table-frame table td,
+  .admin-detail-panel table td,
+  .admin-shell .overflow-x-auto > table td {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 0 !important;
+    padding: 0.625rem 0 !important;
+    text-align: right;
+    vertical-align: top;
+  }
+
+  .admin-mobile-cards td[data-mobile-label]::before,
+  .admin-table-frame table td[data-mobile-label]::before,
+  .admin-detail-panel table td[data-mobile-label]::before,
+  .admin-shell .overflow-x-auto > table td[data-mobile-label]::before {
+    flex: 0 0 auto;
+    color: rgb(107 114 128);
+    content: attr(data-mobile-label);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    text-align: left;
+  }
+
+  .admin-mobile-cards td[data-mobile="primary"],
+  .admin-table-frame table td[data-mobile="primary"],
+  .admin-detail-panel table td[data-mobile="primary"],
+  .admin-shell .overflow-x-auto > table td[data-mobile="primary"] {
+    display: block;
+    padding-bottom: 0.75rem !important;
+    text-align: left;
+  }
+
+  .admin-mobile-cards tr > td:first-child,
+  .admin-table-frame table tr > td:first-child,
+  .admin-detail-panel table tr > td:first-child,
+  .admin-shell .overflow-x-auto > table tr > td:first-child {
+    display: block;
+    padding-bottom: 0.75rem !important;
+    text-align: left;
+  }
+
+  .admin-mobile-cards td[data-mobile="primary"]::before,
+  .admin-mobile-cards td[data-mobile="hidden"]::before,
+  .admin-table-frame table td[data-mobile="primary"]::before,
+  .admin-table-frame table td[data-mobile="hidden"]::before,
+  .admin-detail-panel table td[data-mobile="primary"]::before,
+  .admin-detail-panel table td[data-mobile="hidden"]::before,
+  .admin-shell .overflow-x-auto > table td[data-mobile="primary"]::before,
+  .admin-shell .overflow-x-auto > table td[data-mobile="hidden"]::before {
+    display: none;
+  }
+
+  .admin-mobile-cards tr > td:first-child::before,
+  .admin-table-frame table tr > td:first-child::before,
+  .admin-detail-panel table tr > td:first-child::before,
+  .admin-shell .overflow-x-auto > table tr > td:first-child::before {
+    display: none;
+  }
+
+  .admin-mobile-cards td[data-mobile="hidden"],
+  .admin-table-frame table td[data-mobile="hidden"],
+  .admin-detail-panel table td[data-mobile="hidden"],
+  .admin-shell .overflow-x-auto > table td[data-mobile="hidden"] {
+    display: none;
+  }
+
+  .admin-mobile-cards td[data-mobile="actions"],
+  .admin-table-frame table td[data-mobile="actions"],
+  .admin-detail-panel table td[data-mobile="actions"],
+  .admin-shell .overflow-x-auto > table td[data-mobile="actions"] {
+    justify-content: flex-end;
+    border-top: 1px solid rgb(229 231 235) !important;
+    padding-top: 0.75rem !important;
+    text-align: right;
+  }
+
+  .admin-mobile-cards td[data-mobile="actions"]::before,
+  .admin-table-frame table td[data-mobile="actions"]::before,
+  .admin-detail-panel table td[data-mobile="actions"]::before,
+  .admin-shell .overflow-x-auto > table td[data-mobile="actions"]::before {
+    display: none;
+  }
+
+  .admin-mobile-cards td > *,
+  .admin-table-frame table td > *,
+  .admin-detail-panel table td > *,
+  .admin-shell .overflow-x-auto > table td > * {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-toolbar-filters,
+  .admin-toolbar-actions,
+  .admin-page-actions {
+    align-items: stretch !important;
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  .admin-toolbar-filters > form,
+  .admin-toolbar-actions > *,
+  .admin-page-actions > * {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .admin-toolbar-filters > form {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .admin-toolbar-filters > form > *,
+  .admin-toolbar-actions > div > button,
+  .admin-toolbar-actions > div > a,
+  .admin-page-actions > div > button,
+  .admin-page-actions > div > a,
+  .admin-toolbar-actions > a,
+  .admin-toolbar-actions > button,
+  .admin-page-actions > a,
+  .admin-page-actions > button {
+    width: 100% !important;
+    min-width: 0;
+  }
+
+  .admin-modal-content form[class*="sm:grid-cols-2"],
+  .admin-modal-content form[class*="md:grid-cols-2"],
+  .admin-modal-content [class*="sm:grid-cols-2"],
+  .admin-modal-content [class*="md:grid-cols-2"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .admin-modal-content form button,
+  .admin-modal-content form a {
+    width: 100%;
+  }
+
+  .admin-shell form[class*="sm:grid-cols-2"],
+  .admin-shell form[class*="md:grid-cols-2"],
+  .admin-shell form [class*="sm:grid-cols-2"],
+  .admin-shell form [class*="md:grid-cols-2"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .admin-shell form button {
+    width: 100%;
+  }
 }

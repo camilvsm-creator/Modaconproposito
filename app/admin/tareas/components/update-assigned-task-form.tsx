@@ -43,7 +43,7 @@ export function UpdateAssignedTaskForm({ task }: { task: TaskFormData }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-3 rounded-lg border border-stone-200 p-4 md:grid-cols-2">
+    <form onSubmit={handleSubmit} className="grid gap-3 p-0 md:grid-cols-2">
       <input type="hidden" name="taskId" value={task.id} />
       <input className={compactInputClassName} name="title" defaultValue={task.title} required />
       <select className={compactInputClassName} name="status" defaultValue={task.status}>

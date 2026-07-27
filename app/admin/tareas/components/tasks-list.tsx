@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { closeWorkshopNeedAction } from "@/app/admin/ally-actions";
-import { Button, SectionCard } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { EmptyState } from "@/components/empty-state";
 import { WORKSHOP_NEED_STATUS_LABELS, WORKSHOP_NEED_STATUS_TONES } from "@/lib/constants";
 import { cn, formatDate } from "@/lib/utils";
@@ -38,44 +38,46 @@ export function NeedsList({ needs, workshopId }: { needs: WorkshopNeed[]; worksh
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <h2 className="text-lg font-semibold text-ink">Necesidades registradas</h2>
       {error ? <p className="text-sm text-danger">{error}</p> : null}
-      {needs.map((need) => {
-        const statusLabel = WORKSHOP_NEED_STATUS_LABELS[need.status] ?? need.status;
-        const statusTone = WORKSHOP_NEED_STATUS_TONES[need.status] ?? "bg-stone-100 text-stone-700";
-
-        return (
-          <SectionCard key={need.id} className="p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="space-y-1 min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-base font-semibold text-ink">{need.title}</h3>
-                  <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-sm font-semibold uppercase tracking-wide", statusTone)}>
-                    {statusLabel}
-                  </span>
-                </div>
-                {need.description ? <p className="text-sm text-stone-600">{need.description}</p> : null}
-                {need.requested_items ? (
-                  <p className="text-sm text-stone-500">
-                    <span className="font-medium">Solicitan:</span> {need.requested_items}
-                  </p>
-                ) : null}
-                <p className="text-sm text-stone-400">{formatDate(need.created_at)}</p>
-              </div>
-              {(need.status === "pendiente" || need.status === "publicada") && (
-                <Button
-                  variant="ghost"
-                  onClick={() => handleClose(need.id)}
-                  disabled={closingId === need.id}
-                >
-                  {closingId === need.id ? "Cerrando..." : "Cerrar"}
-                </Button>
-              )}
-            </div>
-          </SectionCard>
-        );
-      })}
+      <div className="overflow-x-auto">
+        <table className="admin-mobile-cards min-w-[900px] w-full text-left text-sm">
+          <thead className="border-b border-gray-200 bg-gray-50 text-sm font-semibold text-gray-600">
+            <tr>
+              <th className="px-4 py-3">Necesidad</th>
+              <th className="px-4 py-3">Elementos solicitados</th>
+              <th className="px-4 py-3">Estado</th>
+              <th className="px-4 py-3">Fecha</th>
+              <th className="px-4 py-3 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {needs.map((need) => {
+              const statusLabel = WORKSHOP_NEED_STATUS_LABELS[need.status] ?? need.status;
+              const statusTone = WORKSHOP_NEED_STATUS_TONES[need.status] ?? "bg-gray-100 text-gray-700";
+              return (
+                <tr key={need.id} className="align-top hover:bg-gray-50">
+                  <td className="px-4 py-4">
+                    <p className="font-semibold text-ink">{need.title}</p>
+                    {need.description ? <p className="mt-1 max-w-md text-sm text-gray-600">{need.description}</p> : null}
+                  </td>
+                  <td className="px-4 py-4 text-gray-600">{need.requested_items ?? "-"}</td>
+                  <td className="px-4 py-4"><span className={cn("inline-flex rounded-md px-2.5 py-1 text-sm font-semibold", statusTone)}>{statusLabel}</span></td>
+                  <td className="px-4 py-4 text-gray-500">{formatDate(need.created_at)}</td>
+                  <td className="px-4 py-4 text-right">
+                    {(need.status === "pendiente" || need.status === "publicada") ? (
+                      <Button variant="ghost" size="sm" onClick={() => handleClose(need.id)} disabled={closingId === need.id}>
+                        {closingId === need.id ? "Cerrando..." : "Cerrar"}
+                      </Button>
+                    ) : "-"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

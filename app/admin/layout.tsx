@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 import { AdminShell } from "@/components/admin-shell";
 import { WORKSHOP_PHOTO_BUCKET } from "@/lib/constants";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth";
 import { getWorkshopAvatarPath, getUserLinkedWorkshops } from "@/lib/workshops";
 import { getContextFromHeaders } from "@/lib/context";
 
@@ -16,9 +16,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   if (isPublicActivation) return <>{children}</>;
 
-  const supabase = await createSupabaseServerClient();
-  const { data } = await supabase.auth.getUser();
-  const user = data.user;
+  const user = await getCurrentUser();
 
   if (!user) {
     if (pathname !== "/admin") redirect("/admin");

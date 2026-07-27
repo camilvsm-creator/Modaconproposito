@@ -23,7 +23,7 @@ export function SectionCard({
   return (
     <div
       className={cn(
-        "rounded-lg border border-stone-200 bg-paper shadow-card",
+        "rounded-md bg-white",
         className,
       )}
     >
@@ -41,9 +41,9 @@ const buttonClasses = {
   primary:
     "bg-primary text-white hover:bg-primary-dark focus-visible:ring-primary/30",
   secondary:
-    "bg-white text-ink ring-1 ring-stone-300 hover:bg-stone-50 focus-visible:ring-black/10",
+    "bg-gray-50 text-ink hover:bg-gray-100 focus-visible:ring-black/10",
   ghost:
-    "bg-transparent text-primary hover:bg-primary/5 focus-visible:ring-primary/20",
+    "bg-transparent text-primary hover:bg-primary-soft focus-visible:ring-primary/20",
 };
 
 export function Button({
@@ -57,8 +57,8 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "inline-flex items-center justify-center rounded-full font-semibold transition focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-60",
-        size === "sm" ? "px-4 py-2.5 text-sm" : "px-5 py-3 text-sm",
+        "inline-flex items-center justify-center rounded-md font-semibold transition focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-60",
+        size === "sm" ? "min-h-11 px-3.5 py-2 text-sm md:min-h-0" : "min-h-11 px-4 py-2.5 text-sm",
         buttonClasses[variant],
         className,
       )}
@@ -79,7 +79,7 @@ export function LinkButton({
   return (
     <Link
       className={cn(
-        "inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition",
+        "inline-flex min-h-11 items-center justify-center rounded-md px-4 py-2.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/30",
         buttonClasses[variant],
         className,
       )}
@@ -120,20 +120,20 @@ export function InputShell({
   children: ReactNode;
 }) {
   return (
-    <label className="block space-y-2">
-      <span className="block text-base font-medium text-stone-900">{label}</span>
+    <label className="block space-y-1.5">
+      <span className="block text-sm font-medium text-gray-900">{label}</span>
       {children}
-      {hint ? <span className="block text-sm text-stone-500">{hint}</span> : null}
+      {hint ? <span className="block text-sm text-gray-500">{hint}</span> : null}
       {error ? <span className="block text-sm text-danger">{error}</span> : null}
     </label>
   );
 }
 
 export const inputClassName =
-  "w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-base text-ink placeholder:text-stone-400 focus:border-primary/40 focus:ring-4 focus:ring-primary/10";
+  "min-h-11 w-full rounded-md border border-gray-300 bg-white px-3.5 py-2.5 text-base text-ink placeholder:text-gray-400 focus:border-primary/40 focus:ring-4 focus:ring-primary/10";
 
 export const compactInputClassName =
-  "w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-sm text-ink placeholder:text-stone-400 focus:border-primary/40 focus:ring-4 focus:ring-primary/10";
+  "min-h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-ink placeholder:text-gray-400 focus:border-primary/40 focus:ring-4 focus:ring-primary/10 md:min-h-0 md:py-2";
 
 export function CheckboxPill({
   checked,
@@ -149,7 +149,7 @@ export function CheckboxPill({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-lg border px-4 py-3 text-sm font-medium transition",
+        "rounded-md border px-3.5 py-2 text-sm font-medium transition",
         checked
           ? "border-primary bg-primary/10 text-primary"
           : "border-black/10 bg-white text-slate-700 hover:border-primary/30",

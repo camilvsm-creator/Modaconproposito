@@ -29,6 +29,7 @@ const sharedAdminItems: NavItem[] = [
   { href: "/admin/aliados", label: "Aliados", icon: LayoutDashboard },
   { href: "/admin/tareas", label: "Tareas", icon: FolderKanban },
   { href: "/admin/solicitudes", label: "Solicitudes", icon: HandHeart },
+  { href: "/admin/solicitantes", label: "Solicitantes", icon: Users },
   { href: "/admin/voluntarios", label: "Voluntarios", icon: Users },
   { href: "/admin/colaboradores", label: "Colaboradores", icon: GitFork },
   { href: "/admin/materia-prima", label: "Materia prima", icon: Package },
@@ -51,6 +52,7 @@ const aliadoNavItems: NavItem[] = [
 const requesterNavItems: NavItem[] = [
   { href: "/admin/solicitudes", label: "Solicitudes", icon: HandHeart },
   { href: "/admin/entregas", label: "Entregas", icon: PackageCheck },
+  { href: "/admin/mensajes", label: "Mensajes", icon: MessageCircle },
 ];
 
 const navByRole: Record<string, NavItem[]> = {
@@ -75,8 +77,8 @@ function ContextSwitcher({
   const isPlatform = context.type === "platform";
 
   return (
-    <div className={cn("border-b pb-4 shrink-0", isPromoda ? "border-[#F74897]/10" : "border-stone-300")}>
-      <p className={cn("text-sm font-semibold uppercase tracking-[0.16em] mb-2", isPromoda ? "text-[#D6003F]" : "text-stone-500")}>
+    <div className="pb-4 shrink-0">
+      <p className={cn("text-sm font-semibold uppercase tracking-[0.16em] mb-2", isPromoda ? "text-[#D6003F]" : "text-gray-500")}>
         Espacio de trabajo
       </p>
       <div className="flex flex-col gap-1">
@@ -86,9 +88,9 @@ function ContextSwitcher({
             "inline-flex min-h-9 items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition w-full text-left",
             isPlatform
               ? isPromoda
-                ? "bg-[#FFE4EC] text-[#D6003F] ring-1 ring-[#F74897]/20"
-                : "bg-[#faf9f7] text-ink ring-1 ring-stone-300"
-              : "bg-transparent text-stone-600 hover:bg-stone-100",
+              ? "bg-[#FFE4EC] text-[#D6003F]"
+              : "bg-transparent text-ink"
+              : "bg-transparent text-gray-600 hover:bg-gray-100",
           )}
         >
           <Building2 className="h-4 w-4 shrink-0" />
@@ -105,9 +107,9 @@ function ContextSwitcher({
                 "inline-flex min-h-9 items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition w-full text-left",
                 isActive
                   ? isPromoda
-                    ? "bg-[#FFE4EC] text-[#D6003F] ring-1 ring-[#F74897]/20"
-                    : "bg-[#faf9f7] text-ink ring-1 ring-stone-300"
-                  : "bg-transparent text-stone-600 hover:bg-stone-100",
+                  ? "bg-[#FFE4EC] text-[#D6003F]"
+                  : "bg-transparent text-ink"
+                  : "bg-transparent text-gray-600 hover:bg-gray-100",
               )}
             >
               {w.avatar_path ? (
@@ -142,8 +144,12 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
 
-  const primaryItems = items.slice(0, 4);
-  const secondaryItems = items.slice(4);
+  const primaryItems = isAdmin
+    ? ["/admin/aliados", "/admin/tareas", "/admin/materia-prima", "/admin/entregas"]
+        .map((href) => items.find((item) => item.href === href))
+        .filter((item): item is NavItem => Boolean(item))
+    : items.slice(0, 4);
+  const secondaryItems = items.filter((item) => !primaryItems.some((primary) => primary.href === item.href));
 
   function isActive(href: string) {
     if (href === "/admin") return pathname === "/admin";
@@ -184,16 +190,16 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
     : "Plataforma PROMODA";
 
   return (
-    <div className={cn("h-screen overflow-hidden text-ink", isPromoda ? "bg-[#FFE4EC]/30" : "bg-stone-50")}>
+    <div className={cn("admin-shell h-[100dvh] overflow-hidden text-ink", isPromoda ? "bg-white" : "bg-gray-50")}>
       <div className="flex h-full">
         {/* Desktop sidebar */}
         <aside className={cn(
-          "hidden lg:flex lg:w-[250px] lg:flex-col lg:border-r text-stone-700 shrink-0",
-          isPromoda ? "border-[#F74897]/10 bg-white" : "border-stone-300 bg-stone-50",
+          "hidden h-full shrink-0 text-gray-700 lg:flex lg:w-[250px] lg:flex-col",
+          "bg-[#FCFCFC]",
         )}>
           <div className="flex h-full flex-col px-4 py-5">
             {/* Sidebar header */}
-            <div className={cn("border-b pb-4 shrink-0", isPromoda ? "border-[#F74897]/10" : "border-stone-300")}>
+            <div className="pb-4 shrink-0">
               {isPromoda ? (
                 <Link href="/admin/aliados" className="flex items-center gap-2">
                   <img src="/promoda-logo.svg" alt="Promoda" className="h-7 w-auto" />
@@ -204,8 +210,8 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
                   <h1 className="mt-1.5 text-xl font-semibold tracking-[-0.03em] text-ink">Operaciones</h1>
                 </>
               )}
-              <p className={cn("mt-3 truncate text-sm", isPromoda ? "text-stone-500" : "text-stone-600")}>{email || role}</p>
-              <p className={cn("mt-1 text-sm font-semibold uppercase tracking-[0.16em]", isPromoda ? "text-[#D6003F]" : "text-stone-500")}>
+              <p className={cn("mt-3 truncate text-sm", isPromoda ? "text-gray-500" : "text-gray-600")}>{email || role}</p>
+              <p className={cn("mt-1 text-sm font-semibold uppercase tracking-[0.16em]", isPromoda ? "text-[#D6003F]" : "text-gray-500")}>
                 {context.type === "aliado" ? "Aliado" : role}
               </p>
             </div>
@@ -235,14 +241,14 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
                       "inline-flex min-h-11 items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition w-full",
                       active
                         ? isPromoda
-                          ? "bg-[#FFE4EC] text-[#D6003F] shadow-sm ring-1 ring-[#F74897]/20"
-                          : "bg-[#faf9f7] text-ink shadow-sm ring-1 ring-stone-300"
+                          ? "bg-[#FFE4EC] text-[#D6003F]"
+                          : "bg-transparent text-ink"
                         : isPromoda
-                          ? "bg-transparent text-stone-600 hover:bg-[#FFE4EC]/60 hover:text-[#D6003F]"
-                          : "bg-transparent text-stone-600 hover:bg-[#f6f4f1] hover:text-ink",
+                          ? "bg-transparent text-gray-600 hover:bg-[#FFE4EC]/60 hover:text-[#D6003F]"
+                          : "bg-transparent text-gray-600 hover:bg-[#f6f4f1] hover:text-ink",
                     )}
                   >
-                    <Icon className={cn("h-4 w-4 shrink-0", active ? (isPromoda ? "text-[#F74897]" : "text-primary") : "text-stone-500")} />
+                    <Icon className={cn("h-4 w-4 shrink-0", active ? (isPromoda ? "text-[#F74897]" : "text-primary") : "text-gray-500")} />
                     <span>{item.label}</span>
                   </Link>
                 );
@@ -255,10 +261,10 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
                 <button
                   type="submit"
                   className={cn(
-                    "inline-flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold transition",
+                    "inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-semibold transition",
                     isPromoda
-                      ? "border-[#F74897]/20 bg-[#FFE4EC] text-[#D6003F] hover:bg-white"
-                      : "border-stone-300 bg-[#f7f6f4] text-stone-700 hover:bg-white",
+                      ? "bg-[#FFE4EC] text-[#D6003F] hover:bg-white"
+                      : "bg-[#f7f6f4] text-gray-700 hover:bg-white",
                   )}
                 >
                   <LogOut className="h-4 w-4" />
@@ -270,14 +276,14 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
         </aside>
 
         {/* Main content */}
-        <div className="flex-1 min-w-0 flex flex-col h-full bg-white">
-          <main className="flex-1 min-h-0 overflow-y-auto px-4 py-5 sm:px-6 lg:px-10 xl:px-12 lg:py-8 pb-[72px] lg:pb-8">
-            {children}
+        <div className="flex h-full min-w-0 flex-1 flex-col bg-white">
+          <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 pb-[calc(72px+env(safe-area-inset-bottom))] sm:px-6 lg:px-10 lg:py-8 lg:pb-8 xl:px-12">
+            <div className="mx-auto w-full max-w-[1440px]">{children}</div>
           </main>
         </div>
 
         {/* Mobile bottom tab bar */}
-        <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center border-t border-stone-200 bg-white/95 backdrop-blur-lg lg:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+        <nav aria-label="Navegación principal" className="fixed bottom-0 left-0 right-0 z-40 flex min-h-16 items-center bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg ring-1 ring-black/5 lg:hidden">
           {primaryItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
@@ -286,22 +292,22 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-semibold transition-colors",
-                  active ? (isPromoda ? "text-[#F74897]" : "text-primary") : "text-stone-500",
+                  "flex min-h-16 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-semibold leading-none transition-colors",
+                  active ? (isPromoda ? "text-[#F74897]" : "text-primary") : "text-gray-500",
                 )}
               >
-                <Icon className={cn("h-5 w-5", active ? (isPromoda ? "text-[#F74897]" : "text-primary") : "text-stone-500")} />
-                <span>{item.label}</span>
+                <Icon className={cn("h-5 w-5", active ? (isPromoda ? "text-[#F74897]" : "text-primary") : "text-gray-500")} />
+                <span className="whitespace-nowrap">{item.label}</span>
               </Link>
             );
           })}
           {secondaryItems.length > 0 ? (
             <button
               onClick={() => setDrawerOpen(true)}
-              className="flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-semibold text-stone-500 transition-colors"
+              className="flex min-h-16 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-semibold leading-none text-gray-500 transition-colors"
             >
               <Menu className="h-5 w-5" />
-              <span>Más</span>
+              <span className="whitespace-nowrap">Más</span>
             </button>
           ) : null}
         </nav>
@@ -318,13 +324,13 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
         {/* Drawer panel */}
         <div
           className={cn(
-            "fixed top-0 left-0 z-50 h-full w-[280px] shadow-xl transition-transform duration-300 ease-out lg:hidden",
+            "fixed top-0 left-0 z-50 h-full w-[280px] ring-1 ring-black/10 transition-transform duration-300 ease-out lg:hidden",
             drawerOpen ? "translate-x-0" : "-translate-x-full",
-            isPromoda ? "bg-white" : "bg-stone-50",
+            isPromoda ? "bg-white" : "bg-[#FCFCFC]",
           )}
         >
           <div className="flex h-full flex-col px-4 py-5">
-            <div className={cn("flex items-center justify-between border-b pb-4", isPromoda ? "border-[#F74897]/10" : "border-stone-300")}>
+            <div className="flex items-center justify-between pb-4">
               {isPromoda ? (
                 <div className="flex items-center gap-2">
                   <img src="/promoda-logo.svg" alt="Promoda" className="h-6 w-auto" />
@@ -338,10 +344,10 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
               <button
                 onClick={closeDrawer}
                 className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-lg border",
+                  "flex h-9 w-9 items-center justify-center rounded-md",
                   isPromoda
-                    ? "border-[#F74897]/20 bg-[#FFE4EC] text-[#D6003F]"
-                    : "border-stone-300 bg-[#f7f6f4] text-stone-600",
+                    ? "bg-[#FFE4EC] text-[#D6003F]"
+                    : "bg-[#f7f6f4] text-gray-600",
                 )}
                 aria-label="Cerrar menú"
               >
@@ -374,14 +380,14 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
                       "inline-flex min-h-11 items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition",
                       active
                         ? isPromoda
-                          ? "bg-[#FFE4EC] text-[#D6003F] shadow-sm ring-1 ring-[#F74897]/20"
-                          : "bg-[#faf9f7] text-ink shadow-sm ring-1 ring-stone-300"
+                          ? "bg-[#FFE4EC] text-[#D6003F]"
+                          : "bg-transparent text-ink"
                         : isPromoda
-                          ? "bg-transparent text-stone-600 hover:bg-[#FFE4EC]/60 hover:text-[#D6003F]"
-                          : "bg-transparent text-stone-600 hover:bg-[#f6f4f1] hover:text-ink",
+                          ? "bg-transparent text-gray-600 hover:bg-[#FFE4EC]/60 hover:text-[#D6003F]"
+                          : "bg-transparent text-gray-600 hover:bg-[#f6f4f1] hover:text-ink",
                     )}
                   >
-                    <Icon className={cn("h-4 w-4 shrink-0", active ? (isPromoda ? "text-[#F74897]" : "text-primary") : "text-stone-500")} />
+                    <Icon className={cn("h-4 w-4 shrink-0", active ? (isPromoda ? "text-[#F74897]" : "text-primary") : "text-gray-500")} />
                     <span>{item.label}</span>
                   </Link>
                 );
@@ -393,10 +399,10 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
                 <button
                   type="submit"
                   className={cn(
-                    "inline-flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold transition",
+                    "inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-semibold transition",
                     isPromoda
-                      ? "border-[#F74897]/20 bg-[#FFE4EC] text-[#D6003F] hover:bg-white"
-                      : "border-stone-300 bg-[#f7f6f4] text-stone-700 hover:bg-white",
+                      ? "bg-[#FFE4EC] text-[#D6003F] hover:bg-white"
+                      : "bg-[#f7f6f4] text-gray-700 hover:bg-white",
                   )}
                 >
                   <LogOut className="h-4 w-4" />

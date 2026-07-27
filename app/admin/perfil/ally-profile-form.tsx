@@ -1,12 +1,12 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 
 import { updateWorkshopProfileAction, uploadWorkshopAvatarAction } from "@/app/admin/ally-actions";
 import { Button, InputShell, SectionCard, inputClassName } from "@/components/ui";
 import { WORKSHOP_PHOTO_BUCKET, MAX_WORKSHOP_AVATAR_BYTES } from "@/lib/constants";
 import type { Workshop } from "@/lib/types";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 function avatarUrl(storagePath: string | null) {
   if (!storagePath) return null;
@@ -77,11 +77,7 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
       const ext = avatarFile.name.split(".").pop() || "jpg";
       const storagePath = `avatars/${workshop.id}/${Date.now()}.${ext}`;
 
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-      const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-        auth: { autoRefreshToken: false, persistSession: false },
-      });
+      const supabase = createSupabaseBrowserClient();
 
       const { error: uploadError } = await supabase.storage
         .from(WORKSHOP_PHOTO_BUCKET)
@@ -114,18 +110,18 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
       {/* Avatar section */}
       <SectionCard className="p-6">
         <h2 className="mb-2 text-lg font-semibold text-ink">Avatar del aliado</h2>
-        <p className="mb-4 text-sm text-stone-500">Usa una imagen cuadrada. Formato JPG o PNG, máximo {avatarLimitMb} MB.</p>
+        <p className="mb-4 text-sm text-gray-500">Usa una imagen cuadrada. Formato JPG o PNG, máximo {avatarLimitMb} MB.</p>
         <div className="flex flex-wrap items-center gap-6">
           <div className="shrink-0">
             {avatarPreview || avatarSrc ? (
               <img
                 src={avatarPreview || avatarSrc!}
                 alt="Avatar del aliado"
-                className="h-20 w-20 rounded-full object-cover ring-2 ring-stone-200"
+                className="h-20 w-20 rounded-full object-cover ring-2 ring-gray-200"
               />
             ) : (
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-stone-100 ring-2 ring-stone-200">
-                <span className="text-2xl font-semibold text-stone-400">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 ring-2 ring-gray-200">
+                <span className="text-2xl font-semibold text-gray-400">
                   {workshop.name.charAt(0).toUpperCase()}
                 </span>
               </div>
@@ -158,11 +154,7 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
               setAvatarPending(true);
               setError(null);
               try {
-                const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-                const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-                const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-                  auth: { autoRefreshToken: false, persistSession: false },
-                });
+                const supabase = createSupabaseBrowserClient();
                 await supabase.storage.from(WORKSHOP_PHOTO_BUCKET).remove([workshop.avatar_path!]);
                 const formData = new FormData();
                 formData.set("workshopId", workshop.id);
@@ -235,23 +227,23 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
           </InputShell>
 
           <fieldset className="space-y-3">
-            <legend className="text-base font-medium text-stone-900">Autorizaciones de publicación</legend>
+            <legend className="text-base font-medium text-gray-900">Autorizaciones de publicación</legend>
             <div className="space-y-2">
               <label className="flex items-center gap-3">
-                <input type="checkbox" name="publicNameAllowed" checked={publicNameAllowed} onChange={(e) => setPublicNameAllowed(e.target.checked)} className="h-5 w-5 rounded border-stone-300 text-primary focus:ring-primary/30" />
-                <span className="text-sm text-stone-700">Permitir publicar el nombre del responsable</span>
+                <input type="checkbox" name="publicNameAllowed" checked={publicNameAllowed} onChange={(e) => setPublicNameAllowed(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary/30" />
+                <span className="text-sm text-gray-700">Permitir publicar el nombre del responsable</span>
               </label>
               <label className="flex items-center gap-3">
-                <input type="checkbox" name="publicLocationAllowed" checked={publicLocationAllowed} onChange={(e) => setPublicLocationAllowed(e.target.checked)} className="h-5 w-5 rounded border-stone-300 text-primary focus:ring-primary/30" />
-                <span className="text-sm text-stone-700">Permitir publicar la zona de ubicación</span>
+                <input type="checkbox" name="publicLocationAllowed" checked={publicLocationAllowed} onChange={(e) => setPublicLocationAllowed(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary/30" />
+                <span className="text-sm text-gray-700">Permitir publicar la zona de ubicación</span>
               </label>
               <label className="flex items-center gap-3">
-                <input type="checkbox" name="publicInstagramAllowed" checked={publicInstagramAllowed} onChange={(e) => setPublicInstagramAllowed(e.target.checked)} className="h-5 w-5 rounded border-stone-300 text-primary focus:ring-primary/30" />
-                <span className="text-sm text-stone-700">Permitir publicar el enlace de Instagram</span>
+                <input type="checkbox" name="publicInstagramAllowed" checked={publicInstagramAllowed} onChange={(e) => setPublicInstagramAllowed(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary/30" />
+                <span className="text-sm text-gray-700">Permitir publicar el enlace de Instagram</span>
               </label>
               <label className="flex items-center gap-3">
-                <input type="checkbox" name="publicWhatsappAllowed" checked={publicWhatsappAllowed} onChange={(e) => setPublicWhatsappAllowed(e.target.checked)} className="h-5 w-5 rounded border-stone-300 text-primary focus:ring-primary/30" />
-                <span className="text-sm text-stone-700">Permitir publicar el número de WhatsApp</span>
+                <input type="checkbox" name="publicWhatsappAllowed" checked={publicWhatsappAllowed} onChange={(e) => setPublicWhatsappAllowed(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary/30" />
+                <span className="text-sm text-gray-700">Permitir publicar el número de WhatsApp</span>
               </label>
             </div>
           </fieldset>
