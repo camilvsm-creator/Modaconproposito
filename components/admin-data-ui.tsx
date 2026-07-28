@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { MoreHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
+import { AdminRowActionsClient } from "@/components/admin-row-actions";
 
 export type AdminTab = {
   href: string;
@@ -84,17 +84,7 @@ export function AdminStatusBadge({ children, className }: { children: ReactNode;
 }
 
 export function AdminRowActions({ children, label = "Acciones" }: { children: ReactNode; label?: string }) {
-  return (
-    <details className="relative inline-block text-left">
-      <summary className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-md text-gray-500 transition hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 [&::-webkit-details-marker]:hidden">
-        <MoreHorizontal className="h-5 w-5" aria-hidden="true" />
-        <span className="sr-only">{label}</span>
-      </summary>
-      <div className="absolute right-0 z-30 mt-1 min-w-44 space-y-1 rounded-lg border border-gray-200 bg-white p-1 shadow-[0_12px_30px_-20px_rgba(31,26,23,0.55)]">
-        {children}
-      </div>
-    </details>
-  );
+  return <AdminRowActionsClient label={label}>{children}</AdminRowActionsClient>;
 }
 
 export function AdminActionItem({ children, className }: { children: ReactNode; className?: string }) {

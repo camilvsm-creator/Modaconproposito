@@ -29,7 +29,6 @@ import {
 import { cn, formatDate, formatDateTime } from "@/lib/utils";
 
 import { requireCurrentAlly } from "../../ally-scope";
-import { createDeliveryAction } from "../../entregas/actions";
 import {
   closeOwnTaskAction,
   createTaskIncidentAction,
@@ -118,7 +117,6 @@ export default async function AdminTaskDetailPage({
       <AdminPageHeader
         eyebrow={isAlly ? "Cuenta" : "Promoda"}
         title={task.title}
-        description={task.description ?? undefined}
         navigation={{ baseHref: "/admin/tareas", baseLabel: "Tareas", currentLabel: task.title }}
         actions={
           <AdminRowActions>
@@ -174,7 +172,7 @@ export default async function AdminTaskDetailPage({
               <input type="hidden" name="taskId" value={task.id} />
               <label className="space-y-2"><span className="text-sm font-medium text-gray-800">Título</span><input className={compactInputClassName} name="title" defaultValue={task.title} required /></label>
               <label className="space-y-2"><span className="text-sm font-medium text-gray-800">Estado</span><select className={compactInputClassName} name="status" defaultValue={task.status}>{Object.entries(ASSIGNED_TASK_STATUS_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-              <label className="space-y-2 md:col-span-2"><span className="text-sm font-medium text-gray-800">Descripción</span><textarea className={`${compactInputClassName} min-h-[100px]`} name="description" defaultValue={task.description ?? ""} /></label>
+              <label className="space-y-2 md:col-span-2"><span className="text-sm font-medium text-gray-800">Descripción</span><textarea className={`${compactInputClassName} h-32 max-h-60 resize-y overflow-y-auto`} name="description" defaultValue={task.description ?? ""} /></label>
               <label className="space-y-2"><span className="text-sm font-medium text-gray-800">Resultado esperado</span><input className={compactInputClassName} name="expectedOutput" defaultValue={task.expected_output ?? task.requested_items ?? ""} /></label>
               <label className="space-y-2"><span className="text-sm font-medium text-gray-800">Fecha límite</span><input className={compactInputClassName} name="dueDate" type="date" defaultValue={task.due_date ?? ""} /></label>
               <label className="space-y-2 md:col-span-2"><span className="text-sm font-medium text-gray-800">Notas administrativas</span><textarea className={`${compactInputClassName} min-h-[100px]`} name="adminNotes" defaultValue={task.admin_notes ?? ""} /></label>
@@ -198,7 +196,7 @@ export default async function AdminTaskDetailPage({
 
       {activeTab === "entregas" ? (
         <AdminDetailPanel>
-          <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-semibold text-ink">Entregas</h2><p className="mt-1 text-sm text-gray-500">Seguimiento logístico asociado a esta tarea.</p></div>{task.status === "completada" && relationCounts.deliveries === 0 ? <form action={createDeliveryAction}><input type="hidden" name="taskId" value={task.id} /><input type="hidden" name="title" value={task.title} /><input type="hidden" name="description" value={task.description ?? ""} /><input type="hidden" name="quantity" value={task.requested_items ?? task.expected_output ?? ""} /><Button type="submit" size="sm">Crear entrega</Button></form> : null}</div>
+          <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-semibold text-ink">Entregas</h2><p className="mt-1 text-sm text-gray-500">Seguimiento logístico asociado a esta tarea.</p></div>{task.status === "completada" && relationCounts.deliveries === 0 ? <Link href={`/admin/entregas/crear?taskId=${task.id}`} className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark">Crear entrega</Link> : null}</div>
           <AdminRecordsSummary total={relationCounts.deliveries} />
           {deliveries.length ? <div className="mt-5 overflow-x-auto"><table className="min-w-[760px] w-full text-left text-sm"><thead className="bg-gray-50 text-gray-600"><tr><th className="px-4 py-3">Entrega</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3">Programada</th><th className="px-4 py-3">Registrada</th></tr></thead><tbody className="divide-y divide-gray-200">{deliveries.map((delivery) => <tr key={delivery.id}><td className="px-4 py-3 font-medium text-ink">{delivery.title}<p className="mt-1 text-sm font-normal text-gray-500">{delivery.quantity ?? "Sin cantidad"}</p></td><td className="px-4 py-3"><AdminStatusBadge className={DELIVERY_STATUS_TONES[delivery.status] ?? "bg-gray-100 text-gray-600"}>{DELIVERY_STATUS_LABELS[delivery.status] ?? delivery.status}</AdminStatusBadge></td><td className="px-4 py-3 text-gray-600">{delivery.scheduled_for ? formatDateTime(delivery.scheduled_for) : "—"}</td><td className="px-4 py-3 text-gray-600">{formatDateTime(delivery.created_at)}</td></tr>)}</tbody></table></div> : <p className="mt-5 text-sm text-gray-500">No hay entregas asociadas.</p>}
           {deliveriesPage ? <AdminPagination page={deliveriesPage.page} pageCount={deliveriesPage.pageCount} total={deliveriesPage.total} limit={deliveriesPage.limit} hrefForPage={(page) => relatedPageHref(id, "entregas", page)} /> : null}

@@ -34,11 +34,15 @@ function StatusBadge({ status }: { status: string }) {
 
 export default async function AdminEntregaDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const user = await requireOperationsUser();
   const { id } = await params;
+  const query = await searchParams;
+  const created = query.created === "1";
   const delivery = await getDeliveryById(id);
   if (!delivery) notFound();
 
@@ -68,6 +72,8 @@ export default async function AdminEntregaDetailPage({
         description="Consulta la información completa y gestiona el estado de esta entrega."
         navigation={{ baseHref: "/admin/entregas", baseLabel: "Entregas", currentLabel: "Detalle" }}
       />
+
+      {created ? <div className="rounded-md bg-success-soft px-4 py-3 text-sm font-semibold text-success">Entrega creada correctamente.</div> : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link href="/admin/entregas" className="text-sm font-semibold text-primary hover:underline">Volver a entregas</Link>

@@ -30,6 +30,14 @@ function normalizeTask<T extends Record<string, unknown>>(task: T): T & {
   };
 }
 
+function sanitizeTaskSearchTerm(value: string) {
+  return value
+    .replace(/[^\p{L}\p{N}\s-]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 100);
+}
+
 const TASK_LIST_FIELDS = `
   id,
   ally_id,
@@ -129,7 +137,10 @@ export async function getTaskBoardPage({
 
   if (status && status !== "all") query = query.eq("status", status);
   if (allyId) query = query.eq("ally_id", allyId);
-  if (q) query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%,expected_output.ilike.%${q}%`);
+  const searchTerm = q ? sanitizeTaskSearchTerm(q) : "";
+  if (searchTerm) {
+    query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,expected_output.ilike.%${searchTerm}%`);
+  }
 
   const { data, count, error } = await query;
   assertQueryOk(error, "No se pudieron cargar las tareas");
@@ -414,6 +425,18 @@ export async function getRawMaterialsPage({
   };
 }
 
+export async function getRawMaterialById(id: string): Promise<RawMaterial | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("raw_materials")
+    .select("id, ally_id, name, category, unit, description, stock_quantity, notes, status, created_at, updated_at, ally:allies(id, name, slug)")
+    .eq("id", id)
+    .maybeSingle();
+
+  assertQueryOk(error, "No se pudo cargar la materia prima");
+  return (data ?? null) as RawMaterial | null;
+}
+
 export async function getAllyRawMaterials(allyId: string): Promise<RawMaterial[]> {
   const supabase = await createSupabaseServerClient();
   const { data: ownMaterials, error: ownError } = await supabase
@@ -526,16 +549,18 @@ export async function getRawMaterialMovements(): Promise<RawMaterialMovementWith
 export async function getRawMaterialMovementsPage({
   page = 1,
   limit = 20,
+  rawMaterialId,
 }: {
   page?: number;
   limit?: number;
+  rawMaterialId?: string;
 } = {}): Promise<PagedResult<RawMaterialMovementWithRelations>> {
   const supabase = await createSupabaseServerClient();
   page = Math.max(page, 1);
   limit = Math.min(Math.max(limit, 1), 100);
   const from = (page - 1) * limit;
   const to = from + limit - 1;
-  const { data, count, error } = await supabase
+  let query = supabase
     .from("raw_material_movements")
     .select(`
       id, raw_material_id, related_task_id, related_assignment_id, movement_type,
@@ -546,6 +571,8 @@ export async function getRawMaterialMovementsPage({
     `, { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
+  if (rawMaterialId) query = query.eq("raw_material_id", rawMaterialId);
+  const { data, count, error } = await query;
   assertQueryOk(error, "No se pudieron cargar los movimientos de materia prima");
   const total = count ?? 0;
 

@@ -29,9 +29,10 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
   const [publicLocationAllowed, setPublicLocationAllowed] = useState(workshop.public_location_allowed);
   const [publicInstagramAllowed, setPublicInstagramAllowed] = useState(workshop.public_instagram_allowed);
   const [publicWhatsappAllowed, setPublicWhatsappAllowed] = useState(workshop.public_whatsapp_allowed);
-  const [avatarSrc, setAvatarSrc] = useState<string | null>(avatarUrl(workshop.avatar_path));
+  const [avatarPath, setAvatarPath] = useState<string | null>(workshop.avatar_path);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarSuccess, setAvatarSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isPending, setIsPending] = useState(false);
@@ -72,6 +73,7 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
 
     setAvatarPending(true);
     setError(null);
+    setAvatarSuccess(null);
 
     try {
       const ext = avatarFile.name.split(".").pop() || "jpg";
@@ -83,7 +85,7 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
         .from(WORKSHOP_PHOTO_BUCKET)
         .upload(storagePath, avatarFile, {
           contentType: avatarFile.type,
-          upsert: true,
+          upsert: false,
         });
 
       if (uploadError) throw new Error("No pudimos subir la imagen. Intenta nuevamente.");
@@ -95,9 +97,10 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
       const result = await uploadWorkshopAvatarAction(formData);
       if (result.error) throw new Error(result.error);
 
-      setAvatarSrc(avatarUrl(storagePath));
+      setAvatarPath(storagePath);
       setAvatarFile(null);
       setAvatarPreview(null);
+      setAvatarSuccess("Avatar guardado correctamente.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al subir el avatar.");
     } finally {
@@ -113,9 +116,9 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
         <p className="mb-4 text-sm text-gray-500">Usa una imagen cuadrada. Formato JPG o PNG, máximo {avatarLimitMb} MB.</p>
         <div className="flex flex-wrap items-center gap-6">
           <div className="shrink-0">
-            {avatarPreview || avatarSrc ? (
+            {avatarPreview || avatarPath ? (
               <img
-                src={avatarPreview || avatarSrc!}
+                src={avatarPreview || avatarUrl(avatarPath)!}
                 alt="Avatar del aliado"
                 className="h-20 w-20 rounded-full object-cover ring-2 ring-gray-200"
               />
@@ -127,10 +130,10 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
               </div>
             )}
           </div>
-          <form onSubmit={handleAvatarUpload} className="flex flex-wrap items-end gap-3">
+          <form onSubmit={handleAvatarUpload} className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-end">
             <input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/gif"
               className={inputClassName + " file:mr-3 file:rounded file:border-0 file:bg-[#F74897] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white"}
               onChange={(e) => {
                 const file = e.target.files?.[0] ?? null;
@@ -147,7 +150,7 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
             </Button>
           </form>
         </div>
-        {workshop.avatar_path ? (
+        {avatarPath ? (
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -155,15 +158,17 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
               setError(null);
               try {
                 const supabase = createSupabaseBrowserClient();
-                await supabase.storage.from(WORKSHOP_PHOTO_BUCKET).remove([workshop.avatar_path!]);
+                const { error: removeError } = await supabase.storage.from(WORKSHOP_PHOTO_BUCKET).remove([avatarPath]);
+                if (removeError) throw new Error("No pudimos eliminar el avatar.");
                 const formData = new FormData();
                 formData.set("workshopId", workshop.id);
                 formData.set("storagePath", "");
                 const result = await uploadWorkshopAvatarAction(formData);
                 if (result.error) throw new Error(result.error);
-                setAvatarSrc(null);
+                setAvatarPath(null);
                 setAvatarFile(null);
                 setAvatarPreview(null);
+                setAvatarSuccess("Avatar eliminado correctamente.");
               } catch (err) {
                 setError(err instanceof Error ? err.message : "Error al eliminar el avatar.");
               } finally {
@@ -177,6 +182,7 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
             </Button>
           </form>
         ) : null}
+        {avatarSuccess ? <p role="status" className="mt-3 text-sm font-medium text-success">{avatarSuccess}</p> : null}
       </SectionCard>
 
       <SectionCard className="p-6">

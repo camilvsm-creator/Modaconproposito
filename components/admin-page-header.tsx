@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 type AdminPageHeaderProps = {
   eyebrow: string;
   title: string;
-  description?: string;
+  description?: ReactNode;
   meta?: string;
   actions?: ReactNode;
   className?: string;

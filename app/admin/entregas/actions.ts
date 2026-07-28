@@ -57,7 +57,7 @@ async function syncTaskAndRequestClosure(admin: ReturnType<typeof createSupabase
   if (requestUpdateError) throw new Error(requestUpdateError.message);
 }
 
-export async function createDeliveryAction(formData: FormData): Promise<void> {
+export async function createDeliveryAction(formData: FormData): Promise<{ success: true; deliveryId: string }> {
   const user = await requireOperationsUser();
   const admin = createSupabaseAdminClient();
   const role = user.app_metadata?.role as string | undefined;
@@ -123,6 +123,9 @@ export async function createDeliveryAction(formData: FormData): Promise<void> {
   revalidatePath("/admin/tareas");
   revalidatePath(`/admin/tareas/${taskId}`);
   revalidatePath("/admin/solicitudes");
+  revalidatePath("/admin/ayudas");
+
+  return { success: true, deliveryId: delivery.id };
 }
 
 export async function getDeliveryTaskOptionsAction(allyId?: string): Promise<Array<{ id: string; title: string; ally?: { id: string; name: string } | null }>> {
@@ -218,6 +221,7 @@ export async function updateDeliveryLogisticsAction(formData: FormData): Promise
   revalidatePath("/admin/tareas");
   if (delivery.task_id) revalidatePath(`/admin/tareas/${delivery.task_id}`);
   revalidatePath("/admin/solicitudes");
+  revalidatePath("/admin/ayudas");
 }
 
 export async function updateDeliveryStatusAction(formData: FormData): Promise<void> {
@@ -310,4 +314,5 @@ export async function updateDeliveryStatusAction(formData: FormData): Promise<vo
   if (delivery.task_id) revalidatePath(`/admin/tareas/${delivery.task_id}`);
   revalidatePath("/admin/materia-prima");
   revalidatePath("/admin/solicitudes");
+  revalidatePath("/admin/ayudas");
 }

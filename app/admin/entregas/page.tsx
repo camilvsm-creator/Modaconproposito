@@ -5,9 +5,7 @@ import { AdminPageHeader } from "@/components/admin-page-header";
 import { AdminPagination } from "@/components/admin-pagination";
 import { AutoSubmitFilterForm } from "@/components/auto-submit-filter-form";
 import { EmptyState } from "@/components/empty-state";
-import { LazyDeliveryTaskSelect } from "@/components/lazy-delivery-task-select";
-import { Modal } from "@/components/modal";
-import { Button, compactInputClassName } from "@/components/ui";
+import { LinkButton, compactInputClassName } from "@/components/ui";
 import { ALLY_DELIVERY_STATUSES, DELIVERY_STATUS_LABELS, DELIVERY_STATUS_TONES } from "@/lib/constants";
 import { requireOperationsUser, requireWorkshopAdminUser } from "@/lib/auth";
 import { getDeliveriesPage, getRequesterDeliveriesPage } from "@/lib/production";
@@ -16,7 +14,6 @@ import { cn, formatDate } from "@/lib/utils";
 
 import { requireCurrentAlly } from "../ally-scope";
 import { requireCurrentRequester } from "../requester-scope";
-import { createDeliveryAction } from "./actions";
 
 const PAGE_SIZE = 20;
 
@@ -180,27 +177,6 @@ function DeliveryStatusFilter({ status }: { status: string }) {
   );
 }
 
-function CreateDeliveryModal({ allyId }: { allyId?: string }) {
-  return (
-    <Modal
-      triggerLabel="Nueva entrega"
-      triggerVariant="primary"
-      title="Crear entrega"
-      description="Registra una entrega desde una tarea terminada."
-    >
-      <form action={createDeliveryAction} className="grid gap-4 md:grid-cols-2">
-        <LazyDeliveryTaskSelect allyId={allyId} />
-        <input className={compactInputClassName} name="title" placeholder="Título de la entrega" />
-        <input className={compactInputClassName} name="scheduledFor" type="datetime-local" />
-        <input className={compactInputClassName} name="quantity" placeholder="Cantidad o resumen" />
-        <textarea className={`${compactInputClassName} min-h-[80px] md:col-span-2`} name="description" placeholder="Descripción" />
-        <textarea className={`${compactInputClassName} min-h-[80px] md:col-span-2`} name="notes" placeholder="Notas" />
-        <div className="md:col-span-2"><Button type="submit">Crear entrega</Button></div>
-      </form>
-    </Modal>
-  );
-}
-
 export default async function AdminEntregasPage({
   searchParams,
 }: {
@@ -220,7 +196,7 @@ export default async function AdminEntregasPage({
     return (
       <div className="space-y-6">
         <AdminPageHeader eyebrow="Cuenta" title="Entregas" description="Consulta el estado de tus entregas y abre el detalle para gestionarlas." />
-        <AdminToolbar filters={<DeliveryStatusFilter status={status} />} actions={<CreateDeliveryModal allyId={ally.id} />} />
+        <AdminToolbar filters={<DeliveryStatusFilter status={status} />} actions={<LinkButton href="/admin/entregas/crear">Nueva entrega</LinkButton>} />
         <AdminRecordsSummary total={deliveries.total} />
         {deliveries.items.length ? <><AllyDeliveryTable deliveries={deliveries.items} /><AdminPagination page={deliveries.page} pageCount={deliveries.pageCount} total={deliveries.total} limit={deliveries.limit} hrefForPage={(nextPage) => pageHref(nextPage, status)} /></> : <EmptyState title="Sin entregas registradas" description="Las entregas de tus tareas completadas aparecerán aquí." />}
       </div>
@@ -247,7 +223,7 @@ export default async function AdminEntregasPage({
   return (
     <div className="space-y-6">
       <AdminPageHeader eyebrow="Promoda" title="Entregas" description="Consulta el flujo de entregas y abre el detalle para gestionar logística y recepción." />
-      <AdminToolbar filters={<DeliveryStatusFilter status={status} />} actions={<CreateDeliveryModal />} />
+      <AdminToolbar filters={<DeliveryStatusFilter status={status} />} actions={<LinkButton href="/admin/entregas/crear">Nueva entrega</LinkButton>} />
       <AdminRecordsSummary total={deliveries.total} />
       {deliveries.items.length ? <><AdminDeliveryTable deliveries={deliveries.items} /><AdminPagination page={deliveries.page} pageCount={deliveries.pageCount} total={deliveries.total} limit={deliveries.limit} hrefForPage={(nextPage) => pageHref(nextPage, status)} /></> : <EmptyState title="Sin entregas registradas" description="Crea una entrega desde una tarea completada para cerrar el flujo." />}
     </div>

@@ -26,10 +26,10 @@ type NavItem = {
 };
 
 const sharedAdminItems: NavItem[] = [
-  { href: "/admin/aliados", label: "Aliados", icon: LayoutDashboard },
+  { href: "/admin", label: "Inicio", icon: LayoutDashboard },
+  { href: "/admin/aliados", label: "Aliados", icon: Building2 },
   { href: "/admin/tareas", label: "Tareas", icon: FolderKanban },
-  { href: "/admin/solicitudes", label: "Solicitudes", icon: HandHeart },
-  { href: "/admin/solicitantes", label: "Solicitantes", icon: Users },
+  { href: "/admin/ayudas", label: "Ayudas", icon: HandHeart },
   { href: "/admin/voluntarios", label: "Voluntarios", icon: Users },
   { href: "/admin/colaboradores", label: "Colaboradores", icon: GitFork },
   { href: "/admin/materia-prima", label: "Materia prima", icon: Package },
@@ -145,7 +145,7 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
   const [switching, setSwitching] = useState(false);
 
   const primaryItems = isAdmin
-    ? ["/admin/aliados", "/admin/tareas", "/admin/materia-prima", "/admin/entregas"]
+    ? ["/admin", "/admin/aliados", "/admin/tareas", "/admin/materia-prima"]
         .map((href) => items.find((item) => item.href === href))
         .filter((item): item is NavItem => Boolean(item))
     : items.slice(0, 4);
@@ -201,7 +201,7 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
             {/* Sidebar header */}
             <div className="pb-4 shrink-0">
               {isPromoda ? (
-                <Link href="/admin/aliados" className="flex items-center gap-2">
+                <Link href="/admin" className="flex items-center gap-2">
                   <img src="/promoda-logo.svg" alt="Promoda" className="h-7 w-auto" />
                 </Link>
               ) : (

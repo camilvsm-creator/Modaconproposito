@@ -25,8 +25,8 @@ export function AdminPagination({
   const hasNext = page < pageCount;
 
   return (
-    <nav className={cn("flex w-full items-center justify-center gap-2 pt-4 text-sm font-semibold text-gray-700", className)} aria-label="Paginación">
-      <div className="flex w-full items-center justify-center gap-2 sm:max-w-md">
+    <nav className={cn("flex w-full items-center justify-center gap-2 pt-4 text-sm font-semibold text-gray-700 lg:justify-start", className)} aria-label="Paginación">
+      <div className="flex w-full items-center justify-center gap-2 sm:max-w-md lg:justify-start">
         {hasPrevious ? (
           <Link
             href={hrefForPage(page - 1)}

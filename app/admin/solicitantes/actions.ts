@@ -11,6 +11,7 @@ type Result = { error?: string; activationLink?: string | null };
 function revalidateRequesterModules() {
   revalidatePath("/admin/solicitantes");
   revalidatePath("/admin/solicitudes");
+  revalidatePath("/admin/ayudas");
 }
 
 export async function createAidRequesterAction(formData: FormData): Promise<void> {

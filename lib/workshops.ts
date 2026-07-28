@@ -30,6 +30,14 @@ function assertQueryOk(error: { message: string } | null, context: string) {
   }
 }
 
+function sanitizeAllySearchTerm(value: string) {
+  return value
+    .replace(/[^\p{L}\p{N}\s-]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 100);
+}
+
 const ALLY_DETAIL_FIELDS = `
   id, user_id, category, name, slug, responsible_name, email, phone, whatsapp,
   instagram, state, city, municipality, public_location, description, what_they_do,
@@ -137,7 +145,12 @@ export async function getAdminWorkshopsPage({
 
   if (status && status !== "all") query = query.eq("status", status);
   if (category && category !== "all") query = query.eq("category", category);
-  if (q) query = query.or(`name.ilike.%${q}%,responsible_name.ilike.%${q}%,city.ilike.%${q}%`);
+  const searchTerm = q ? sanitizeAllySearchTerm(q) : "";
+  if (searchTerm) {
+    query = query.or(
+      `name.ilike.%${searchTerm}%,responsible_name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`,
+    );
+  }
 
   const { data, count, error } = await query;
   assertQueryOk(error, "No se pudieron cargar los aliados");

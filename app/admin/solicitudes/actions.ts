@@ -45,6 +45,7 @@ export async function updateAidRequesterAction(formData: FormData): Promise<void
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/solicitudes");
+  revalidatePath("/admin/ayudas");
 }
 
 export async function createAidRequestAction(formData: FormData): Promise<void> {
@@ -92,6 +93,7 @@ export async function createAidRequestAction(formData: FormData): Promise<void> 
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/solicitudes");
+  revalidatePath("/admin/ayudas");
 }
 
 export async function updateAidRequestAction(formData: FormData): Promise<void> {
@@ -147,6 +149,7 @@ export async function updateAidRequestAction(formData: FormData): Promise<void> 
   }
 
   revalidatePath("/admin/solicitudes");
+  revalidatePath("/admin/ayudas");
 }
 
 export async function updateAidRequestStatusAction(formData: FormData): Promise<void> {
@@ -163,6 +166,7 @@ export async function updateAidRequestStatusAction(formData: FormData): Promise<
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/solicitudes");
+  revalidatePath("/admin/ayudas");
 }
 
 export async function createTaskFromAidRequestAction(formData: FormData): Promise<void> {
@@ -221,4 +225,5 @@ export async function createTaskFromAidRequestAction(formData: FormData): Promis
 
   revalidatePath("/admin/solicitudes");
   revalidatePath("/admin/tareas");
+  revalidatePath("/admin/ayudas");
 }

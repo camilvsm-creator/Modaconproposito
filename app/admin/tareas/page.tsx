@@ -6,7 +6,7 @@ import { AdminPagination } from "@/components/admin-pagination";
 import { AutoSubmitFilterForm } from "@/components/auto-submit-filter-form";
 import { Modal } from "@/components/modal";
 import { EmptyState } from "@/components/empty-state";
-import { Button, SectionCard, compactInputClassName } from "@/components/ui";
+import { Button, LinkButton, SectionCard, compactInputClassName } from "@/components/ui";
 import {
   ASSIGNED_TASK_STATUS_LABELS,
   ASSIGNED_TASK_STATUS_TONES,
@@ -20,7 +20,6 @@ import { requireWorkshopAdminUser, requireWorkshopUser } from "@/lib/auth";
 import { cn, formatDate } from "@/lib/utils";
 
 import { requireCurrentAlly } from "../ally-scope";
-import { createDeliveryAction } from "../entregas/actions";
 import {
   getAdminTaskBoardPage,
   getAllyTaskBoardPage,
@@ -32,8 +31,6 @@ import {
   saveTaskMaterialUsageAction,
   startAssignedTaskAction,
 } from "./actions";
-import { CreateAssignedTaskModal } from "./components/create-assigned-task-modal";
-import { CreateNeedForm } from "./components/create-task-form";
 
 type AdminTask = Awaited<ReturnType<typeof getAdminTaskBoardPage>>["items"][number];
 type AllyTask = Awaited<ReturnType<typeof getAllyTaskBoardPage>>["items"][number];
@@ -63,6 +60,29 @@ function pageHref(params: Record<string, string | string[] | undefined>, page: n
   if (page > 1) search.set("page", String(page));
   const query = search.toString();
   return query ? `/admin/tareas?${query}` : "/admin/tareas";
+}
+
+function TaskFilters({ q, status }: { q?: string; status: string }) {
+  return (
+    <AutoSubmitFilterForm
+      action="/admin/tareas"
+      method="get"
+      className="grid w-full min-w-0 gap-3 md:max-w-[65%] md:grid-cols-[minmax(220px,1fr)_220px]"
+    >
+      <input
+        className={compactInputClassName}
+        name="q"
+        type="search"
+        defaultValue={q ?? ""}
+        placeholder="Buscar por título, descripción o resultado"
+        aria-label="Buscar tareas"
+      />
+      <select className={compactInputClassName} name="status" defaultValue={status} aria-label="Filtrar por estado">
+        <option value="all">Todos los estados</option>
+        {Object.entries(ASSIGNED_TASK_STATUS_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+      </select>
+    </AutoSubmitFilterForm>
+  );
 }
 
 function canEditUsage(task: {
@@ -189,33 +209,6 @@ function TaskIncidentsModal({ task }: { task: AdminTask }) {
   );
 }
 
-function CreateTaskDeliveryModal({ task }: { task: AdminTask }) {
-  const latestDelivery = getLatestDelivery(task);
-
-  if (task.status !== "completada" || latestDelivery) return null;
-
-  return (
-    <Modal
-      triggerLabel="Crear entrega"
-      title={`Crear entrega: ${task.title}`}
-      description="Abre la entrega de esta tarea completada."
-      size="lg"
-      triggerClassName="px-3 py-1.5"
-    >
-      <form action={createDeliveryAction} className="space-y-3">
-        <input type="hidden" name="taskId" value={task.id} />
-        <div className="space-y-3">
-          <input className={compactInputClassName} name="title" defaultValue={task.title} placeholder="Titulo de la entrega" />
-          <textarea className={`${compactInputClassName} min-h-[80px]`} name="description" defaultValue={task.description ?? ""} placeholder="Descripcion" />
-          <input className={compactInputClassName} name="quantity" defaultValue={task.requested_items ?? ""} placeholder="Cantidad o resumen" />
-          <textarea className={`${compactInputClassName} min-h-[80px]`} name="notes" placeholder="Notas logisticas" />
-          <Button type="submit">Crear entrega</Button>
-        </div>
-      </form>
-    </Modal>
-  );
-}
-
 function TaskSummaryModal({ task }: { task: AdminTask }) {
   const latestDelivery = getLatestDelivery(task);
 
@@ -248,6 +241,7 @@ export default async function AdminNecesidadesPage({ searchParams }: { searchPar
   const page = getPageParam(params);
   const q = getStringParam(params, "q");
   const status = getStringParam(params, "status") ?? "all";
+  const created = getStringParam(params, "created");
 
   if (user.app_metadata?.role === "aliado") {
     const ally = await requireCurrentAlly();
@@ -264,7 +258,11 @@ export default async function AdminNecesidadesPage({ searchParams }: { searchPar
           description="Consulta tus tareas asignadas y completa la producción."
         />
 
-        <CreateNeedForm workshopId={ally.id} />
+        <AdminToolbar
+          filters={<TaskFilters q={q} status={status} />}
+          actions={<LinkButton href="/admin/tareas/crear">Nueva tarea</LinkButton>}
+        />
+        {created ? <div className="rounded-md bg-success-soft px-4 py-3 text-sm font-semibold text-success">Tarea creada correctamente.</div> : null}
 
         <AdminRecordsSummary total={result.total} />
 
@@ -291,9 +289,11 @@ export default async function AdminNecesidadesPage({ searchParams }: { searchPar
       />
 
       <AdminToolbar
-        filters={<AutoSubmitFilterForm action="/admin/tareas" method="get" className="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(180px,1fr)_220px]"><input className={compactInputClassName} name="q" defaultValue={q ?? ""} placeholder="Buscar tarea" /><select className={compactInputClassName} name="status" defaultValue={status}><option value="all">Todos los estados</option>{Object.entries(ASSIGNED_TASK_STATUS_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></AutoSubmitFilterForm>}
-        actions={<CreateAssignedTaskModal />}
+        filters={<TaskFilters q={q} status={status} />}
+        actions={<LinkButton href="/admin/tareas/crear">Nueva tarea</LinkButton>}
       />
+
+      {created ? <div className="rounded-md bg-success-soft px-4 py-3 text-sm font-semibold text-success">Tarea creada correctamente.</div> : null}
 
       <AdminRecordsSummary total={result.total} />
 
@@ -332,7 +332,7 @@ export default async function AdminNecesidadesPage({ searchParams }: { searchPar
                           <AdminActionItem><TaskSummaryModal task={task} /></AdminActionItem>
                           <AdminActionItem><Link href={`/admin/tareas/${task.id}?tab=produccion`} className="block w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Editar tarea</Link></AdminActionItem>
                           <AdminActionItem><TaskIncidentsModal task={task} /></AdminActionItem>
-                          <AdminActionItem><CreateTaskDeliveryModal task={task} /></AdminActionItem>
+                          {task.status === "completada" && !getLatestDelivery(task) ? <AdminActionItem><Link href={`/admin/entregas/crear?taskId=${task.id}`} className="block w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Crear entrega</Link></AdminActionItem> : null}
                         </AdminRowActions>
                       </td>
                     </tr>

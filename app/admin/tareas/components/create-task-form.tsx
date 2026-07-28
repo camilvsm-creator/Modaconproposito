@@ -11,6 +11,7 @@ export function CreateNeedForm({ workshopId }: { workshopId: string }) {
   const [description, setDescription] = useState("");
   const [requestedItems, setRequestedItems] = useState("");
   const [urgency, setUrgency] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isPending, setIsPending] = useState(false);
@@ -21,25 +22,31 @@ export function CreateNeedForm({ workshopId }: { workshopId: string }) {
     setError(null);
     setSuccess(false);
 
-    const formData = new FormData(event.currentTarget);
-    const result = await createWorkshopNeedAction(formData);
-    setIsPending(false);
+    try {
+      const formData = new FormData(event.currentTarget);
+      const result = await createWorkshopNeedAction(formData);
 
-    if (result.error) {
-      setError(result.error);
-      return;
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+
+      setSuccess(true);
+      setTitle("");
+      setDescription("");
+      setRequestedItems("");
+      setUrgency("");
+      setDueDate("");
+    } catch (submissionError) {
+      setError(submissionError instanceof Error ? submissionError.message : "No se pudo crear la tarea.");
+    } finally {
+      setIsPending(false);
     }
-
-    setSuccess(true);
-    setTitle("");
-    setDescription("");
-    setRequestedItems("");
-    setUrgency("");
   }
 
   return (
     <div className="space-y-4">
-      <h2 className="mb-4 text-lg font-semibold text-ink">Nueva tarea</h2>
+      <h2 className="mb-1 text-lg font-semibold text-ink">Información de la tarea</h2>
       <p className="mb-4 text-sm text-gray-500">
         La tarea queda activa inmediatamente para que puedas gestionarla desde tu panel.
       </p>
@@ -68,7 +75,7 @@ export function CreateNeedForm({ workshopId }: { workshopId: string }) {
         </InputShell>
 
         <InputShell label="Fecha esperada">
-          <input className={compactInputClassName} name="dueDate" type="date" />
+          <input className={compactInputClassName} name="dueDate" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
         </InputShell>
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}

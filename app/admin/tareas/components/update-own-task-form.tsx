@@ -46,7 +46,7 @@ export function UpdateOwnTaskForm({
         <input type="hidden" name="taskId" value={task.id} />
         <InputShell label="Título"><input className={compactInputClassName} name="title" defaultValue={task.title} required /></InputShell>
         <InputShell label="Fecha esperada"><input className={compactInputClassName} name="dueDate" type="date" defaultValue={task.due_date ?? ""} /></InputShell>
-        <InputShell label="Descripción"><textarea className={`${compactInputClassName} min-h-[80px]`} name="description" defaultValue={task.description ?? ""} /></InputShell>
+        <div className="md:col-span-2"><InputShell label="Descripción"><textarea className={`${compactInputClassName} h-32 max-h-60 resize-y overflow-y-auto`} name="description" defaultValue={task.description ?? ""} /></InputShell></div>
         <InputShell label="Objetivo de producción"><textarea className={`${compactInputClassName} min-h-[80px]`} name="requestedItems" defaultValue={task.requested_items ?? ""} /></InputShell>
         <InputShell label="Urgencia">
           <select className={compactInputClassName} name="urgency" defaultValue={task.urgency ?? ""}>

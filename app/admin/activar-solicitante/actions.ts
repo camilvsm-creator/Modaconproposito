@@ -83,6 +83,7 @@ export async function activateRequesterFromTokenAction(formData: FormData): Prom
   }
 
   revalidatePath("/admin/solicitudes");
+  revalidatePath("/admin/ayudas");
   revalidatePath("/admin/entregas");
   return {};
 }

@@ -110,7 +110,7 @@ async function saveMaterialUsage({
 
 }
 
-export async function createAssignedTaskAction(formData: FormData): Promise<void> {
+export async function createAssignedTaskAction(formData: FormData): Promise<{ success: true; taskId: string }> {
   const user = await requireWorkshopAdminUser();
   const admin = createSupabaseAdminClient();
 
@@ -155,6 +155,8 @@ export async function createAssignedTaskAction(formData: FormData): Promise<void
 
   revalidatePath("/admin/tareas");
   revalidatePath("/admin/entregas");
+
+  return { success: true, taskId: task.id };
 }
 
 export async function updateAssignedTaskAdminAction(formData: FormData): Promise<void> {
@@ -207,6 +209,7 @@ export async function updateAssignedTaskAdminAction(formData: FormData): Promise
   revalidatePath(`/admin/tareas/${taskId}`);
   revalidatePath("/admin/entregas");
   revalidatePath("/admin/solicitudes");
+  revalidatePath("/admin/ayudas");
 }
 
 export async function assignMaterialToTaskAction(formData: FormData): Promise<void> {

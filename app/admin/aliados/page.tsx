@@ -4,7 +4,7 @@ import { AdminPageHeader } from "@/components/admin-page-header";
 import { AdminPagination } from "@/components/admin-pagination";
 import { AdminActionItem, AdminRecordsSummary, AdminRowActions, AdminTabs, AdminTableFrame, AdminToolbar } from "@/components/admin-data-ui";
 import { AutoSubmitFilterForm } from "@/components/auto-submit-filter-form";
-import { SectionCard, compactInputClassName } from "@/components/ui";
+import { LinkButton, compactInputClassName } from "@/components/ui";
 import { GenerateAccessButton } from "@/components/generate-access-button";
 import { requireWorkshopAdminUser } from "@/lib/auth";
 import { ALLY_CATEGORIES, ALLY_CATEGORY_LABELS } from "@/lib/constants";
@@ -92,7 +92,7 @@ function pageHref(params: Record<string, string | string[] | undefined>, page: n
   return query ? `/admin/aliados?${query}` : "/admin/aliados";
 }
 
-export default async function AdminInicioPage({
+export default async function AdminAliadosPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -113,27 +113,15 @@ export default async function AdminInicioPage({
     category: category === "all" ? undefined : category,
     q: q || undefined,
   });
-
-  const admin = await createSupabaseServerClient();
-
-  const [
-    { count: totalTalleres },
-    { count: talleresActivos },
-    { count: postulacionesPendientes },
-    { count: necesidadesCount },
-  ] = await Promise.all([
-    admin.from("allies").select("id", { count: "exact", head: true }),
-    admin.from("allies").select("id", { count: "exact", head: true }).eq("status", "activo"),
-    admin.from("allies").select("id", { count: "exact", head: true }).in("status", ["pendiente", "approved_pending_activation"]),
-    admin.from("assigned_tasks").select("id", { count: "exact", head: true }).in("status", ["pendiente", "asignada", "en_progreso"]),
-  ]);
-
-  const stats = [
-    { label: "Aliados", value: totalTalleres ?? 0 },
-    { label: "Activos", value: talleresActivos ?? 0 },
-    { label: "Necesidades urgentes", value: necesidadesCount ?? 0 },
-    { label: "Postulaciones pendientes", value: postulacionesPendientes ?? 0 },
-  ];
+  let postulationsCount = tab === "postulaciones" ? result.total : 0;
+  if (tab !== "postulaciones") {
+    const admin = await createSupabaseServerClient();
+    const { count } = await admin
+      .from("allies")
+      .select("id", { count: "exact", head: true })
+      .in("status", ["pendiente", "approved_pending_activation"]);
+    postulationsCount = count ?? 0;
+  }
 
   const statusOptions = tab === "aliados" ? ACTIVE_STATUS_OPTIONS : POSTULATION_STATUS_OPTIONS;
 
@@ -141,33 +129,38 @@ export default async function AdminInicioPage({
     <div className="space-y-6">
       <AdminPageHeader
         eyebrow="Promoda"
-        title="Inicio"
-        description="Resumen general de la red de aliados."
+        title="Aliados"
+        description="Gestiona las postulaciones, accesos y estados de los aliados de la red."
       />
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.map((stat) => (
-          <SectionCard key={stat.label} className="bg-[#FCFCFC] p-4 ring-1 ring-gray-200/70">
-            <p className="text-3xl font-bold text-ink">{stat.value}</p>
-            <p className="mt-1 text-sm text-gray-500">{stat.label}</p>
-          </SectionCard>
-        ))}
-      </div>
 
       <div className="space-y-5">
         <AdminTabs
           tabs={TABS.map((t) => ({
             href: pageHref({ ...params, tab: t.value, status: undefined, page: undefined }, 1),
             label: t.label,
-            count: t.value === "postulaciones" ? postulacionesPendientes ?? 0 : undefined,
+            count: t.value === "postulaciones" ? postulationsCount : undefined,
             active: tab === t.value,
           }))}
         />
 
         <AdminToolbar
           filters={
-            <AutoSubmitFilterForm id="allies-filter" action="/admin/aliados" method="get" className="flex w-full flex-col gap-3 sm:flex-row">
-              <input name="q" defaultValue={q ?? ""} placeholder="Buscar por nombre, responsable o ciudad" className={`${compactInputClassName} min-w-0 flex-1`} />
+            <AutoSubmitFilterForm
+              id="allies-filter"
+              action="/admin/aliados"
+              method="get"
+              className="grid w-full min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(140px,180px)_minmax(140px,180px)]"
+            >
+              <input
+                type="search"
+                name="q"
+                defaultValue={q ?? ""}
+                placeholder="Buscar por nombre, responsable, ciudad o correo"
+                aria-label="Buscar aliados"
+                autoComplete="off"
+                enterKeyHint="search"
+                className={`${compactInputClassName} min-w-0 w-full`}
+              />
               <select name="status" defaultValue={status} className={compactInputClassName}>
                 {statusOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
               </select>
@@ -179,7 +172,7 @@ export default async function AdminInicioPage({
               <input type="hidden" name="tab" value={tab} />
             </AutoSubmitFilterForm>
           }
-          actions={<Link href="/admin/aliados/crear" className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark">Crear aliado</Link>}
+          actions={<LinkButton href="/admin/aliados/crear">Crear aliado</LinkButton>}
         />
       </div>
 
@@ -188,7 +181,15 @@ export default async function AdminInicioPage({
       {result.items.length ? (
         <div className="space-y-4">
           <AdminTableFrame>
-            <table className="admin-mobile-cards min-w-[900px] w-full text-left text-sm">
+            <table className="admin-mobile-cards min-w-[900px] w-full table-fixed text-left text-sm">
+              <colgroup>
+                <col className="w-[25%]" />
+                <col className="w-[16%]" />
+                <col className="w-[20%]" />
+                <col className="w-[15%]" />
+                <col className="w-[16%]" />
+                <col className="w-[8%]" />
+              </colgroup>
               <thead className="border-b border-gray-200 bg-gray-50/80 text-sm font-semibold text-gray-600">
                 <tr>
                   <th className="px-4 py-3">Nombre</th>
@@ -196,7 +197,7 @@ export default async function AdminInicioPage({
                   <th className="px-4 py-3">Responsable</th>
                   <th className="px-4 py-3">Estado</th>
                   <th className="px-4 py-3">Ubicación</th>
-                  <th className="px-4 py-3">Acciones</th>
+                  <th className="px-4 py-3 text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -219,7 +220,7 @@ export default async function AdminInicioPage({
                       </span>
                     </td>
                     <td data-mobile-label="Ubicación" className="px-4 py-3 align-top text-gray-600 leading-tight text-sm">{w.city ?? "—"}, {w.state}</td>
-                    <td data-mobile="actions" data-mobile-label="Acciones" className="px-4 py-3 align-top leading-tight">
+                    <td data-mobile="actions" data-mobile-label="Acciones" className="px-4 py-3 text-right align-top leading-tight">
                       <AdminRowActions>
                         <Link
                           href={`/admin/aliados/${w.id}`}
