@@ -80,7 +80,7 @@ export default function NuestraMisionPage() {
     <div className="full-bleed overflow-hidden bg-[#F7F2EF] text-ink">
       <section className="relative isolate overflow-hidden bg-[#201923] text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_25%,rgba(247,72,151,0.24),transparent_34%)]" aria-hidden="true" />
-        <div className="absolute -right-28 top-16 h-72 w-72 rounded-full border border-[#F74897]/30" aria-hidden="true" />
+        <div className="absolute -right-28 top-16 h-72 w-72 rounded-full border border-[#F6026B]/30" aria-hidden="true" />
         <div className="absolute -bottom-40 left-1/3 h-96 w-96 rounded-full border border-white/10" aria-hidden="true" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid min-h-[540px] items-center gap-10 py-11 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 lg:py-14">
@@ -100,7 +100,7 @@ export default function NuestraMisionPage() {
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link
                   href="/registro"
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#F74897] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#D6003F]"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#F6026B] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#C00253]"
                 >
                   Registrar aliado
                   <ArrowUpRight className="h-4 w-4" />
@@ -147,7 +147,7 @@ export default function NuestraMisionPage() {
             <PhotoFrame image={galleryImages[4]} className="mt-12 h-64 sm:mt-20 sm:h-80" />
           </div>
           <div className="max-w-3xl">
-            <p className="text-sm font-black uppercase tracking-[0.2em] text-[#D6003F]">Nuestra misión</p>
+            <p className="text-sm font-black uppercase tracking-[0.2em] text-[#C00253]">Nuestra misión</p>
             <div className="mt-5 space-y-5 text-base leading-8 text-stone-700 sm:text-lg">
               <p>
                 Desde nuestra experiencia dentro del sector moda, identificamos una necesidad crítica: la escasez de insumos textiles de primera necesidad (ropa interior, sábanas, toallas, bolsos de traslado e indumentaria básica) que frecuentemente quedan fuera de las donaciones tradicionales.
@@ -163,7 +163,7 @@ export default function NuestraMisionPage() {
       <section className="bg-white px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-2xl">
-            <p className="text-sm font-black uppercase tracking-[0.2em] text-[#F74897]">Así se construye la red</p>
+            <p className="text-sm font-black uppercase tracking-[0.2em] text-[#F6026B]">Así se construye la red</p>
             <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] text-ink sm:text-5xl">
               ¿Cómo funciona?
             </h2>
@@ -187,11 +187,11 @@ export default function NuestraMisionPage() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
-              <article className="rounded-[2rem] border border-[#F74897]/20 bg-[#FFF1F5] p-6 sm:p-7">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F74897] text-white">
+              <article className="rounded-[2rem] border border-[#F6026B]/20 bg-[#FFE6F0] p-6 sm:p-7">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F6026B] text-white">
                   <HeartHandshake className="h-5 w-5" />
                 </div>
-                <h3 className="mt-7 text-lg font-black text-[#D6003F]">Aliados verificados</h3>
+                <h3 className="mt-7 text-lg font-black text-[#C00253]">Aliados verificados</h3>
                 <p className="mt-3 text-sm leading-6 text-stone-600">
                   Las academias, talleres, escuelas y otros aliados pueden registrarse para formar parte de la red, compartir su capacidad de producción y participar en la confección de productos textiles destinados a apoyar a las comunidades afectadas.
                 </p>
@@ -200,7 +200,7 @@ export default function NuestraMisionPage() {
                 <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#201923] text-white">
                   <Scissors className="h-5 w-5" />
                 </div>
-                <h3 className="mt-7 text-lg font-black text-[#D6003F]">Voluntarios</h3>
+                <h3 className="mt-7 text-lg font-black text-[#C00253]">Voluntarios</h3>
                 <p className="mt-3 text-sm leading-6 text-stone-600">
                   Personas con conocimientos en confección, patronaje, diseño, corte, costura, logística u otras áreas pueden sumarse para apoyar los procesos que requieran colaboración.
                 </p>
@@ -209,7 +209,7 @@ export default function NuestraMisionPage() {
                 <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#FF91BA] text-[#201923]">
                   <PackageCheck className="h-5 w-5" />
                 </div>
-                <h3 className="mt-7 text-lg font-black text-[#D6003F]">Aliados y colaboradores</h3>
+                <h3 className="mt-7 text-lg font-black text-[#C00253]">Aliados y colaboradores</h3>
                 <p className="mt-3 text-sm leading-6 text-stone-600">
                   Empresas, organizaciones e instituciones pueden aportar materiales textiles como telas, cierres, hilos, elásticos u otros insumos necesarios para la producción.
                 </p>
@@ -223,7 +223,7 @@ export default function NuestraMisionPage() {
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-end lg:gap-20">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.2em] text-[#D6003F]">Voluntariado</p>
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-[#C00253]">Voluntariado</p>
               <h2 className="mt-4 text-3xl font-black tracking-[-0.04em] text-ink sm:text-5xl">
                 ¿A quiénes buscamos como voluntarios?
               </h2>
@@ -237,7 +237,7 @@ export default function NuestraMisionPage() {
             <article className="overflow-hidden rounded-[2rem] bg-white">
               <PhotoFrame image={galleryImages[7]} className="h-56 rounded-none" />
               <div className="p-7">
-                <h3 className="text-lg font-black text-[#D6003F]">Área Técnica y Académica</h3>
+                <h3 className="text-lg font-black text-[#C00253]">Área Técnica y Académica</h3>
                 <ul className="mt-5 space-y-4 text-sm leading-6 text-stone-700">
                   <li>
                     <strong className="font-bold text-ink">Academias y escuelas de moda y diseño:</strong>{" "}
@@ -254,7 +254,7 @@ export default function NuestraMisionPage() {
             <article className="overflow-hidden rounded-[2rem] bg-white">
               <PhotoFrame image={galleryImages[5]} className="h-56 rounded-none" />
               <div className="p-7">
-                <h3 className="text-lg font-black text-[#D6003F]">Área de Comunicación y Medios</h3>
+                <h3 className="text-lg font-black text-[#C00253]">Área de Comunicación y Medios</h3>
                 <ul className="mt-5 space-y-4 text-sm leading-6 text-stone-700">
                   <li>
                     <strong className="font-bold text-ink">Creadores de contenido:</strong>{" "}
@@ -296,22 +296,22 @@ export default function NuestraMisionPage() {
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.2em] text-[#F74897]">La red crece contigo</p>
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-[#F6026B]">La red crece contigo</p>
               <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] text-ink sm:text-5xl">
                 Categorías de aliados
               </h2>
             </div>
-            <Link href="/aliados" className="inline-flex items-center gap-2 text-sm font-bold text-[#D6003F] hover:text-[#F74897]">
+            <Link href="/aliados" className="inline-flex items-center gap-2 text-sm font-bold text-[#C00253] hover:text-[#F6026B]">
               Ver aliados
               <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {Object.entries(ALLY_CATEGORY_LABELS).map(([value, label]) => (
-              <article key={value} className="group rounded-[2rem] border border-stone-200 bg-[#F7F2EF] p-6 transition hover:-translate-y-1 hover:border-[#F74897]/50">
-                <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F74897]">{label}</p>
+              <article key={value} className="group rounded-[2rem] border border-stone-200 bg-[#F7F2EF] p-6 transition hover:-translate-y-1 hover:border-[#F6026B]/50">
+                <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F6026B]">{label}</p>
                 <p className="mt-4 text-sm leading-6 text-stone-600">Aliados que pueden sumarse a tareas, producción y apoyo textil coordinado por Promoda.</p>
-                <ArrowUpRight className="mt-8 h-5 w-5 text-[#D6003F] transition group-hover:translate-x-1 group-hover:-translate-y-1" />
+                <ArrowUpRight className="mt-8 h-5 w-5 text-[#C00253] transition group-hover:translate-x-1 group-hover:-translate-y-1" />
               </article>
             ))}
           </div>
@@ -342,7 +342,7 @@ export default function NuestraMisionPage() {
 
       <section className="bg-[#201923] px-4 py-20 text-white sm:px-6 lg:px-8 lg:py-28">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-20">
-          <div className="relative min-h-[440px] overflow-hidden rounded-[2rem] bg-[#F74897]">
+          <div className="relative min-h-[440px] overflow-hidden rounded-[2rem] bg-[#F6026B]">
             <Image
               src={galleryImages[4].src}
               alt={galleryImages[4].alt}
@@ -380,7 +380,7 @@ export default function NuestraMisionPage() {
             </div>
             <Link
               href="/adopta-una-cartuchera"
-              className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#F74897] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#D6003F]"
+              className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#F6026B] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#C00253]"
             >
               Quiero sumarme
               <ArrowUpRight className="h-4 w-4" />
@@ -389,22 +389,22 @@ export default function NuestraMisionPage() {
         </div>
       </section>
 
-      <section className="bg-[#FFE4EC] px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
+      <section className="bg-[#FFE6F0] px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
         <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-          <p className="text-sm font-black uppercase tracking-[0.2em] text-[#F74897]">Únete</p>
+          <p className="text-sm font-black uppercase tracking-[0.2em] text-[#F6026B]">Únete</p>
           <p className="mt-5 max-w-2xl text-base leading-8 text-stone-700 sm:text-lg">
             Si eres aliado, voluntario, empresa o profesional del sector moda, puedes formar parte de esta iniciativa.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               href="/registro"
-              className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#F74897] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#D6003F]"
+              className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#F6026B] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#C00253]"
             >
               Registrar aliado
             </Link>
             <Link
               href="/voluntarios"
-              className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-bold text-[#F74897] ring-1 ring-[#F74897] transition hover:bg-[#FFF1F5]"
+              className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-bold text-[#F6026B] ring-1 ring-[#F6026B] transition hover:bg-[#FFE6F0]"
             >
               Postularme como voluntario
             </Link>

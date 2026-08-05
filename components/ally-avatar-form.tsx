@@ -86,7 +86,7 @@ export function AllyAvatarForm({ workshop }: { workshop: Workshop }) {
       <div className="mt-4 flex flex-wrap items-center gap-6">
         {preview || avatarUrl(path) ? <img src={preview || avatarUrl(path)!} alt={`Foto de ${workshop.name}`} className="h-24 w-24 rounded-full object-cover ring-2 ring-gray-200" /> : <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 text-3xl font-semibold text-gray-400">{workshop.name.charAt(0).toUpperCase()}</div>}
         <form onSubmit={save} className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-end">
-          <input className={`${inputClassName} file:mr-3 file:rounded file:border-0 file:bg-[#F74897] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white`} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={(event) => { const next = event.target.files?.[0] ?? null; setFile(next); setPreview(next ? URL.createObjectURL(next) : null); }} />
+          <input className={`${inputClassName} file:mr-3 file:rounded file:border-0 file:bg-[#F6026B] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white`} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={(event) => { const next = event.target.files?.[0] ?? null; setFile(next); setPreview(next ? URL.createObjectURL(next) : null); }} />
           <Button type="submit" disabled={pending || !file}>{pending ? "Guardando..." : "Guardar foto"}</Button>
         </form>
       </div>

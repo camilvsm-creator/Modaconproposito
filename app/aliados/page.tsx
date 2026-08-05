@@ -68,7 +68,7 @@ export default async function AlliesPage({
       <section className="full-bleed border-t border-stone-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="max-w-3xl space-y-4">
-            <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F74897]">
+            <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F6026B]">
               Red de aliados verificados
             </p>
             <h1 className="text-3xl font-black leading-[1.05] tracking-[-0.03em] text-ink sm:text-4xl">
@@ -82,10 +82,10 @@ export default async function AlliesPage({
               Cada aliado es revisado por el equipo Promoda antes de publicarse.
             </p>
             <div className="flex flex-wrap gap-3 pt-2">
-              <LinkButton href="/registro" className="bg-[#F74897] text-white hover:bg-[#D6003F]">
+              <LinkButton href="/registro" className="bg-[#F6026B] text-white hover:bg-[#C00253]">
                 Registrar aliado
               </LinkButton>
-              <Link href="/voluntarios" className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#F74897] ring-1 ring-stone-300 transition hover:bg-[#FFE4EC]">
+              <Link href="/voluntarios" className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#F6026B] ring-1 ring-stone-300 transition hover:bg-[#FFE6F0]">
                 Postularme como voluntario
               </Link>
             </div>
@@ -128,20 +128,20 @@ export default async function AlliesPage({
                 </span>
                 <div className="flex gap-2">
                   {hasPrevious ? (
-                    <Link href={pageHref(filters, result.page - 1)} className="rounded-full bg-white px-4 py-3 text-[#F74897] ring-1 ring-stone-200 hover:bg-[#FFE4EC]">
+                    <Link href={pageHref(filters, result.page - 1)} className="rounded-full bg-white px-4 py-3 text-[#F6026B] ring-1 ring-stone-200 hover:bg-[#FFE6F0]">
                       Anterior
                     </Link>
                   ) : (
-                    <span className="pointer-events-none rounded-full bg-[#FFE4EC] px-4 py-3 text-stone-400 ring-1 ring-[#F74897]/10">
+                    <span className="pointer-events-none rounded-full bg-[#FFE6F0] px-4 py-3 text-stone-400 ring-1 ring-[#F6026B]/10">
                       Anterior
                     </span>
                   )}
                   {hasNext ? (
-                    <Link href={pageHref(filters, result.page + 1)} className="rounded-full bg-[#F74897] px-4 py-3 text-white ring-1 ring-stone-200 hover:bg-[#D6003F]">
+                    <Link href={pageHref(filters, result.page + 1)} className="rounded-full bg-[#F6026B] px-4 py-3 text-white ring-1 ring-stone-200 hover:bg-[#C00253]">
                       Siguiente
                     </Link>
                   ) : (
-                    <span className="pointer-events-none rounded-full bg-[#FFE4EC] px-4 py-3 text-stone-400 ring-1 ring-[#F74897]/10">
+                    <span className="pointer-events-none rounded-full bg-[#FFE6F0] px-4 py-3 text-stone-400 ring-1 ring-[#F6026B]/10">
                       Siguiente
                     </span>
                   )}

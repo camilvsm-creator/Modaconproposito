@@ -287,7 +287,7 @@ Reglas para Server Actions:
 - **Sin arboles heredados**: no crear ni importar desde `app/admin/talleres/*`, `app/admin/aliado/*`, ni rutas equivalentes. No reintroducir `/ver-talleres` ni `/admin/activar-taller`.
 - **Queries nuevas**: usar `allies`, `assigned_tasks`, `ally_photos`, `collaborator_offers`, `volunteers`, `ally_volunteer_assignments`, `raw_materials`, `ally_raw_material_assignments`, `ally_deliveries`, `aid_requests`, `message_threads`, `messages`.
 - **No usar tablas legacy**: no consultar `workshops`, `workshop_needs`, `workshop_photos`, `workshop_help_offers`, `workshop_volunteers`, `user_workshops` ni `workshop_activation_tokens`.
-- **Tailwind**: usar valores arbitrarios como `text-[#FF0B55]` o `bg-[#F74897]` para Promoda; no modificar `tailwind.config.ts` para colores del dominio salvo necesidad clara.
+- **Tailwind**: usar valores arbitrarios como `text-[#F6026B]` o `bg-[#F6026B]` para Promoda; no modificar `tailwind.config.ts` para colores del dominio salvo necesidad clara.
 - **Texto minimo**: no usar `text-xs`; minimo `text-sm`.
 - **Iconos**: usar `lucide-react`.
 - **Paginacion**: tipo `PagedResult<T>` con `page`, `limit`, `pageCount`, `items`, `total`.

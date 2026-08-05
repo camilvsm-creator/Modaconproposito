@@ -69,7 +69,7 @@ export default async function PatronesPage({
                     href={href}
                     className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
                       isActive
-                        ? "bg-[#F74897] text-white"
+                        ? "bg-[#F6026B] text-white"
                         : "bg-white text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50"
                     }`}
                   >
@@ -209,8 +209,8 @@ function PatternGrid({ patterns }: { patterns: SewingPattern[] }) {
                 />
               </div>
             ) : (
-              <div className="flex h-32 items-center justify-center bg-[#FFE4EC]">
-                <Scissors className="h-10 w-10 text-[#F74897]/40" />
+              <div className="flex h-32 items-center justify-center bg-[#FFE6F0]">
+                <Scissors className="h-10 w-10 text-[#F6026B]/40" />
               </div>
             )}
             <div className="flex flex-1 flex-col p-5">
@@ -240,7 +240,7 @@ function PatternGrid({ patterns }: { patterns: SewingPattern[] }) {
                 <a
                   href={downloadUrl}
                   download
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#F74897] px-4 py-2 text-sm font-bold text-white hover:bg-[#D6003F]"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#F6026B] px-4 py-2 text-sm font-bold text-white hover:bg-[#C00253]"
                 >
                   <Download className="h-4 w-4" />
                   Descargar

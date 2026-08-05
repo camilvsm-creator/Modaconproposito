@@ -184,7 +184,7 @@ export default async function AdminVoluntariosPage({
                     <td data-mobile="primary" data-mobile-label="Nombre" className="px-4 py-2.5 align-top font-semibold text-ink">{assignment.name}</td>
                     <td data-mobile-label="Aliado" className="px-4 py-2.5 align-top">
                       {assignment.ally ? (
-                        <Link href={`/admin/aliados/${assignment.ally.id}`} className="font-semibold text-[#F74897] hover:underline">{assignment.ally.name}</Link>
+                        <Link href={`/admin/aliados/${assignment.ally.id}`} className="font-semibold text-[#F6026B] hover:underline">{assignment.ally.name}</Link>
                       ) : (
                         <span className="text-gray-400">Sin aliado</span>
                       )}

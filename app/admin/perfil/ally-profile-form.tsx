@@ -134,7 +134,7 @@ export function WorkshopProfileForm({ workshop }: { workshop: Workshop }) {
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
-              className={inputClassName + " file:mr-3 file:rounded file:border-0 file:bg-[#F74897] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white"}
+              className={inputClassName + " file:mr-3 file:rounded file:border-0 file:bg-[#F6026B] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white"}
               onChange={(e) => {
                 const file = e.target.files?.[0] ?? null;
                 setAvatarFile(file);

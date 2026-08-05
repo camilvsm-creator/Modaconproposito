@@ -50,7 +50,7 @@ export default async function WorkshopDetailPage({ params }: Props) {
         <div className="mx-auto max-w-4xl space-y-6">
           <Link
             href="/aliados"
-            className="inline-flex items-center gap-2 text-sm font-bold text-[#F74897] hover:underline"
+            className="inline-flex items-center gap-2 text-sm font-bold text-[#F6026B] hover:underline"
           >
             <ArrowLeft className="h-4 w-4" />
             Volver a aliados
@@ -62,17 +62,17 @@ export default async function WorkshopDetailPage({ params }: Props) {
                 <img
                   src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${WORKSHOP_PHOTO_BUCKET}/${workshop.avatar_path}`}
                   alt={name}
-                  className="h-14 w-14 shrink-0 rounded-full object-cover ring-2 ring-[#F74897]/20"
+                  className="h-14 w-14 shrink-0 rounded-full object-cover ring-2 ring-[#F6026B]/20"
                 />
               ) : (
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#FFE4EC] text-[#F74897] ring-2 ring-[#F74897]/20">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#FFE6F0] text-[#F6026B] ring-2 ring-[#F6026B]/20">
                   <Scissors className="h-6 w-6" />
                 </div>
               )}
               <div className="min-w-0 flex-1 space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1">
-                    <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F74897]">
+                    <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F6026B]">
                       Aliado Promoda
                     </p>
                     <h1 className="text-2xl font-black tracking-[-0.03em] text-ink sm:text-3xl">
@@ -84,7 +84,7 @@ export default async function WorkshopDetailPage({ params }: Props) {
 
                 {workshop.public_location_allowed && workshop.public_location ? (
                   <div className="flex items-start gap-3">
-                    <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[#F74897]" />
+                    <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[#F6026B]" />
                     <div>
                       <p className="font-semibold text-ink">
                         {workshop.public_location}
@@ -139,7 +139,7 @@ export default async function WorkshopDetailPage({ params }: Props) {
             <SectionCard className="p-6 sm:p-8">
               <div className="flex items-center gap-3">
                 <h2 className="text-xl font-black text-ink">Necesidades</h2>
-                <span className="rounded-full bg-[#FFE4EC] px-2.5 py-0.5 text-sm font-semibold text-[#D6003F]">
+                <span className="rounded-full bg-[#FFE6F0] px-2.5 py-0.5 text-sm font-semibold text-[#C00253]">
                   {needs.length} {needs.length === 1 ? "activa" : "activas"}
                 </span>
               </div>

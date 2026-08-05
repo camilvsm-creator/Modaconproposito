@@ -204,12 +204,12 @@ export default async function AdminAliadosPage({
                 {result.items.map((w) => (
                   <tr key={w.id} className="hover:bg-gray-50 transition-colors">
                     <td data-mobile="primary" data-mobile-label="Aliado" className="px-4 py-3 align-top leading-tight">
-                      <Link href={`/admin/aliados/${w.id}`} className="font-semibold text-[#F74897] hover:underline">
+                      <Link href={`/admin/aliados/${w.id}`} className="font-semibold text-[#F6026B] hover:underline">
                         {w.name}
                       </Link>
                     </td>
                     <td data-mobile-label="Categoría" className="px-4 py-3 align-top leading-tight">
-                      <span className="inline-flex rounded-md bg-[#FFE4EC] px-2.5 py-1 text-sm font-semibold text-[#D6003F]">
+                      <span className="inline-flex rounded-md bg-[#FFE6F0] px-2.5 py-1 text-sm font-semibold text-[#C00253]">
                         {ALLY_CATEGORY_LABELS[w.category] ?? w.category}
                       </span>
                     </td>

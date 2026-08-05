@@ -11,9 +11,9 @@
 
 :root {
   color-scheme: light;
-  --color-primary: 255 11 85;
-  --color-primary-dark: 214 0 63;
-  --color-primary-soft: 255 228 236;
+  --color-primary: 246 2 107;
+  --color-primary-dark: 192 2 83;
+  --color-primary-soft: 255 230 240;
 }
 
 body {

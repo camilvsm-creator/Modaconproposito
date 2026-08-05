@@ -14,9 +14,9 @@ export async function sendWorkshopActivationEmail(email: string, responsibleName
     <td align="center">
       <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 480px; width: 100%; background-color: #FFFFFF; border-radius: 12px; overflow: hidden;">
         <tr>
-          <td style="background-color: #FF0B55; padding: 28px 24px; text-align: center;">
+          <td style="background-color: #F6026B; padding: 28px 24px; text-align: center;">
             <h1 style="color: #FFFFFF; font-family: Arial, sans-serif; font-size: 18px; font-weight: 700; margin: 0; padding: 0;">Promoda Aliados</h1>
-            <p style="color: #FFE4EC; font-family: Arial, sans-serif; font-size: 14px; margin: 8px 0 0 0;">Red de aliados textiles</p>
+            <p style="color: #FFE6F0; font-family: Arial, sans-serif; font-size: 14px; margin: 8px 0 0 0;">Red de aliados textiles</p>
           </td>
         </tr>
         <tr>
@@ -25,7 +25,7 @@ export async function sendWorkshopActivationEmail(email: string, responsibleName
             <p style="color: #1F1A17; font-family: Arial, sans-serif; font-size: 16px; line-height: 1.7; margin: 0 0 24px 0;">Tu aliado fue aprobado. Haz clic en el botón para activar tu cuenta y definir tu contraseña:</p>
             <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto 28px;">
               <tr>
-                <td style="background-color: #FF0B55; border-radius: 8px; text-align: center;">
+                <td style="background-color: #F6026B; border-radius: 8px; text-align: center;">
                   <a href="${activationLink}" style="display: inline-block; padding: 14px 32px; color: #FFFFFF; font-family: Arial, sans-serif; font-size: 16px; font-weight: 700; text-decoration: none; border-radius: 8px; letter-spacing: 0.02em;">Activar mi acceso</a>
                 </td>
               </tr>

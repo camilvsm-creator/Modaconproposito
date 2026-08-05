@@ -49,7 +49,7 @@ export default async function CrearTallerPage({
         <div className="rounded-md border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
           <p className="font-semibold">El aliado fue creado y el enlace de activación está disponible para copiar.</p>
           <input readOnly value={activationLink} className="mt-3 w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm text-gray-700" />
-          {allyId ? <Link href={`/admin/aliados/${allyId}`} className="mt-3 inline-flex font-semibold text-[#F74897] hover:underline">Ver detalle del aliado</Link> : null}
+          {allyId ? <Link href={`/admin/aliados/${allyId}`} className="mt-3 inline-flex font-semibold text-[#F6026B] hover:underline">Ver detalle del aliado</Link> : null}
         </div>
       ) : null}
 

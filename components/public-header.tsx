@@ -16,10 +16,10 @@ export function PublicHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="border-b border-[#F74897]/10 bg-white">
+    <header className="border-b border-[#F6026B]/10 bg-white">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2">
-          <img src="/promoda-logo.svg" alt="Promoda" className="h-8 w-auto" />
+          <img src="/promoda-logo.png" alt="Moda con Propósito" className="h-8 w-auto" />
         </Link>
 
         {/* Desktop nav */}
@@ -28,14 +28,14 @@ export function PublicHeader() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-semibold text-stone-600 hover:text-[#F74897]"
+              className="text-sm font-semibold text-stone-600 hover:text-[#F6026B]"
             >
               {link.label}
             </Link>
           ))}
           <Link
             href="/registro"
-            className="rounded-full bg-[#F74897] px-4 py-2 text-sm font-bold text-white hover:bg-[#D6003F]"
+            className="rounded-full bg-[#F6026B] px-4 py-2 text-sm font-bold text-white hover:bg-[#C00253]"
           >
             Registrar aliado
           </Link>
@@ -60,7 +60,7 @@ export function PublicHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="rounded-lg px-3 py-3 text-sm font-semibold text-stone-600 hover:bg-stone-50 hover:text-[#F74897]"
+                className="rounded-lg px-3 py-3 text-sm font-semibold text-stone-600 hover:bg-stone-50 hover:text-[#F6026B]"
                 onClick={() => setOpen(false)}
               >
                 {link.label}
@@ -68,7 +68,7 @@ export function PublicHeader() {
             ))}
             <Link
               href="/registro"
-              className="mt-2 rounded-full bg-[#F74897] px-4 py-3 text-center text-sm font-bold text-white hover:bg-[#D6003F]"
+              className="mt-2 rounded-full bg-[#F6026B] px-4 py-3 text-center text-sm font-bold text-white hover:bg-[#C00253]"
               onClick={() => setOpen(false)}
             >
               Registrar aliado

@@ -318,7 +318,7 @@ export default async function AdminNecesidadesPage({ searchParams }: { searchPar
                       </td>
                       <td data-mobile-label="Aliado" className="px-4 py-2.5 align-top leading-tight">
                         {task.ally ? (
-                          <Link href={`/admin/aliados/${task.ally.id}`} className="font-semibold text-[#F74897] hover:underline">{task.ally.name}</Link>
+                          <Link href={`/admin/aliados/${task.ally.id}`} className="font-semibold text-[#F6026B] hover:underline">{task.ally.name}</Link>
                         ) : (
                           <span className="text-gray-400">Sin aliado</span>
                         )}

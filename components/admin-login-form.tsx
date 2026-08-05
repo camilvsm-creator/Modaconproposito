@@ -60,21 +60,21 @@ export function AdminLoginForm() {
   return (
     <div className="flex min-h-dvh flex-col lg:flex-row">
       {/* Branding panel */}
-      <div className="relative flex flex-col items-center justify-center bg-[#FFE4EC]/30 px-8 py-12 lg:w-[45%] lg:px-16 lg:py-0">
+      <div className="relative flex flex-col items-center justify-center bg-[#FFE6F0]/30 px-8 py-12 lg:w-[45%] lg:px-16 lg:py-0">
         {/* Decorative circles */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-[#F74897]/[0.06]" />
-          <div className="absolute -bottom-8 -left-8 h-40 w-40 rounded-full bg-[#F74897]/[0.08]" />
-          <div className="absolute right-12 top-1/3 h-20 w-20 rounded-full bg-[#F74897]/[0.05]" />
+          <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-[#F6026B]/[0.06]" />
+          <div className="absolute -bottom-8 -left-8 h-40 w-40 rounded-full bg-[#F6026B]/[0.08]" />
+          <div className="absolute right-12 top-1/3 h-20 w-20 rounded-full bg-[#F6026B]/[0.05]" />
         </div>
 
         <div className="relative flex flex-col items-center text-center">
           <img
-            src="/promoda-logo.svg"
-            alt="Promoda"
-            className="mb-8 h-8 w-auto lg:h-10"
+            src="/promoda-logo-vertical.png"
+            alt="Moda con Propósito"
+            className="mb-8 h-14 w-auto lg:h-16"
           />
-          <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F74897]">
+          <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F6026B]">
             Red de Aliados Verificados
           </p>
           <h2 className="mt-3 text-2xl font-black tracking-[-0.03em] text-ink lg:text-3xl">

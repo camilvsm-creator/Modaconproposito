@@ -54,7 +54,7 @@ export default async function RootLayout({
             <footer className="border-t border-stone-200 bg-white">
               <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-8 sm:flex-row sm:px-6 lg:px-8">
                 <div className="flex items-center justify-center">
-                  <img src="/promoda-logo.svg" alt="Promoda" className="h-7 w-auto" />
+                  <img src="/promoda-logo.png" alt="Moda con Propósito" className="h-7 w-auto" />
                 </div>
                 <div className="text-center sm:text-left">
                   <p className="text-sm font-bold text-stone-700">Aliados Verificados</p>

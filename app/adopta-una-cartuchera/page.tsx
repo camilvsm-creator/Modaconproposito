@@ -58,7 +58,7 @@ export default function AdoptaUnaCartucheraPage() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-6">
           <div className="space-y-2">
-            <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F74897]">
+            <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F6026B]">
               RED DE ALIADOS VERIFICADOS
             </p>
             <h1 className="text-3xl font-black tracking-[-0.03em] text-ink sm:text-4xl">
@@ -113,7 +113,7 @@ export default function AdoptaUnaCartucheraPage() {
             <div className="grid gap-4 md:grid-cols-3">
               <SectionCard className="flex flex-col items-center gap-3 p-6 text-center">
                 <span className="text-3xl">🧵</span>
-                <h3 className="font-black text-[#F74897]">
+                <h3 className="font-black text-[#F6026B]">
                   Insumos / Materiales
                 </h3>
                 <p className="text-sm leading-6 text-stone-600">
@@ -123,7 +123,7 @@ export default function AdoptaUnaCartucheraPage() {
               </SectionCard>
               <SectionCard className="flex flex-col items-center gap-3 p-6 text-center">
                 <span className="text-3xl">💰</span>
-                <h3 className="font-black text-[#F74897]">Aporte económico</h3>
+                <h3 className="font-black text-[#F6026B]">Aporte económico</h3>
                 <p className="text-sm leading-6 text-stone-600">
                   Tu aporte se utiliza para comprar insumos y cubrir los costos
                   de producción de cada kit.
@@ -131,7 +131,7 @@ export default function AdoptaUnaCartucheraPage() {
               </SectionCard>
               <SectionCard className="flex flex-col items-center gap-3 p-6 text-center">
                 <span className="text-3xl">🤝</span>
-                <h3 className="font-black text-[#F74897]">Voluntariado</h3>
+                <h3 className="font-black text-[#F6026B]">Voluntariado</h3>
                 <p className="text-sm leading-6 text-stone-600">
                   Sumate como voluntario para la confección de los kits, la
                   organización de insumos o la logística de entrega.
@@ -140,13 +140,13 @@ export default function AdoptaUnaCartucheraPage() {
             </div>
           </section>
 
-          <SectionCard className="space-y-4 bg-[#FFE4EC] p-6 sm:p-8">
+          <SectionCard className="space-y-4 bg-[#FFE6F0] p-6 sm:p-8">
             <h2 className="text-xl font-black tracking-[-0.01em] text-ink">
               Donación económica
             </h2>
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="space-y-3">
-                <h3 className="text-sm font-black uppercase tracking-[0.08em] text-[#F74897]">
+                <h3 className="text-sm font-black uppercase tracking-[0.08em] text-[#F6026B]">
                   Pago Móvil
                 </h3>
                 <div className="space-y-1 text-sm text-stone-700">
@@ -165,7 +165,7 @@ export default function AdoptaUnaCartucheraPage() {
                 </div>
               </div>
               <div className="space-y-3">
-                <h3 className="text-sm font-black uppercase tracking-[0.08em] text-[#F74897]">
+                <h3 className="text-sm font-black uppercase tracking-[0.08em] text-[#F6026B]">
                   Binance
                 </h3>
                 <div className="space-y-1 text-sm text-stone-700">
@@ -175,7 +175,7 @@ export default function AdoptaUnaCartucheraPage() {
                 </div>
               </div>
             </div>
-            <p className="text-center text-sm font-bold text-[#D6003F]">
+            <p className="text-center text-sm font-bold text-[#C00253]">
               CUALQUIER AYUDA ES BIENVENIDA
             </p>
           </SectionCard>
@@ -257,7 +257,7 @@ export default function AdoptaUnaCartucheraPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-full bg-[#F74897] px-6 py-3 text-sm font-bold text-white hover:bg-[#D6003F] disabled:opacity-50"
+                className="rounded-full bg-[#F6026B] px-6 py-3 text-sm font-bold text-white hover:bg-[#C00253] disabled:opacity-50"
               >
                 {isSubmitting ? "Enviando..." : "Quiero ayudar"}
               </button>

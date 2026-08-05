@@ -137,7 +137,7 @@ export function WorkshopHelpForm({
         </SectionCard>
       ) : null}
 
-      <Button type="submit" disabled={isSubmitting} className="bg-[#F74897] hover:bg-[#D6003F]">
+      <Button type="submit" disabled={isSubmitting} className="bg-[#F6026B] hover:bg-[#C00253]">
         {isSubmitting ? "Enviando..." : "Enviar oferta de ayuda"}
       </Button>
     </form>

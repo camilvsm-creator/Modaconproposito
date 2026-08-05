@@ -78,7 +78,7 @@ function ContextSwitcher({
 
   return (
     <div className="pb-4 shrink-0">
-      <p className={cn("text-sm font-semibold uppercase tracking-[0.16em] mb-2", isPromoda ? "text-[#D6003F]" : "text-gray-500")}>
+      <p className={cn("text-sm font-semibold uppercase tracking-[0.16em] mb-2", isPromoda ? "text-[#C00253]" : "text-gray-500")}>
         Espacio de trabajo
       </p>
       <div className="flex flex-col gap-1">
@@ -88,7 +88,7 @@ function ContextSwitcher({
             "inline-flex min-h-9 items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition w-full text-left",
             isPlatform
               ? isPromoda
-              ? "bg-[#FFE4EC] text-[#D6003F]"
+              ? "bg-[#FFE6F0] text-[#C00253]"
               : "bg-transparent text-ink"
               : "bg-transparent text-gray-600 hover:bg-gray-100",
           )}
@@ -107,7 +107,7 @@ function ContextSwitcher({
                 "inline-flex min-h-9 items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition w-full text-left",
                 isActive
                   ? isPromoda
-                  ? "bg-[#FFE4EC] text-[#D6003F]"
+                  ? "bg-[#FFE6F0] text-[#C00253]"
                   : "bg-transparent text-ink"
                   : "bg-transparent text-gray-600 hover:bg-gray-100",
               )}
@@ -119,7 +119,7 @@ function ContextSwitcher({
                   className="h-5 w-5 rounded-full object-cover shrink-0"
                 />
               ) : (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#FFE4EC] text-[10px] font-bold text-[#F74897] shrink-0">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#FFE6F0] text-[10px] font-bold text-[#F6026B] shrink-0">
                   {w.name.charAt(0)}
                 </span>
               )}
@@ -202,7 +202,7 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
             <div className="pb-4 shrink-0">
               {isPromoda ? (
                 <Link href="/admin" className="flex items-center gap-2">
-                  <img src="/promoda-logo.svg" alt="Promoda" className="h-7 w-auto" />
+                  <img src="/promoda-logo.png" alt="Moda con Propósito" className="h-7 w-auto" />
                 </Link>
               ) : (
                 <>
@@ -211,7 +211,7 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
                 </>
               )}
               <p className={cn("mt-3 truncate text-sm", isPromoda ? "text-gray-500" : "text-gray-600")}>{email || role}</p>
-              <p className={cn("mt-1 text-sm font-semibold uppercase tracking-[0.16em]", isPromoda ? "text-[#D6003F]" : "text-gray-500")}>
+              <p className={cn("mt-1 text-sm font-semibold uppercase tracking-[0.16em]", isPromoda ? "text-[#C00253]" : "text-gray-500")}>
                 {context.type === "aliado" ? "Aliado" : role}
               </p>
             </div>
@@ -241,14 +241,14 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
                       "inline-flex min-h-11 items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition w-full",
                       active
                         ? isPromoda
-                          ? "bg-[#FFE4EC] text-[#D6003F]"
+                          ? "bg-[#FFE6F0] text-[#C00253]"
                           : "bg-transparent text-ink"
                         : isPromoda
-                          ? "bg-transparent text-gray-600 hover:bg-[#FFE4EC]/60 hover:text-[#D6003F]"
+                          ? "bg-transparent text-gray-600 hover:bg-[#FFE6F0]/60 hover:text-[#C00253]"
                           : "bg-transparent text-gray-600 hover:bg-[#f6f4f1] hover:text-ink",
                     )}
                   >
-                    <Icon className={cn("h-4 w-4 shrink-0", active ? (isPromoda ? "text-[#F74897]" : "text-primary") : "text-gray-500")} />
+                    <Icon className={cn("h-4 w-4 shrink-0", active ? (isPromoda ? "text-[#F6026B]" : "text-primary") : "text-gray-500")} />
                     <span>{item.label}</span>
                   </Link>
                 );
@@ -263,7 +263,7 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
                   className={cn(
                     "inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-semibold transition",
                     isPromoda
-                      ? "bg-[#FFE4EC] text-[#D6003F] hover:bg-white"
+                      ? "bg-[#FFE6F0] text-[#C00253] hover:bg-white"
                       : "bg-[#f7f6f4] text-gray-700 hover:bg-white",
                   )}
                 >
@@ -293,10 +293,10 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
                 href={item.href}
                 className={cn(
                   "flex min-h-16 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-semibold leading-none transition-colors",
-                  active ? (isPromoda ? "text-[#F74897]" : "text-primary") : "text-gray-500",
+                  active ? (isPromoda ? "text-[#F6026B]" : "text-primary") : "text-gray-500",
                 )}
               >
-                <Icon className={cn("h-5 w-5", active ? (isPromoda ? "text-[#F74897]" : "text-primary") : "text-gray-500")} />
+                <Icon className={cn("h-5 w-5", active ? (isPromoda ? "text-[#F6026B]" : "text-primary") : "text-gray-500")} />
                 <span className="whitespace-nowrap">{item.label}</span>
               </Link>
             );
@@ -333,7 +333,7 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
             <div className="flex items-center justify-between pb-4">
               {isPromoda ? (
                 <div className="flex items-center gap-2">
-                  <img src="/promoda-logo.svg" alt="Promoda" className="h-6 w-auto" />
+                  <img src="/promoda-logo.png" alt="Moda con Propósito" className="h-6 w-auto" />
                 </div>
               ) : (
                 <div>
@@ -346,7 +346,7 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-md",
                   isPromoda
-                    ? "bg-[#FFE4EC] text-[#D6003F]"
+                    ? "bg-[#FFE6F0] text-[#C00253]"
                     : "bg-[#f7f6f4] text-gray-600",
                 )}
                 aria-label="Cerrar menú"
@@ -380,14 +380,14 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
                       "inline-flex min-h-11 items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition",
                       active
                         ? isPromoda
-                          ? "bg-[#FFE4EC] text-[#D6003F]"
+                          ? "bg-[#FFE6F0] text-[#C00253]"
                           : "bg-transparent text-ink"
                         : isPromoda
-                          ? "bg-transparent text-gray-600 hover:bg-[#FFE4EC]/60 hover:text-[#D6003F]"
+                          ? "bg-transparent text-gray-600 hover:bg-[#FFE6F0]/60 hover:text-[#C00253]"
                           : "bg-transparent text-gray-600 hover:bg-[#f6f4f1] hover:text-ink",
                     )}
                   >
-                    <Icon className={cn("h-4 w-4 shrink-0", active ? (isPromoda ? "text-[#F74897]" : "text-primary") : "text-gray-500")} />
+                    <Icon className={cn("h-4 w-4 shrink-0", active ? (isPromoda ? "text-[#F6026B]" : "text-primary") : "text-gray-500")} />
                     <span>{item.label}</span>
                   </Link>
                 );
@@ -401,7 +401,7 @@ export function AdminShell({ role, email, avatarUrl, context, linkedWorkshops, c
                   className={cn(
                     "inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-semibold transition",
                     isPromoda
-                      ? "bg-[#FFE4EC] text-[#D6003F] hover:bg-white"
+                      ? "bg-[#FFE6F0] text-[#C00253] hover:bg-white"
                       : "bg-[#f7f6f4] text-gray-700 hover:bg-white",
                   )}
                 >

@@ -41,7 +41,7 @@ export default async function TallerNecesidadesPage({
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-6">
           <div className="space-y-2">
-            <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F74897]">
+            <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F6026B]">
               RED DE ALIADOS VERIFICADOS
             </p>
             <h1 className="text-3xl font-black tracking-[-0.03em] text-ink sm:text-4xl">
@@ -66,7 +66,7 @@ export default async function TallerNecesidadesPage({
                     {need.workshop?.slug ? (
                       <Link
                         href={`/aliados/${need.workshop.slug}`}
-                        className="inline-block text-sm font-bold text-[#F74897] underline-offset-2 hover:underline"
+                        className="inline-block text-sm font-bold text-[#F6026B] underline-offset-2 hover:underline"
                       >
                         {need.workshop.name ?? "Aliado"}
                       </Link>
@@ -118,24 +118,24 @@ export default async function TallerNecesidadesPage({
                 {hasPrevious ? (
                   <Link
                     href={`/necesidades?page=${result.page - 1}`}
-                    className="rounded-full bg-white px-4 py-3 ring-1 ring-stone-200 text-[#F74897] hover:bg-[#FFE4EC]"
+                    className="rounded-full bg-white px-4 py-3 ring-1 ring-stone-200 text-[#F6026B] hover:bg-[#FFE6F0]"
                   >
                     Anterior
                   </Link>
                 ) : (
-                  <span className="rounded-full bg-[#FFE4EC] px-4 py-3 ring-1 ring-[#F74897]/10 text-stone-400 pointer-events-none">
+                  <span className="rounded-full bg-[#FFE6F0] px-4 py-3 ring-1 ring-[#F6026B]/10 text-stone-400 pointer-events-none">
                     Anterior
                   </span>
                 )}
                 {hasNext ? (
                   <Link
                     href={`/necesidades?page=${result.page + 1}`}
-                    className="rounded-full bg-[#F74897] px-4 py-3 text-white ring-1 ring-stone-200 hover:bg-[#D6003F]"
+                    className="rounded-full bg-[#F6026B] px-4 py-3 text-white ring-1 ring-stone-200 hover:bg-[#C00253]"
                   >
                     Siguiente
                   </Link>
                 ) : (
-                    <span className="rounded-full bg-[#FFE4EC] px-4 py-3 ring-1 ring-[#F74897]/10 text-stone-400 pointer-events-none">
+                    <span className="rounded-full bg-[#FFE6F0] px-4 py-3 ring-1 ring-[#F6026B]/10 text-stone-400 pointer-events-none">
                       Siguiente
                     </span>
                 )}
