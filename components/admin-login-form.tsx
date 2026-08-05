@@ -17,6 +17,8 @@ function translateError(message: string) {
   return SPANISH_ERRORS[message] ?? message;
 }
 
+const LOGIN_BACKGROUND_IMAGE = "/background-image.jpg";
+
 export function AdminLoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -58,107 +60,125 @@ export function AdminLoginForm() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col lg:flex-row">
-      {/* Branding panel */}
-      <div className="relative flex flex-col items-center justify-center bg-[#FFE6F0]/30 px-8 py-12 lg:w-[45%] lg:px-16 lg:py-0">
-        {/* Decorative circles */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-[#F6026B]/[0.06]" />
-          <div className="absolute -bottom-8 -left-8 h-40 w-40 rounded-full bg-[#F6026B]/[0.08]" />
-          <div className="absolute right-12 top-1/3 h-20 w-20 rounded-full bg-[#F6026B]/[0.05]" />
-        </div>
+    <div className="flex min-h-dvh items-center justify-center bg-[#FFF5F8] px-4 py-8 sm:px-6 lg:p-10">
+      <div className="w-full max-w-[1200px] overflow-hidden rounded-[24px] bg-white shadow-card lg:grid lg:grid-cols-2">
+        {/* Photo/branding column */}
+        <div
+          className="relative hidden min-h-[680px] lg:block"
+          style={{
+            backgroundImage: `url(${LOGIN_BACKGROUND_IMAGE})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          <div className="absolute inset-0 bg-primary/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/5 to-transparent" />
 
-        <div className="relative flex flex-col items-center text-center">
-          <img
-            src="/promoda-logo-vertical.png"
-            alt="Moda con Propósito"
-            className="mb-8 h-14 w-auto lg:h-16"
-          />
-          <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F6026B]">
-            Red de Aliados Verificados
-          </p>
-          <h2 className="mt-3 text-2xl font-black tracking-[-0.03em] text-ink lg:text-3xl">
-            Red de Aliados Promoda
-          </h2>
-          <p className="mt-4 max-w-sm text-sm leading-relaxed text-gray-500">
-            Plataforma para coordinar aliados, voluntarios y recursos de
-            clasificación textil con aliados y voluntarios verificados.
-          </p>
-        </div>
-      </div>
-
-      {/* Form panel */}
-      <div className="flex flex-1 items-center justify-center bg-white px-4 py-12 lg:px-10">
-        <div className="w-full max-w-sm">
-          <div className="mb-10">
-            <h1 className="text-2xl font-bold text-ink">
-              Panel de administración
-            </h1>
-            <p className="mt-2 text-sm text-gray-500">
-              Ingresa para gestionar tu aliado y coordinar la ayuda textil.
-            </p>
+          <div className="absolute left-12 top-10">
+            <img
+              src="/isotipomoda.png"
+              alt="Moda con Propósito"
+              className="h-11 w-auto"
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-1">
-              <label
-                className="text-sm font-medium text-gray-700"
-                htmlFor="login-email"
-              >
-                Correo electrónico
-              </label>
-              <input
-                id="login-email"
-                type="email"
-                autoComplete="email"
-                autoFocus
-                className={inputClassName}
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
+          <div className="absolute inset-x-12 bottom-10">
+            <h2 className="max-w-md text-[28px] font-black leading-[1.15] tracking-[-0.03em] text-white xl:text-[40px]">
+              Confeccionamos <span className="italic">ayuda</span>. Conectamos{" "}
+              <span className="italic">propósito</span>.
+            </h2>
+            <p className="mt-6 max-w-[360px] text-base leading-relaxed text-white">
+              Cada aliado, voluntario y colaborador forma parte de una red que
+              transforma la solidaridad en soluciones textiles para quienes más
+              lo necesitan.
+            </p>
+          </div>
+        </div>
+
+        {/* Form column */}
+        <div className="flex items-center justify-center bg-white px-4 py-10 sm:px-6 lg:px-10">
+          <div className="w-full max-w-[440px]">
+            <div className="mb-8 lg:hidden">
+              <img
+                src="/isotipomoda.png"
+                alt="Moda con Propósito"
+                className="h-10 w-auto"
               />
             </div>
 
-            <div className="space-y-1">
-              <label
-                className="text-sm font-medium text-gray-700"
-                htmlFor="login-password"
-              >
-                Contraseña
-              </label>
-              <div className="relative">
-                <input
-                  id="login-password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  className={`${inputClassName} pr-10`}
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  tabIndex={-1}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
+            <div className="rounded-2xl bg-white p-8 shadow-sm sm:p-10">
+              <div className="mb-8">
+                <h1 className="text-3xl font-bold tracking-[-0.02em] text-ink">
+                  Bienvenido
+                </h1>
+                <p className="mt-3 text-sm leading-relaxed text-gray-500">
+                  Ingresa para administrar la plataforma o gestionar tu aliado
+                  dentro de la red de Moda con Propósito.
+                </p>
               </div>
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-1">
+                  <label
+                    className="text-sm font-medium text-gray-700"
+                    htmlFor="login-email"
+                  >
+                    Correo electrónico
+                  </label>
+                  <input
+                    id="login-email"
+                    type="email"
+                    autoComplete="email"
+                    autoFocus
+                    className={inputClassName}
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label
+                    className="text-sm font-medium text-gray-700"
+                    htmlFor="login-password"
+                  >
+                    Contraseña
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="login-password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      className={`${inputClassName} pr-10`}
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {error ? (
+                  <p className="rounded-lg border border-danger-soft bg-danger-soft/30 px-3 py-2 text-sm text-danger">
+                    {error}
+                  </p>
+                ) : null}
+
+                <Button type="submit" disabled={loading} className="w-full">
+                  {loading ? "Ingresando…" : "Ingresar"}
+                </Button>
+              </form>
             </div>
-
-            {error ? (
-              <p className="rounded-lg border border-danger-soft bg-danger-soft/30 px-3 py-2 text-sm text-danger">
-                {error}
-              </p>
-            ) : null}
-
-            <Button type="submit" disabled={loading} className="w-full">
-              {loading ? "Ingresando…" : "Ingresar"}
-            </Button>
-          </form>
+          </div>
         </div>
       </div>
     </div>
