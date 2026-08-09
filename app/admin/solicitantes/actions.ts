@@ -3,10 +3,11 @@
 import { revalidatePath } from "next/cache";
 
 import { requireWorkshopAdminUser } from "@/lib/auth";
+import { sendAidRequesterActivationEmail } from "@/lib/email";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { generateAidRequesterActivationToken } from "@/lib/requesters";
 
-type Result = { error?: string; activationLink?: string | null };
+type Result = { error?: string; activationLink?: string | null; emailSent?: boolean };
 
 function revalidateRequesterModules() {
   revalidatePath("/admin/solicitantes");
@@ -99,7 +100,7 @@ export async function generateAidRequesterAccessLinkAction(formData: FormData): 
 
   const { data: requester, error } = await admin
     .from("aid_requesters")
-    .select("id, user_id, status")
+    .select("id, user_id, status, name, contact_name, email")
     .eq("id", requesterId)
     .maybeSingle();
 
@@ -109,8 +110,23 @@ export async function generateAidRequesterAccessLinkAction(formData: FormData): 
   if (requester.status !== "activo") return { error: "Solo puedes generar acceso para solicitantes activos.", activationLink: null };
 
   const { activationLink } = await generateAidRequesterActivationToken(requesterId, user.id);
+
+  if (requester.email) {
+    const { error: emailError } = await sendAidRequesterActivationEmail(
+      requester.email,
+      requester.contact_name || requester.name,
+      activationLink,
+      requester.name,
+    );
+
+    if (emailError) {
+      revalidateRequesterModules();
+      return { error: `El acceso fue generado, pero no se pudo enviar el correo: ${emailError}`, activationLink, emailSent: false };
+    }
+  }
+
   revalidateRequesterModules();
-  return { activationLink };
+  return { activationLink, emailSent: Boolean(requester.email) };
 }
 
 export async function getAidRequesterOptionsAction(): Promise<Array<{ id: string; name: string }>> {

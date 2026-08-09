@@ -5,11 +5,20 @@ import { useEffect, useId, useState } from "react";
 
 import { generateAccessLinkAction } from "@/app/admin/aliados/actions";
 
-export function GenerateAccessButton({ workshopId, workshopName }: { workshopId: string; workshopName: string }) {
+export function GenerateAccessButton({
+  workshopId,
+  workshopName,
+  triggerLabel = "Generar acceso",
+}: {
+  workshopId: string;
+  workshopName: string;
+  triggerLabel?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activationLink, setActivationLink] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
   const [copied, setCopied] = useState(false);
   const titleId = `generate-access-modal-title-${useId().replace(/:/g, "")}`;
   const router = useRouter();
@@ -17,17 +26,18 @@ export function GenerateAccessButton({ workshopId, workshopName }: { workshopId:
   async function handleGenerate() {
     setLoading(true);
     setError(null);
+    setCopied(false);
     const fd = new FormData();
     fd.set("workshopId", workshopId);
     const result = await generateAccessLinkAction(fd);
     setLoading(false);
 
-    if (result.error) {
-      setError(result.error);
-    } else if (result.activationLink) {
+    if (result.activationLink) {
       setActivationLink(result.activationLink);
       router.refresh();
     }
+    setEmailSent(result.emailSent === true);
+    if (result.error) setError(result.error);
   }
 
   function handleCopy() {
@@ -40,6 +50,7 @@ export function GenerateAccessButton({ workshopId, workshopName }: { workshopId:
   function handleClose() {
     setOpen(false);
     setActivationLink(null);
+    setEmailSent(false);
     setError(null);
   }
 
@@ -63,10 +74,10 @@ export function GenerateAccessButton({ workshopId, workshopName }: { workshopId:
     <>
       <button
         type="button"
-        onClick={() => { setOpen(true); setActivationLink(null); setError(null); }}
+        onClick={() => { setOpen(true); setActivationLink(null); setEmailSent(false); setError(null); }}
         className="inline-flex min-h-11 items-center justify-center rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-primary ring-1 ring-primary/40 transition hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20"
       >
-        Generar acceso
+        {triggerLabel}
       </button>
 
       {open && (
@@ -82,7 +93,7 @@ export function GenerateAccessButton({ workshopId, workshopName }: { workshopId:
               <div className="min-w-0">
                 <h2 id={titleId} className="text-lg font-semibold text-ink sm:text-xl">Generar acceso</h2>
                 <p className="mt-2 text-sm text-gray-600">
-                  Se generará un enlace de activación para <strong>{workshopName}</strong>. Compártelo con la persona responsable para que cree su cuenta.
+                  Se generará un enlace de activación para <strong>{workshopName}</strong>. Si tiene correo registrado, también se enviará por email.
                 </p>
               </div>
               <button type="button" onClick={handleClose} className="min-h-11 rounded-md px-2.5 py-1.5 text-sm font-semibold text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20">Cerrar</button>
@@ -93,6 +104,15 @@ export function GenerateAccessButton({ workshopId, workshopName }: { workshopId:
 
               {activationLink ? (
                 <div className="space-y-3">
+                {emailSent ? (
+                  <p className="text-sm font-medium text-emerald-700">
+                    El correo de acceso fue enviado correctamente.
+                  </p>
+                ) : !error ? (
+                  <p className="text-sm font-medium text-amber-700">
+                    El registro no tiene correo. Comparte el enlace manualmente.
+                  </p>
+                ) : null}
                 <label className="block text-sm font-medium text-gray-700">
                   Enlace de activación:
                 </label>
@@ -114,6 +134,14 @@ export function GenerateAccessButton({ workshopId, workshopName }: { workshopId:
                 <p className="text-sm text-gray-500">
                   El enlace expira en 7 días. Al generar uno nuevo, el anterior deja de funcionar.
                 </p>
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={handleGenerate}
+                  className="min-h-11 rounded-md bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {loading ? "Regenerando..." : "Volver a generar acceso"}
+                </button>
                 </div>
               ) : (
               <div className="flex flex-col gap-3 sm:flex-row">
@@ -123,7 +151,7 @@ export function GenerateAccessButton({ workshopId, workshopName }: { workshopId:
                   onClick={handleGenerate}
                   className="min-h-11 w-full rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                 >
-                  {loading ? "Generando..." : "Generar enlace"}
+                  {loading ? "Generando y enviando..." : "Generar y enviar acceso"}
                 </button>
                 <button
                   type="button"

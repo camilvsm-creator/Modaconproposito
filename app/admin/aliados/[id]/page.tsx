@@ -24,15 +24,15 @@ const STATUS_BADGES: Record<string, string> = {
   desactivado: "bg-red-100 text-red-700",
 };
 const STATUS_LABELS: Record<string, string> = {
-  pendiente: "Pendiente",
-  approved_pending_activation: "Por activar",
-  activo: "Activo",
-  pausado: "Pausado",
-  rechazado: "Rechazado",
-  desactivado: "Desactivado",
+  pendiente: "Pendiente de aprobación",
+  approved_pending_activation: "Postulación aprobada",
+  activo: "Cuenta activa",
+  pausado: "Cuenta pausada",
+  rechazado: "Postulación rechazada",
+  desactivado: "Aliado desactivado",
 };
 
-const ACTIVATION_BLOCKED_STATUSES = ["pendiente", "rechazado", "desactivado"];
+const ACTIVATION_BLOCKED_STATUSES = ["rechazado", "desactivado"];
 
 function getStringParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
@@ -132,7 +132,13 @@ export default async function AdminTallerDetailPage({
         actions={
           <AdminRowActions>
             {!taller.user_id && !ACTIVATION_BLOCKED_STATUSES.includes(taller.status) ? (
-              <AdminActionItem><GenerateAccessButton workshopId={taller.id} workshopName={taller.name} /></AdminActionItem>
+              <AdminActionItem>
+                <GenerateAccessButton
+                  workshopId={taller.id}
+                  workshopName={taller.name}
+                  triggerLabel={taller.status === "pendiente" ? "Aprobar y generar acceso" : "Volver a generar acceso"}
+                />
+              </AdminActionItem>
             ) : null}
             {taller.status === "desactivado" ? (
               <AdminActionItem><Modal triggerLabel="Reactivar" title="Reactivar aliado" description="Confirma la reactivación de este aliado." triggerClassName="text-green-700">
@@ -169,7 +175,15 @@ export default async function AdminTallerDetailPage({
             <InputShell label="Responsable"><p className="text-sm text-gray-700">{taller.responsible_name ?? "—"}</p></InputShell>
             <InputShell label="Estado"><span className={`inline-block rounded-md px-2.5 py-1 text-sm font-semibold ${STATUS_BADGES[taller.status]}`}>{STATUS_LABELS[taller.status]}</span></InputShell>
             <InputShell label="Categoría"><p className="text-sm text-gray-700">{ALLY_CATEGORY_LABELS[taller.category] ?? taller.category}</p></InputShell>
-            <InputShell label="Usuario"><p className="text-sm text-gray-700">{taller.user_id ? "Vinculado" : "Sin usuario"}</p></InputShell>
+            <InputShell label="Acceso">
+              <p className="text-sm font-semibold text-gray-700">
+                {taller.user_id
+                  ? "Usuario creado"
+                  : taller.status === "approved_pending_activation"
+                    ? "Usuario por crear"
+                    : "Sin usuario"}
+              </p>
+            </InputShell>
             <InputShell label="Ubicación"><p className="text-sm text-gray-700">{taller.city ?? "—"}, {taller.state}</p></InputShell>
             <InputShell label="Email"><p className="text-sm text-gray-700">{taller.email ?? "—"}</p></InputShell>
             <InputShell label="WhatsApp"><p className="text-sm text-gray-700">{taller.whatsapp || "—"}</p></InputShell>

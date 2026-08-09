@@ -1,56 +1,73 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY ?? "");
-const fromEmail = process.env.RESEND_FROM_EMAIL ?? "Promoda <no-reply@promoda.org>";
+const resendApiKey = process.env.RESEND_API_KEY;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
+const fromEmail = process.env.RESEND_FROM_EMAIL ?? "Moda con Propósito <no-reply@modaconproposito.com>";
 
-export async function sendWorkshopActivationEmail(email: string, responsibleName: string, activationLink: string) {
-  const { error } = await resend.emails.send({
-    from: fromEmail,
-    to: email,
-    subject: "Tu aliado fue aprobado — Activa tu cuenta",
-    html: `
-<table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #FBF7F3; padding: 40px 16px;">
-  <tr>
-    <td align="center">
-      <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 480px; width: 100%; background-color: #FFFFFF; border-radius: 12px; overflow: hidden;">
-        <tr>
-          <td style="background-color: #F6026B; padding: 28px 24px; text-align: center;">
-            <h1 style="color: #FFFFFF; font-family: Arial, sans-serif; font-size: 18px; font-weight: 700; margin: 0; padding: 0;">Promoda Aliados</h1>
-            <p style="color: #FFE6F0; font-family: Arial, sans-serif; font-size: 14px; margin: 8px 0 0 0;">Red de aliados textiles</p>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding: 32px 28px;">
-            <p style="color: #1F1A17; font-family: Arial, sans-serif; font-size: 16px; line-height: 1.7; margin: 0 0 16px 0;">Hola <strong>${responsibleName}</strong>,</p>
-            <p style="color: #1F1A17; font-family: Arial, sans-serif; font-size: 16px; line-height: 1.7; margin: 0 0 24px 0;">Tu aliado fue aprobado. Haz clic en el botón para activar tu cuenta y definir tu contraseña:</p>
-            <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto 28px;">
-              <tr>
-                <td style="background-color: #F6026B; border-radius: 8px; text-align: center;">
-                  <a href="${activationLink}" style="display: inline-block; padding: 14px 32px; color: #FFFFFF; font-family: Arial, sans-serif; font-size: 16px; font-weight: 700; text-decoration: none; border-radius: 8px; letter-spacing: 0.02em;">Activar mi acceso</a>
-                </td>
-              </tr>
-            </table>
-            <p style="color: #888; font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5; margin: 0 0 8px 0;">Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
-            <p style="color: #999; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.5; word-break: break-all; margin: 0;">${activationLink}</p>
-          </td>
-        </tr>
-        <tr>
-          <td style="border-top: 1px solid #EAECF0; padding: 20px 28px; text-align: center;">
-            <p style="color: #999; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.5; margin: 0;">Equipo Promoda</p>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-</table>
-    `,
-  });
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-  if (error) {
-    console.error("Error sending workshop activation email:", error);
+export async function sendAccessEmail({
+  email,
+  recipientName,
+  entityName,
+  activationLink,
+  accessType,
+}: {
+  email: string;
+  recipientName: string;
+  entityName: string;
+  activationLink: string;
+  accessType: "aliado" | "solicitante";
+}) {
+  if (!resend) return { error: "Falta configurar RESEND_API_KEY." };
+
+  const safeRecipientName = escapeHtml(recipientName);
+  const safeEntityName = escapeHtml(entityName);
+  const safeActivationLink = escapeHtml(activationLink);
+  const accessLabel = accessType === "aliado" ? "aliado" : "solicitante";
+
+  try {
+    const { error } = await resend.emails.send({
+      from: fromEmail,
+      to: email,
+      subject: `Activa tu acceso de ${accessLabel} — Moda con Propósito`,
+      text: `Hola ${recipientName}. Se generó un acceso de ${accessLabel} para ${entityName}. Actívalo y define tu contraseña desde este enlace: ${activationLink}. El enlace vence en 7 días.`,
+      html: `
+<div style="margin:0;background:#ffffff;padding:32px 16px;font-family:Arial,sans-serif;color:#1f1a17;">
+  <div style="max-width:560px;margin:0 auto;">
+    <p style="margin:0 0 24px;color:#ff0b55;font-size:18px;font-weight:700;">Moda con Propósito</p>
+    <h1 style="margin:0 0 20px;font-size:24px;line-height:1.3;">Activa tu acceso</h1>
+    <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">Hola <strong>${safeRecipientName}</strong>,</p>
+    <p style="margin:0 0 24px;font-size:16px;line-height:1.6;">Se generó un acceso de ${accessLabel} para <strong>${safeEntityName}</strong>. Usa el siguiente enlace para activar tu cuenta y definir tu contraseña.</p>
+    <p style="margin:0 0 24px;"><a href="${safeActivationLink}" style="display:inline-block;background:#ff0b55;color:#ffffff;padding:12px 20px;text-decoration:none;font-size:16px;font-weight:700;">Activar mi acceso</a></p>
+    <p style="margin:0 0 8px;color:#666666;font-size:14px;line-height:1.5;">Si el botón no funciona, copia este enlace:</p>
+    <p style="margin:0 0 24px;color:#666666;font-size:14px;line-height:1.5;word-break:break-all;">${safeActivationLink}</p>
+    <p style="margin:0;color:#666666;font-size:14px;line-height:1.5;">El enlace vence en 7 días. Si no solicitaste este acceso, puedes ignorar el mensaje.</p>
+  </div>
+</div>`,
+    });
+
+    if (error) console.error("Error sending access email:", error);
+    return { error: error?.message ?? null };
+  } catch (error) {
+    console.error("Error sending access email:", error);
+    return { error: "No se pudo conectar con el servicio de correo." };
   }
+}
 
-  return { error: error?.message ?? null };
+export function sendWorkshopActivationEmail(email: string, responsibleName: string, activationLink: string, allyName = "tu aliado") {
+  return sendAccessEmail({ email, recipientName: responsibleName, entityName: allyName, activationLink, accessType: "aliado" });
+}
+
+export function sendAidRequesterActivationEmail(email: string, contactName: string, activationLink: string, requesterName: string) {
+  return sendAccessEmail({ email, recipientName: contactName, entityName: requesterName, activationLink, accessType: "solicitante" });
 }
 
 export async function sendMensajeNotification(
@@ -64,8 +81,10 @@ export async function sendMensajeNotification(
     : tallerEmail!;
 
   const subject = emisor === "aliado"
-    ? `Mensaje de ${tallerNombre ?? "tu aliado"} — Promoda`
-    : "Nuevo mensaje de Promoda";
+    ? `Mensaje de ${tallerNombre ?? "tu aliado"} — Moda con Propósito`
+    : "Nuevo mensaje de Moda con Propósito";
+
+  if (!resend) return { error: "Falta configurar RESEND_API_KEY." };
 
   const { error } = await resend.emails.send({
     from: fromEmail,

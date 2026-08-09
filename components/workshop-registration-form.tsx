@@ -88,6 +88,22 @@ export function WorkshopRegistrationForm() {
               <option value="otro">Otro</option>
             </select>
           </InputShell>
+        </div>
+        <InputShell label="¿Qué hace o puede aportar el aliado? *">
+          <textarea
+            className={inputClassName}
+            name="whatTheyDo"
+            rows={4}
+            required
+          />
+        </InputShell>
+      </FieldGroup>
+
+      <FieldGroup
+        title="Datos de contacto"
+        description="Información para que Promoda pueda contactar a la persona responsable."
+      >
+        <div className="grid gap-4 md:grid-cols-2">
           <InputShell label="Nombre del responsable *">
             <input
               className={inputClassName}
@@ -103,6 +119,14 @@ export function WorkshopRegistrationForm() {
               required
             />
           </InputShell>
+          <InputShell label="Teléfono *">
+            <input
+              className={inputClassName}
+              name="phone"
+              type="tel"
+              required
+            />
+          </InputShell>
           <InputShell label="WhatsApp">
             <input
               className={inputClassName}
@@ -115,6 +139,14 @@ export function WorkshopRegistrationForm() {
               name="instagram"
             />
           </InputShell>
+        </div>
+      </FieldGroup>
+
+      <FieldGroup
+        title="Ubicación"
+        description="Ubicación del aliado y referencia que puede mostrarse públicamente."
+      >
+        <div className="grid gap-4 md:grid-cols-2">
           <InputShell label="Estado *">
             <input
               className={inputClassName}
@@ -140,14 +172,6 @@ export function WorkshopRegistrationForm() {
           <input
             className={inputClassName}
             name="publicLocation"
-            required
-          />
-        </InputShell>
-        <InputShell label="¿Qué hace o puede aportar el aliado? *">
-          <textarea
-            className={inputClassName}
-            name="whatTheyDo"
-            rows={4}
             required
           />
         </InputShell>

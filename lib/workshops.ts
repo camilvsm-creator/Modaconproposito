@@ -130,7 +130,7 @@ export async function getAdminWorkshopsPage({
 
   let query = admin
     .from("allies")
-    .select("id, user_id, category, name, responsible_name, city, state, status, created_at", { count: "exact" })
+    .select("id, user_id, category, name, responsible_name, email, phone, city, state, status, created_at", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
 

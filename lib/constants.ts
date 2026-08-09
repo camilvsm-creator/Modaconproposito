@@ -98,7 +98,7 @@ export const ASSIGNED_TASK_STATUS_TONES: Record<string, string> = {
 
 export const WORKSHOP_STATUS_LABELS: Record<string, string> = {
   pendiente: "Pendiente",
-  approved_pending_activation: "Por activar",
+  approved_pending_activation: "Postulación aprobada",
   activo: "Activo",
   pausado: "Pausado",
   rechazado: "Rechazado",
@@ -204,11 +204,11 @@ export const ALLY_DELIVERY_STATUSES = ["pendiente", "entregada", "recibida", "ca
 export const VOLUNTEER_STATUSES = ["postulado", "revisado", "activo", "asignado", "inactivo"] as const;
 
 export const VOLUNTEER_STATUS_LABELS: Record<string, string> = {
-  postulado: "Postulado",
-  revisado: "Revisado",
-  activo: "Activo",
-  asignado: "Asignado",
-  inactivo: "Inactivo",
+  postulado: "Pendiente de aprobación",
+  revisado: "Postulación en revisión",
+  activo: "Aprobado y disponible para asignar",
+  asignado: "Asignado a un aliado",
+  inactivo: "Postulación descartada",
 };
 
 export const VOLUNTEER_STATUS_TONES: Record<string, string> = {

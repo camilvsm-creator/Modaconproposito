@@ -46,7 +46,7 @@ export type Ally = {
 
 export type AllyListItem = Pick<
   Ally,
-  "id" | "user_id" | "category" | "name" | "responsible_name" | "city" | "state" | "status" | "created_at"
+  "id" | "user_id" | "category" | "name" | "responsible_name" | "email" | "phone" | "city" | "state" | "status" | "created_at"
 >;
 
 export type AidRequester = {

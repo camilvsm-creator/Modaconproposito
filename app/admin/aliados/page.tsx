@@ -9,6 +9,7 @@ import { GenerateAccessButton } from "@/components/generate-access-button";
 import { requireWorkshopAdminUser } from "@/lib/auth";
 import { ALLY_CATEGORIES, ALLY_CATEGORY_LABELS } from "@/lib/constants";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { formatDate } from "@/lib/utils";
 import { getAdminWorkshopsPage } from "@/lib/workshops";
 import { deactivateWorkshopAction, reactivateWorkshopAction } from "@/app/admin/aliados/actions";
 
@@ -31,8 +32,8 @@ const TABS = [
 
 const POSTULATION_STATUS_OPTIONS = [
   { value: "all", label: "Todas" },
-  { value: "pendiente", label: "Pendiente" },
-  { value: "approved_pending_activation", label: "Aprobado pendiente activación" },
+  { value: "pendiente", label: "Pendiente de aprobación" },
+  { value: "approved_pending_activation", label: "Postulación aprobada" },
 ] as const;
 
 const ACTIVE_STATUS_OPTIONS = [
@@ -53,15 +54,15 @@ const STATUS_BADGES: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  pendiente: "Pendiente",
-  approved_pending_activation: "Por activar",
-  activo: "Activo",
-  pausado: "Pausado",
-  rechazado: "Rechazado",
-  desactivado: "Desactivado",
+  pendiente: "Pendiente de aprobación",
+  approved_pending_activation: "Postulación aprobada",
+  activo: "Cuenta activa",
+  pausado: "Cuenta pausada",
+  rechazado: "Postulación rechazada",
+  desactivado: "Aliado desactivado",
 };
 
-const ACTIVATION_BLOCKED_STATUSES = ["pendiente", "rechazado", "desactivado"];
+const ACTIVATION_BLOCKED_STATUSES = ["rechazado", "desactivado"];
 
 function canGenerateAccessLink(workshop: { user_id: string | null; status: string }) {
   return !workshop.user_id && !ACTIVATION_BLOCKED_STATUSES.includes(workshop.status);
@@ -128,7 +129,7 @@ export default async function AdminAliadosPage({
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Promoda"
+        eyebrow="Moda con Propósito"
         title="Aliados"
         description="Gestiona las postulaciones, accesos y estados de los aliados de la red."
       />
@@ -181,23 +182,27 @@ export default async function AdminAliadosPage({
       {result.items.length ? (
         <div className="space-y-4">
           <AdminTableFrame>
-            <table className="admin-mobile-cards min-w-[900px] w-full table-fixed text-left text-sm">
+            <table className="admin-mobile-cards min-w-[1240px] w-full table-fixed text-left text-sm">
               <colgroup>
-                <col className="w-[25%]" />
-                <col className="w-[16%]" />
-                <col className="w-[20%]" />
                 <col className="w-[15%]" />
-                <col className="w-[16%]" />
-                <col className="w-[8%]" />
+                <col className="w-[10%]" />
+                <col className="w-[18%]" />
+                <col className="w-[20%]" />
+                <col className="w-[10%]" />
+                <col className="w-[11%]" />
+                <col className="w-[7%]" />
+                <col className="w-[9%]" />
               </colgroup>
               <thead className="border-b border-gray-200 bg-gray-50/80 text-sm font-semibold text-gray-600">
                 <tr>
                   <th className="px-4 py-3">Nombre</th>
                   <th className="px-4 py-3">Categoría</th>
-                  <th className="px-4 py-3">Responsable</th>
-                  <th className="px-4 py-3">Estado</th>
+                  <th className="px-4 py-3">Contacto</th>
                   <th className="px-4 py-3">Ubicación</th>
-                  <th className="px-4 py-3 text-right">Acciones</th>
+                  <th className="px-4 py-3">Estado del proceso</th>
+                  <th className="px-4 py-3">Acceso</th>
+                  <th className="px-4 py-3">Registro</th>
+                  <th className="px-4 py-3 text-right">Opciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -213,36 +218,58 @@ export default async function AdminAliadosPage({
                         {ALLY_CATEGORY_LABELS[w.category] ?? w.category}
                       </span>
                     </td>
-                    <td data-mobile-label="Responsable" className="px-4 py-3 align-top text-gray-700 leading-tight">{w.responsible_name ?? "—"}</td>
-                    <td data-mobile-label="Estado" className="px-4 py-3 align-top leading-tight">
-                        <span className={`inline-block rounded-md px-2.5 py-1 text-sm font-semibold ${STATUS_BADGES[w.status] || "bg-gray-100 text-gray-600"}`}>
+                    <td data-mobile-label="Contacto" className="px-4 py-3 align-top text-gray-700 leading-tight">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-ink">{w.responsible_name ?? "Sin responsable"}</p>
+                        <p className="mt-1 break-all text-sm text-gray-500">{w.email ?? "Sin correo"}</p>
+                        <p className="mt-1 text-sm text-gray-500">{w.phone ?? "Sin teléfono"}</p>
+                      </div>
+                    </td>
+                    <td data-mobile-label="Ubicación" className="px-4 py-3 align-top text-gray-600 leading-tight text-sm">{w.city ?? "—"}, {w.state}</td>
+                    <td data-mobile-label="Estado del proceso" className="px-4 py-3 align-top leading-tight">
+                      <span className={`inline-block rounded-md px-2.5 py-1 text-sm font-semibold ${STATUS_BADGES[w.status] || "bg-gray-100 text-gray-600"}`}>
                         {STATUS_LABELS[w.status] || w.status}
                       </span>
                     </td>
-                    <td data-mobile-label="Ubicación" className="px-4 py-3 align-top text-gray-600 leading-tight text-sm">{w.city ?? "—"}, {w.state}</td>
+                    <td data-mobile-label="Acceso" className="px-4 py-3 align-top leading-tight">
+                      {w.user_id ? (
+                        <span className="inline-flex rounded-md bg-green-50 px-2.5 py-1 text-sm font-semibold text-green-700">Usuario creado</span>
+                      ) : w.status === "approved_pending_activation" ? (
+                        <span className="inline-flex rounded-md bg-blue-50 px-2.5 py-1 text-sm font-semibold text-blue-700">Usuario por crear</span>
+                      ) : (
+                        <span className="inline-flex rounded-md bg-gray-100 px-2.5 py-1 text-sm font-semibold text-gray-700">Sin usuario</span>
+                      )}
+                    </td>
+                    <td data-mobile-label="Registro" className="px-4 py-3 align-top whitespace-nowrap text-sm text-gray-500">{formatDate(w.created_at)}</td>
                     <td data-mobile="actions" data-mobile-label="Acciones" className="px-4 py-3 text-right align-top leading-tight">
-                      <AdminRowActions>
+                      <AdminRowActions label={`Opciones de ${w.name}`}>
                         <Link
                           href={`/admin/aliados/${w.id}`}
                           className="block w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
                         >
-                          Detalle
+                          Ver información completa
                         </Link>
                         {canGenerateAccessLink(w) && (
-                          <AdminActionItem><GenerateAccessButton workshopId={w.id} workshopName={w.name} /></AdminActionItem>
+                          <AdminActionItem>
+                            <GenerateAccessButton
+                              workshopId={w.id}
+                              workshopName={w.name}
+                              triggerLabel={w.status === "pendiente" ? "Aprobar y generar acceso" : "Volver a generar acceso"}
+                            />
+                          </AdminActionItem>
                         )}
                   {w.status === "desactivado" ? (
                     <AdminActionItem>
                       <form action={reactivateAction}>
                         <input type="hidden" name="id" value={w.id} />
-                        <button type="submit" className="text-green-700">Reactivar</button>
+                        <button type="submit" className="text-green-700">Reactivar aliado</button>
                       </form>
                     </AdminActionItem>
                   ) : w.status === "activo" || w.status === "pausado" ? (
                     <AdminActionItem>
                       <form action={deactivateAction}>
                         <input type="hidden" name="id" value={w.id} />
-                        <button type="submit" className="text-red-700">Desactivar</button>
+                        <button type="submit" className="text-red-700">Desactivar aliado</button>
                       </form>
                     </AdminActionItem>
                   ) : null}

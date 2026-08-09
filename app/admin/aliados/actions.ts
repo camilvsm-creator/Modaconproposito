@@ -11,7 +11,30 @@ import {
   getAdminWorkshopById,
 } from "@/lib/workshops";
 
-type Result = { error?: string; activationLink?: string | null; allyId?: string };
+type Result = { error?: string; activationLink?: string | null; allyId?: string; emailSent?: boolean };
+
+async function sendGeneratedAccessEmail(
+  workshop: { email: string | null; responsible_name: string | null; name: string },
+  activationLink: string,
+): Promise<{ error: string | null; emailSent: boolean }> {
+  if (!workshop.email) return { error: null, emailSent: false };
+
+  try {
+    const { error } = await sendWorkshopActivationEmail(
+      workshop.email,
+      workshop.responsible_name ?? workshop.name,
+      activationLink,
+      workshop.name,
+    );
+
+    return error
+      ? { error: `No se pudo enviar el correo de acceso: ${error}`, emailSent: false }
+      : { error: null, emailSent: true };
+  } catch (error) {
+    console.error("Error sending generated ally access email:", error);
+    return { error: "No se pudo enviar el correo de acceso. El enlace sigue disponible para copiar.", emailSent: false };
+  }
+}
 
 export async function updateWorkshopStatusAction(formData: FormData): Promise<Result> {
   await requireWorkshopAdminUser();
@@ -66,12 +89,14 @@ export async function approveWorkshopAction(formData: FormData): Promise<Result>
   if (error) return { error: error.message };
 
   const { activationLink } = await createWorkshopActivationToken(id, user.id);
+  const emailResult = await sendGeneratedAccessEmail(workshop, activationLink);
 
   revalidatePath("/admin/aliados");
   revalidatePath("/admin/aliados");
   revalidatePath(`/admin/aliados/${id}`);
   revalidatePath(`/admin/aliados/${id}`);
-  return { activationLink };
+  if (emailResult.error) return { error: emailResult.error, activationLink, emailSent: false };
+  return { activationLink, emailSent: emailResult.emailSent };
 }
 
 export async function sendWorkshopActivationEmailAction(formData: FormData): Promise<Result> {
@@ -95,6 +120,7 @@ export async function sendWorkshopActivationEmailAction(formData: FormData): Pro
     workshop.email,
     workshop.responsible_name ?? workshop.name,
     activationLink,
+    workshop.name,
   );
 
   if (error) return { error: `Error al enviar el correo: ${error}` };
@@ -117,16 +143,28 @@ export async function generateWorkshopActivationLinkAction(formData: FormData): 
     return { error: "Este aliado ya tiene un usuario vinculado.", activationLink: null };
   }
 
-  const blockedStatuses = ["pendiente", "rechazado", "desactivado"];
+  const blockedStatuses = ["rechazado", "desactivado"];
   if (blockedStatuses.includes(workshop.status)) {
     return { error: "No puedes generar un link para un aliado en este estado.", activationLink: null };
   }
 
+  if (workshop.status === "pendiente") {
+    const admin = createSupabaseAdminClient();
+    const { error } = await admin.from("allies").update({
+      status: "approved_pending_activation",
+      approved_by: user.id,
+      approved_at: new Date().toISOString(),
+    }).eq("id", workshopId);
+    if (error) return { error: error.message, activationLink: null };
+  }
+
   const { activationLink } = await createWorkshopActivationToken(workshopId, user.id);
+  const emailResult = await sendGeneratedAccessEmail(workshop, activationLink);
 
   revalidatePath(`/admin/aliados/${workshopId}`);
   revalidatePath(`/admin/aliados/${workshopId}`);
-  return { activationLink };
+  if (emailResult.error) return { error: emailResult.error, activationLink, emailSent: false };
+  return { activationLink, emailSent: emailResult.emailSent };
 }
 
 export async function generateAccessLinkAction(formData: FormData): Promise<Result> {
@@ -142,18 +180,30 @@ export async function generateAccessLinkAction(formData: FormData): Promise<Resu
     return { error: "Este aliado ya tiene un usuario vinculado.", activationLink: null };
   }
 
-  const blockedStatuses = ["pendiente", "rechazado", "desactivado"];
+  const blockedStatuses = ["rechazado", "desactivado"];
   if (blockedStatuses.includes(workshop.status)) {
     return { error: "No puedes generar acceso para un aliado en este estado.", activationLink: null };
   }
 
+  if (workshop.status === "pendiente") {
+    const admin = createSupabaseAdminClient();
+    const { error } = await admin.from("allies").update({
+      status: "approved_pending_activation",
+      approved_by: user.id,
+      approved_at: new Date().toISOString(),
+    }).eq("id", workshopId);
+    if (error) return { error: error.message, activationLink: null };
+  }
+
   const { activationLink } = await createWorkshopActivationToken(workshopId, user.id);
+  const emailResult = await sendGeneratedAccessEmail(workshop, activationLink);
 
   revalidatePath("/admin/aliados");
   revalidatePath("/admin/aliados");
   revalidatePath(`/admin/aliados/${workshopId}`);
   revalidatePath(`/admin/aliados/${workshopId}`);
-  return { activationLink };
+  if (emailResult.error) return { error: emailResult.error, activationLink, emailSent: false };
+  return { activationLink, emailSent: emailResult.emailSent };
 }
 
 export async function updateWorkshopAction(formData: FormData): Promise<Result> {
@@ -438,22 +488,21 @@ export async function createWorkshopAction(formData: FormData): Promise<Result> 
 
   const { activationLink } = await createWorkshopActivationToken(workshop.id, user.id);
 
-  const { error: emailError } = await sendWorkshopActivationEmail(
-    email,
-    responsibleName,
+  const emailResult = await sendGeneratedAccessEmail(
+    { email, responsible_name: responsibleName, name },
     activationLink,
   );
 
-  if (emailError) {
+  if (emailResult.error) {
     revalidatePath("/admin/aliados");
     revalidatePath("/admin/aliados");
-    return { error: `Aliado creado, pero no se pudo enviar el correo: ${emailError}`, activationLink, allyId: workshop.id };
+    return { error: `Aliado creado, pero no se pudo enviar el correo: ${emailResult.error}`, activationLink, allyId: workshop.id, emailSent: false };
   }
 
   revalidatePath("/admin/aliados");
   revalidatePath("/admin/aliados");
   revalidatePath("/aliados");
-  return { activationLink, allyId: workshop.id };
+  return { activationLink, allyId: workshop.id, emailSent: emailResult.emailSent };
 }
 
 export async function getAllyOptionsAction(): Promise<Array<{ id: string; name: string }>> {

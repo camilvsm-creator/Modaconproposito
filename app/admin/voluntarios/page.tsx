@@ -23,6 +23,14 @@ const ROLE_BADGES: Record<string, string> = {
   VOLUNTARIA: "bg-green-100 text-green-700",
 };
 
+const VOLUNTEER_STATUS_DESCRIPTIONS: Record<string, string> = {
+  postulado: "Registro recibido; el equipo todavía debe aprobarlo.",
+  revisado: "El equipo está revisando la postulación antes de decidir.",
+  activo: "Fue aprobado y está disponible para asignarlo a un aliado.",
+  asignado: "Ya está vinculado con un aliado.",
+  inactivo: "La postulación fue descartada o el voluntario fue desactivado.",
+};
+
 function getStringParam(params: Record<string, string | string[] | undefined>, key: string) {
   const value = params[key];
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
@@ -76,7 +84,7 @@ export default async function AdminVoluntariosPage({
         <AdminPageHeader
           eyebrow="Cuenta"
           title="Voluntarios"
-          description="Voluntarios asignados a tu aliado por el equipo de Promoda."
+          description="Voluntarios asignados a tu aliado por el equipo de Moda con Propósito."
         />
 
         <AdminRecordsSummary total={allyAssignments?.total ?? 0} />
@@ -90,7 +98,7 @@ export default async function AdminVoluntariosPage({
                     <th className="px-4 py-2.5">Nombre</th>
                     <th className="px-4 py-2.5">Rol</th>
                     <th className="px-4 py-2.5">Telefono</th>
-                    <th className="px-4 py-2.5">Estado</th>
+                    <th className="px-4 py-2.5">Estado de la asignación</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -99,7 +107,9 @@ export default async function AdminVoluntariosPage({
                       <td data-mobile="primary" data-mobile-label="Nombre" className="px-4 py-2.5 font-semibold text-ink">{assignment.name}</td>
                       <td data-mobile-label="Rol" className="px-4 py-2.5 text-gray-700">{assignment.role ?? "—"}</td>
                       <td data-mobile-label="Teléfono" className="px-4 py-2.5 text-gray-700">{assignment.phone ? formatPublicPhone(assignment.phone) : "—"}</td>
-                      <td data-mobile-label="Estado" className="px-4 py-2.5 text-gray-700">{VOLUNTEER_STATUS_LABELS[assignment.status] ?? assignment.status}</td>
+                      <td data-mobile-label="Estado de la asignación" className="px-4 py-2.5 text-gray-700">
+                        <span className="inline-flex rounded-md bg-green-50 px-2.5 py-1 text-sm font-semibold text-green-700">Asignación activa</span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -127,7 +137,7 @@ export default async function AdminVoluntariosPage({
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Promoda"
+        eyebrow="Moda con Propósito"
         title="Voluntarios"
         description="Asigna voluntarios a aliados y consulta quiénes ya están asignados o disponibles."
       />
@@ -135,7 +145,7 @@ export default async function AdminVoluntariosPage({
       <AdminTabs
         tabs={[
           { href: "/admin/voluntarios?tab=postulaciones", label: "Postulaciones", count: tab === "postulaciones" ? result.total : undefined, active: tab === "postulaciones" },
-          { href: "/admin/voluntarios?tab=activos", label: "Activos", count: tab === "activos" ? result.total : undefined, active: tab === "activos" },
+          { href: "/admin/voluntarios?tab=activos", label: "Asignaciones", count: tab === "activos" ? result.total : undefined, active: tab === "activos" },
         ]}
       />
 
@@ -153,7 +163,74 @@ export default async function AdminVoluntariosPage({
         <SectionCard className="overflow-hidden">
           <div className="border-b border-gray-200 px-6 py-4"><h2 className="text-lg font-semibold text-ink">Postulaciones recibidas</h2></div>
           {result.items.length ? (
-            <div className="overflow-x-auto"><table className="admin-mobile-cards min-w-[980px] w-full text-left text-sm"><thead className="bg-gray-50/80 text-sm font-semibold text-gray-600"><tr><th className="px-4 py-2.5">Nombre</th><th className="px-4 py-2.5">Contacto</th><th className="px-4 py-2.5">Experiencia</th><th className="px-4 py-2.5">Estado</th><th className="px-4 py-2.5">Acciones</th></tr></thead><tbody className="divide-y divide-gray-200">{result.items.map((volunteer) => <tr key={volunteer.id}><td data-mobile="primary" data-mobile-label="Nombre" className="px-4 py-3 align-top font-semibold text-ink">{volunteer.name}<p className="text-sm font-normal text-gray-500">{formatDate(volunteer.created_at)}</p></td><td data-mobile-label="Contacto" className="px-4 py-3 align-top text-gray-700">{volunteer.email ?? "—"}<br />{volunteer.phone ?? "—"}</td><td data-mobile-label="Experiencia" className="px-4 py-3 align-top text-gray-700"><p>{volunteer.skills ?? "—"}</p><p className="mt-1 whitespace-pre-wrap text-sm text-gray-500">{volunteer.notes ?? ""}</p></td><td data-mobile-label="Estado" className="px-4 py-3 align-top text-gray-700"><span className={`inline-flex rounded-md px-2.5 py-1 text-sm font-semibold ${VOLUNTEER_STATUS_TONES[volunteer.status] ?? "bg-gray-100 text-gray-600"}`}>{VOLUNTEER_STATUS_LABELS[volunteer.status] ?? volunteer.status}</span></td><td data-mobile="actions" data-mobile-label="Acciones" className="px-4 py-3 align-top"><AdminRowActions><AdminActionItem><form action={updateVolunteerStatusAction}><input type="hidden" name="volunteerId" value={volunteer.id} /><input type="hidden" name="status" value="activo" /><button className="text-primary" type="submit">Activar</button></form></AdminActionItem><AdminActionItem><form action={updateVolunteerStatusAction}><input type="hidden" name="volunteerId" value={volunteer.id} /><input type="hidden" name="status" value="inactivo" /><button className="text-danger" type="submit">Descartar</button></form></AdminActionItem></AdminRowActions></td></tr>)}</tbody></table></div>
+            <div className="overflow-x-auto">
+              <table className="admin-mobile-cards min-w-[1180px] w-full text-left text-sm">
+                <thead className="bg-gray-50/80 text-sm font-semibold text-gray-600">
+                  <tr>
+                    <th className="px-4 py-2.5">Voluntario</th>
+                    <th className="px-4 py-2.5">Contacto</th>
+                    <th className="px-4 py-2.5">Experiencia</th>
+                    <th className="px-4 py-2.5">Estado del proceso</th>
+                    <th className="px-4 py-2.5">Acceso</th>
+                    <th className="px-4 py-2.5 text-right">Opciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {result.items.map((volunteer) => (
+                    <tr key={volunteer.id} className="transition-colors hover:bg-gray-50">
+                      <td data-mobile="primary" data-mobile-label="Voluntario" className="px-4 py-3 align-top font-semibold text-ink">
+                        {volunteer.name}
+                        <p className="mt-1 text-sm font-normal text-gray-500">Recibido: {formatDate(volunteer.created_at)}</p>
+                      </td>
+                      <td data-mobile-label="Contacto" className="px-4 py-3 align-top text-gray-700">
+                        <div className="min-w-0">
+                          <p className="break-all">{volunteer.email ?? "Sin correo"}</p>
+                          <p className="mt-1">{volunteer.phone ? formatPublicPhone(volunteer.phone) : "Sin teléfono"}</p>
+                        </div>
+                      </td>
+                      <td data-mobile-label="Experiencia" className="px-4 py-3 align-top text-gray-700">
+                        <div className="min-w-0">
+                          <p>{volunteer.skills ?? "Sin experiencia indicada"}</p>
+                          {volunteer.notes ? <p className="mt-1 whitespace-pre-wrap break-words text-sm text-gray-500">{volunteer.notes}</p> : null}
+                        </div>
+                      </td>
+                      <td data-mobile-label="Estado del proceso" className="px-4 py-3 align-top text-gray-700">
+                        <div className="min-w-0">
+                          <span className={`inline-flex rounded-md px-2.5 py-1 text-sm font-semibold ${VOLUNTEER_STATUS_TONES[volunteer.status] ?? "bg-gray-100 text-gray-600"}`}>
+                            {VOLUNTEER_STATUS_LABELS[volunteer.status] ?? volunteer.status}
+                          </span>
+                          <p className="mt-2 text-sm leading-5 text-gray-500">{VOLUNTEER_STATUS_DESCRIPTIONS[volunteer.status] ?? "Consulta el registro para conocer su estado."}</p>
+                        </div>
+                      </td>
+                      <td data-mobile-label="Acceso" className="px-4 py-3 align-top text-gray-700">
+                        <div className="min-w-0">
+                          <span className="inline-flex rounded-md bg-gray-100 px-2.5 py-1 text-sm font-semibold text-gray-700">Sin cuenta de usuario</span>
+                          <p className="mt-2 text-sm leading-5 text-gray-500">Los voluntarios no inician sesión en el sistema.</p>
+                        </div>
+                      </td>
+                      <td data-mobile="actions" data-mobile-label="Opciones" className="px-4 py-3 text-right align-top">
+                        <AdminRowActions label={`Opciones de ${volunteer.name}`}>
+                          <AdminActionItem>
+                            <form action={updateVolunteerStatusAction}>
+                              <input type="hidden" name="volunteerId" value={volunteer.id} />
+                              <input type="hidden" name="status" value="activo" />
+                              <button className="text-primary" type="submit">Aprobar voluntario</button>
+                            </form>
+                          </AdminActionItem>
+                          <AdminActionItem>
+                            <form action={updateVolunteerStatusAction}>
+                              <input type="hidden" name="volunteerId" value={volunteer.id} />
+                              <input type="hidden" name="status" value="inactivo" />
+                              <button className="text-danger" type="submit">Descartar postulación</button>
+                            </form>
+                          </AdminActionItem>
+                        </AdminRowActions>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : <div className="p-6"><EmptyState title="Sin postulaciones pendientes" description="Las nuevas postulaciones aparecerán aquí para revisarlas." /></div>}
         </SectionCard>
       ) : null}
@@ -175,7 +252,8 @@ export default async function AdminVoluntariosPage({
                   <th className="px-4 py-2.5">Telefono</th>
                   <th className="px-4 py-2.5">Instagram</th>
                   <th className="px-4 py-2.5">Asignado</th>
-                  <th className="px-4 py-2.5">Acciones</th>
+                  <th className="px-4 py-2.5">Estado de la asignación</th>
+                  <th className="px-4 py-2.5 text-right">Opciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -195,7 +273,10 @@ export default async function AdminVoluntariosPage({
                     <td data-mobile-label="Teléfono" className="px-4 py-2.5 align-top text-gray-700">{assignment.phone ? formatPublicPhone(assignment.phone) : "—"}</td>
                     <td data-mobile="hidden" data-mobile-label="Instagram" className="px-4 py-2.5 align-top text-gray-700">{assignment.instagram ? `@${assignment.instagram}` : "—"}</td>
                     <td data-mobile-label="Asignado" className="px-4 py-2.5 align-top text-gray-500">{assignment.assigned_at ? formatDate(assignment.assigned_at) : "—"}</td>
-                    <td data-mobile="actions" data-mobile-label="Acciones" className="px-4 py-2.5 align-top"><form action={removeVolunteerAssignmentAction}><input type="hidden" name="assignmentId" value={assignment.id} /><input type="hidden" name="volunteerId" value={assignment.volunteer_id ?? ""} /><button className="text-sm font-semibold text-gray-600 hover:text-red-600" type="submit">Quitar</button></form></td>
+                    <td data-mobile-label="Estado de la asignación" className="px-4 py-2.5 align-top">
+                      <span className="inline-flex rounded-md bg-green-50 px-2.5 py-1 text-sm font-semibold text-green-700">Asignación activa</span>
+                    </td>
+                    <td data-mobile="actions" data-mobile-label="Opciones" className="px-4 py-2.5 text-right align-top"><form action={removeVolunteerAssignmentAction}><input type="hidden" name="assignmentId" value={assignment.id} /><input type="hidden" name="volunteerId" value={assignment.volunteer_id ?? ""} /><button className="text-sm font-semibold text-gray-600 hover:text-red-600" type="submit">Quitar asignación</button></form></td>
                   </tr>
                 ))}
               </tbody>

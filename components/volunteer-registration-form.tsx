@@ -76,8 +76,8 @@ export function VolunteerRegistrationForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <FieldGroup
-        title="Datos personales"
-        description="Información básica de contacto."
+        title="Datos de contacto"
+        description="Información para que Promoda pueda contactarte."
       >
         <div className="grid gap-4 md:grid-cols-2">
           <InputShell label="Nombre completo *">
@@ -91,8 +91,8 @@ export function VolunteerRegistrationForm() {
               required
             />
           </InputShell>
-          <InputShell label="Teléfono">
-            <input className={inputClassName} name="phone" type="tel" />
+          <InputShell label="Teléfono *">
+            <input className={inputClassName} name="phone" type="tel" required />
           </InputShell>
           <InputShell label="WhatsApp">
             <input className={inputClassName} name="whatsapp" type="tel" />

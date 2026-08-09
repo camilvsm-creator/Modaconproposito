@@ -13,6 +13,7 @@ export async function submitWorkshopRegistration(formData: FormData): Promise<Re
   const category = String(formData.get("category") || "taller").trim();
   const responsibleName = String(formData.get("responsibleName") || "").trim();
   const email = String(formData.get("email") || "").trim().toLowerCase();
+  const phone = String(formData.get("phone") || "").trim();
   const whatsapp = String(formData.get("whatsapp") || "").trim();
   const instagram = String(formData.get("instagram") || "").trim();
   const state = String(formData.get("state") || "").trim();
@@ -30,6 +31,7 @@ export async function submitWorkshopRegistration(formData: FormData): Promise<Re
   if (!["academia", "taller", "escuela", "otro"].includes(category)) return { success: false, error: "La categoría del aliado no es válida." };
   if (!responsibleName) return { success: false, error: "El nombre del responsable es obligatorio." };
   if (!email || !email.includes("@")) return { success: false, error: "Correo electrónico inválido." };
+  if (!phone) return { success: false, error: "El teléfono es obligatorio." };
   if (!state) return { success: false, error: "El estado es obligatorio." };
   if (!city) return { success: false, error: "La ciudad es obligatoria." };
   if (!publicLocation) return { success: false, error: "La zona o referencia pública es obligatoria." };
@@ -48,6 +50,7 @@ export async function submitWorkshopRegistration(formData: FormData): Promise<Re
     slug,
     responsible_name: responsibleName,
     email,
+    phone,
     whatsapp: whatsapp || null,
     instagram: instagram || null,
     state,
