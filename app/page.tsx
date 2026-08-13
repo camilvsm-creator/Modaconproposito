@@ -6,7 +6,7 @@ import { ArrowUpRight, HeartHandshake, PackageCheck, Scissors } from "lucide-rea
 import { ALLY_CATEGORY_LABELS } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: "Promoda — Red de Aliados Verificados",
+  title: "Moda con Propósito — Red de Aliados Verificados",
 };
 
 const galleryImages = [
@@ -85,10 +85,7 @@ export default function NuestraMisionPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid min-h-[540px] items-center gap-10 py-11 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 lg:py-14">
             <div className="relative z-10 max-w-2xl">
-              <p className="text-sm font-black uppercase tracking-[0.2em] text-[#FF91BA]">
-                Aliados Verificados
-              </p>
-              <h1 className="mt-4 text-4xl font-black leading-[0.98] tracking-[-0.06em] sm:text-5xl lg:text-6xl">
+              <h1 className="text-4xl font-black leading-[0.98] tracking-[-0.06em] sm:text-5xl lg:text-6xl">
                 Nuestra misión
               </h1>
               <h2 className="mt-5 max-w-xl text-xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-2xl">
@@ -310,7 +307,7 @@ export default function NuestraMisionPage() {
             {Object.entries(ALLY_CATEGORY_LABELS).map(([value, label]) => (
               <article key={value} className="group rounded-[2rem] border border-stone-200 bg-[#F7F2EF] p-6 transition hover:-translate-y-1 hover:border-[#F6026B]/50">
                 <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F6026B]">{label}</p>
-                <p className="mt-4 text-sm leading-6 text-stone-600">Aliados que pueden sumarse a tareas, producción y apoyo textil coordinado por Promoda.</p>
+                <p className="mt-4 text-sm leading-6 text-stone-600">Aliados que pueden sumarse a tareas, producción y apoyo textil coordinado por Moda con Propósito.</p>
                 <ArrowUpRight className="mt-8 h-5 w-5 text-[#C00253] transition group-hover:translate-x-1 group-hover:-translate-y-1" />
               </article>
             ))}

@@ -10,7 +10,7 @@ import { SectionCard } from "@/components/ui";
 import { Download, Scissors } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Patrones — Promoda",
+  title: "Patrones — Moda con Propósito",
 };
 
 function pageHref(category?: string) {

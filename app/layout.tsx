@@ -19,7 +19,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
-  title: "Promoda",
+  title: "Moda con Propósito",
   description: "Red de aliados, voluntarios, colaboradores y patrones estandarizados.",
   icons: {
     icon: [{ url: "/favicon.ico", sizes: "any" }],

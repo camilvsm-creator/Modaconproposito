@@ -11,7 +11,7 @@ import { getPublicAlliesPage } from "@/lib/workshops";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Aliados — Promoda",
+  title: "Aliados — Moda con Propósito",
 };
 
 const ALLIES_PER_PAGE = 12;
@@ -68,18 +68,15 @@ export default async function AlliesPage({
       <section className="full-bleed border-t border-stone-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="max-w-3xl space-y-4">
-            <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F6026B]">
-              Red de aliados verificados
-            </p>
             <h1 className="text-3xl font-black leading-[1.05] tracking-[-0.03em] text-ink sm:text-4xl">
               Academias, talleres, escuelas y aliados textiles
             </h1>
             <p className="text-base leading-7 text-stone-700">
-              Espacio para visibilizar aliados de Promoda que participan en tareas de confección,
+              Espacio para visibilizar aliados de Moda con Propósito que participan en tareas de confección,
               formación, clasificación, reparación y apoyo textil.
             </p>
             <p className="text-sm text-stone-400">
-              Cada aliado es revisado por el equipo Promoda antes de publicarse.
+              Cada aliado es revisado por el equipo Moda con Propósito antes de publicarse.
             </p>
             <div className="flex flex-wrap gap-3 pt-2">
               <LinkButton href="/registro" className="bg-[#F6026B] text-white hover:bg-[#C00253]">

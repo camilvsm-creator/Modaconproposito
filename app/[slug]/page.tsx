@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: workshop.public_name_allowed ? workshop.name : "Aliado Promoda",
+    title: workshop.public_name_allowed ? workshop.name : "Aliado Moda con Propósito",
     description: workshop.what_they_do?.slice(0, 160) ?? "Aliado de confección y apoyo textil.",
   };
 }
@@ -42,7 +42,7 @@ export default async function WorkshopDetailPage({ params }: Props) {
 
   const needs = await getPublicWorkshopNeeds(workshop.id);
   const photos = await getPublicWorkshopPhotos(workshop.id);
-  const name = workshop.public_name_allowed ? workshop.name : "Aliado Promoda";
+  const name = workshop.public_name_allowed ? workshop.name : "Aliado Moda con Propósito";
 
   return (
     <div className="full-bleed border-t border-stone-200 bg-stone-50">
@@ -72,9 +72,6 @@ export default async function WorkshopDetailPage({ params }: Props) {
               <div className="min-w-0 flex-1 space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1">
-                    <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F6026B]">
-                      Aliado Promoda
-                    </p>
                     <h1 className="text-2xl font-black tracking-[-0.03em] text-ink sm:text-3xl">
                       {name}
                     </h1>

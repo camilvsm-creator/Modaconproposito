@@ -77,7 +77,7 @@ export function VolunteerRegistrationForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       <FieldGroup
         title="Datos de contacto"
-        description="Información para que Promoda pueda contactarte."
+        description="Información para que Moda con Propósito pueda contactarte."
       >
         <div className="grid gap-4 md:grid-cols-2">
           <InputShell label="Nombre completo *">
@@ -156,7 +156,7 @@ export function VolunteerRegistrationForm() {
             placeholder="Describe tu experiencia, habilidades y cómo puedes contribuir..."
           />
         </InputShell>
-        <InputShell label="¿Cómo te enteraste de Promoda?">
+        <InputShell label="¿Cómo te enteraste de Moda con Propósito?">
           <select className={inputClassName} name="howDidYouFindOut" defaultValue="">
             <option value="" disabled>
               Selecciona...

@@ -101,7 +101,7 @@ export function WorkshopRegistrationForm() {
 
       <FieldGroup
         title="Datos de contacto"
-        description="Información para que Promoda pueda contactar a la persona responsable."
+        description="Información para que Moda con Propósito pueda contactar a la persona responsable."
       >
         <div className="grid gap-4 md:grid-cols-2">
           <InputShell label="Nombre del responsable *">
