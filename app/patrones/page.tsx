@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   title: "Patrones — Moda con Propósito",
 };
 
+export const revalidate = 300;
+
 function pageHref(category?: string) {
   const params = new URLSearchParams();
   if (category) params.set("category", category);
@@ -45,7 +47,7 @@ export default async function PatronesPage({
               Patrones estandarizados
             </h1>
             <p className="text-base leading-7 text-stone-700">
-              Descargá patrones de costura estandarizados para confeccionar
+              Descarga patrones de costura estandarizados para confeccionar
               prendas y artículos útiles para personas afectadas por el
               terremoto. Todos los patrones son revisados y aprobados por
               nuestro equipo.
@@ -112,7 +114,7 @@ function CategoryView({
     return (
       <EmptyState
         title="No hay patrones en esta categoría."
-        description="Probá seleccionar otra categoría."
+        description="Prueba seleccionar otra categoría."
       />
     );
   }

@@ -249,6 +249,7 @@ export type CartucheraDonation = {
   help_type: string;
   description: string;
   quantity: string | null;
+  initiative: string | null;
   created_at: string;
 };
 

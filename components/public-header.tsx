@@ -9,7 +9,7 @@ const NAV_LINKS = [
   { href: "/aliados", label: "Aliados" },
   { href: "/necesidades", label: "Necesidades" },
   { href: "/patrones", label: "Patrones" },
-  { href: "/adopta-una-cartuchera", label: "Adopta una cartuchera" },
+  { href: "/iniciativas", label: "Iniciativas" },
 ];
 
 export function PublicHeader() {

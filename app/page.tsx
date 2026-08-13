@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { ArrowUpRight, HeartHandshake, PackageCheck, Scissors } from "lucide-react";
 
 import { ALLY_CATEGORY_LABELS } from "@/lib/constants";
+import { ACTIVE_INITIATIVES } from "@/lib/iniciativas";
 
 export const metadata: Metadata = {
   title: "Moda con Propósito — Red de Aliados Verificados",
@@ -338,50 +339,45 @@ export default function NuestraMisionPage() {
       </section>
 
       <section className="bg-[#201923] px-4 py-20 text-white sm:px-6 lg:px-8 lg:py-28">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-20">
-          <div className="relative min-h-[440px] overflow-hidden rounded-[2rem] bg-[#F6026B]">
-            <Image
-              src={galleryImages[4].src}
-              alt={galleryImages[4].alt}
-              fill
-              sizes="(max-width: 1024px) 100vw, 45vw"
-              className="object-cover"
-            />
-          </div>
-          <div>
-            <p className="text-sm font-black uppercase tracking-[0.2em] text-[#FF91BA]">Tu Cartera, Mi Refugio</p>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-white/75 sm:text-lg">
-              Un bolso preparado con cariño para personas afectadas por el terremoto. Podés sumarte donando materiales, haciendo un aporte económico o participando como voluntario.
-            </p>
-            <div className="mt-8 max-w-2xl text-sm leading-7 text-white/75">
-              <p className="font-bold text-white">¿Qué lleva la cartuchera?</p>
-              <ul className="mt-2 list-disc pl-5">
-                <li>Ropa interior nueva</li>
-                <li>Maquillaje y labiales nuevos</li>
-                <li>Productos de higiene personal</li>
-                <li>Una carta escrita a mano</li>
-              </ul>
-              <p className="mt-5 font-bold text-white">¿Qué puedes donar?</p>
-              <p className="mt-2 font-bold text-white/80">Neceseres:</p>
-              <ul className="list-disc pl-5">
-                <li>Tela: Vinil espejo estampado</li>
-                <li>Agujas número 14 punta de bola</li>
-                <li>Cierre de chaqueta de 40cm color rosa</li>
-              </ul>
-              <p className="mt-3 font-bold text-white/80">Pantis o boxers:</p>
-              <ul className="list-disc pl-5">
-                <li>Sesgo elástico tamaño mediano (blanco o rosa)</li>
-                <li>Elástica ancha para boxer</li>
-                <li>Telas: franela pijamera, microdurazno est, microdurazno heavy</li>
-              </ul>
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-[#FF91BA]">Iniciativas</p>
+              <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] text-white sm:text-5xl">
+                Súmate a una iniciativa
+              </h2>
             </div>
             <Link
-              href="/adopta-una-cartuchera"
-              className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#F6026B] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#C00253]"
+              href="/iniciativas"
+              className="inline-flex items-center gap-2 text-sm font-bold text-[#FF91BA] transition hover:text-white"
             >
-              Quiero sumarme
+              Ver todas las iniciativas
               <ArrowUpRight className="h-4 w-4" />
             </Link>
+          </div>
+          <div className="mt-10 grid gap-5 lg:grid-cols-2">
+            {ACTIVE_INITIATIVES.map((initiative) => (
+              <Link
+                key={initiative.slug}
+                href={`/iniciativas#${initiative.slug}`}
+                className="group rounded-[2rem] border border-white/15 bg-white/5 p-7 transition hover:border-[#F6026B]/60 hover:bg-white/10 sm:p-8"
+              >
+                <span className="text-3xl">{initiative.emoji}</span>
+                <h3 className="mt-5 text-2xl font-black leading-tight text-white">
+                  {initiative.name}
+                </h3>
+                <p className="mt-1 text-sm font-bold text-[#FF91BA]">
+                  {initiative.tagline}
+                </p>
+                <p className="mt-3 line-clamp-3 text-sm leading-6 text-white/70">
+                  {initiative.description[0]}
+                </p>
+                <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#FF91BA] transition group-hover:text-white">
+                  Sumarme
+                  <ArrowUpRight className="h-4 w-4" />
+                </span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

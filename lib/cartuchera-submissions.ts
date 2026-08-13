@@ -6,8 +6,9 @@ import { createSupabasePublicClient } from "@/lib/supabase/public";
 
 type Result = { success: true } | { success: false; error: string };
 
-export async function submitCartucheraDonation(
+export async function submitInitiativeHelp(
   formData: FormData,
+  initiative: string,
 ): Promise<Result> {
   const donorName = String(formData.get("donorName") || "").trim();
   const donorEmail = String(formData.get("donorEmail") || "").trim();
@@ -21,7 +22,7 @@ export async function submitCartucheraDonation(
     return { success: false, error: "Correo electrónico inválido." };
   if (!helpType) return { success: false, error: "Selecciona el tipo de ayuda." };
   if (!description)
-    return { success: false, error: "Contanos cómo querés ayudar." };
+    return { success: false, error: "Cuéntanos cómo quieres ayudar." };
 
   const supabase = createSupabasePublicClient();
 
@@ -32,6 +33,7 @@ export async function submitCartucheraDonation(
     help_type: helpType,
     description,
     quantity: quantity || null,
+    initiative,
   });
 
   if (error) {
@@ -41,6 +43,6 @@ export async function submitCartucheraDonation(
     };
   }
 
-  revalidatePath("/adopta-una-cartuchera");
+  revalidatePath("/iniciativas");
   return { success: true };
 }

@@ -32,7 +32,7 @@ export async function submitVolunteerRegistration(
   if (!availability)
     return { success: false, error: "Selecciona tu disponibilidad." };
   if (!experienceDescription)
-    return { success: false, error: "Contanos sobre tu experiencia." };
+    return { success: false, error: "Cuéntanos sobre tu experiencia." };
 
   const supabase = createSupabasePublicClient();
 

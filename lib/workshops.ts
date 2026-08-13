@@ -826,7 +826,7 @@ export async function getAdminCartucheraDonationsPage({
 
   const { data, count, error } = await admin
     .from("cartuchera_donations")
-    .select("id, donor_name, donor_email, donor_phone, help_type, description, quantity, created_at", { count: "exact" })
+    .select("id, donor_name, donor_email, donor_phone, help_type, description, quantity, initiative, created_at", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
   assertQueryOk(error, "No se pudieron cargar las donaciones de cartuchera");
