@@ -32,6 +32,14 @@ export function formatDateTime(date: string | null | undefined) {
   }).format(new Date(date));
 }
 
+export function formatUsd(value: number | null | undefined) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+  }).format(Number(value ?? 0));
+}
+
 export function buildPublicName(
   name: string | null | undefined,
   mode: "anonymous" | "partial" | "full",

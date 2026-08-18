@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ComponentType, type ReactNode, useCallback, useEffect, useState } from "react";
-import { BarChart3, Building2, Check, ClipboardList, FileText, FolderKanban, GitFork, HandHeart, LayoutDashboard, LogOut, Menu, MessageCircle, Package, PackageCheck, Scissors, User, Users, X } from "lucide-react";
+import { BarChart3, Building2, Check, ClipboardList, FileText, FolderKanban, GitFork, HandHeart, LayoutDashboard, LogOut, Menu, MessageCircle, Package, PackageCheck, Scissors, ShoppingBag, User, Users, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { switchContextAction } from "@/app/admin/actions";
@@ -34,6 +34,7 @@ const sharedAdminItems: NavItem[] = [
   { href: "/admin/colaboradores", label: "Colaboradores", icon: GitFork },
   { href: "/admin/materia-prima", label: "Materia prima", icon: Package },
   { href: "/admin/entregas", label: "Entregas", icon: PackageCheck },
+  { href: "/admin/marketplace", label: "Marketplace", icon: ShoppingBag },
   { href: "/admin/patrones", label: "Patrones", icon: FileText },
   { href: "/admin/cartuchera", label: "Cartuchera", icon: ClipboardList },
   { href: "/admin/mensajes", label: "Mensajes", icon: MessageCircle },
@@ -46,6 +47,7 @@ const aliadoNavItems: NavItem[] = [
   { href: "/admin/voluntarios", label: "Voluntarios asignados", icon: Users },
   { href: "/admin/entregas", label: "Entregas", icon: PackageCheck },
   { href: "/admin/materia-prima", label: "Materia prima", icon: Package },
+  { href: "/admin/marketplace", label: "Marketplace", icon: ShoppingBag },
   { href: "/admin/mensajes", label: "Mensajes", icon: MessageCircle },
 ];
 
@@ -55,10 +57,15 @@ const requesterNavItems: NavItem[] = [
   { href: "/admin/mensajes", label: "Mensajes", icon: MessageCircle },
 ];
 
+const buyerNavItems: NavItem[] = [
+  { href: "/admin/marketplace", label: "Mis pedidos", icon: PackageCheck },
+];
+
 const navByRole: Record<string, NavItem[]> = {
   admin: sharedAdminItems,
   aliado: aliadoNavItems,
   solicitante: requesterNavItems,
+  comprador: buyerNavItems,
 };
 
 function ContextSwitcher({

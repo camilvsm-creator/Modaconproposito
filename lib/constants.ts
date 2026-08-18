@@ -295,6 +295,78 @@ export const DELIVERY_STATUS_TONES: Record<string, string> = {
   cancelada: "bg-gray-200 text-gray-600",
 };
 
+export const MARKETPLACE_PRODUCT_STATUSES = [
+  "pendiente_revision",
+  "aprobado",
+  "rechazado",
+  "pausado",
+] as const;
+
+export const MARKETPLACE_PRODUCT_STATUS_LABELS: Record<string, string> = {
+  pendiente_revision: "Pendiente de revisión",
+  aprobado: "Aprobado",
+  rechazado: "Rechazado",
+  pausado: "Pausado",
+};
+
+export const MARKETPLACE_PRODUCT_STATUS_TONES: Record<string, string> = {
+  pendiente_revision: "bg-warning-soft text-warning",
+  aprobado: "bg-success-soft text-success",
+  rechazado: "bg-danger-soft text-danger",
+  pausado: "bg-gray-200 text-gray-600",
+};
+
+export const MARKETPLACE_PAYMENT_STATUSES = [
+  "pendiente_comprobante",
+  "en_revision",
+  "aprobado",
+  "rechazado",
+] as const;
+
+export const MARKETPLACE_PAYMENT_STATUS_LABELS: Record<string, string> = {
+  pendiente_comprobante: "Pendiente de comprobante",
+  en_revision: "Pago en revisión",
+  aprobado: "Pago aprobado",
+  rechazado: "Pago rechazado",
+};
+
+export const MARKETPLACE_PAYMENT_STATUS_TONES: Record<string, string> = {
+  pendiente_comprobante: "bg-warning-soft text-warning",
+  en_revision: "bg-info-soft text-info",
+  aprobado: "bg-success-soft text-success",
+  rechazado: "bg-danger-soft text-danger",
+};
+
+export const MARKETPLACE_ORDER_STATUSES = [
+  "pendiente_pago",
+  "pago_en_revision",
+  "pago_aprobado",
+  "en_preparacion",
+  "enviado",
+  "entregado",
+  "cancelado",
+] as const;
+
+export const MARKETPLACE_ORDER_STATUS_LABELS: Record<string, string> = {
+  pendiente_pago: "Pendiente de pago",
+  pago_en_revision: "Pago en revisión",
+  pago_aprobado: "Pago aprobado",
+  en_preparacion: "En preparación",
+  enviado: "Enviado",
+  entregado: "Entregado",
+  cancelado: "Cancelado",
+};
+
+export const MARKETPLACE_ORDER_STATUS_TONES: Record<string, string> = {
+  pendiente_pago: "bg-warning-soft text-warning",
+  pago_en_revision: "bg-info-soft text-info",
+  pago_aprobado: "bg-blue-100 text-blue-700",
+  en_preparacion: "bg-primary-soft text-primary-dark",
+  enviado: "bg-info-soft text-info",
+  entregado: "bg-success-soft text-success",
+  cancelado: "bg-gray-200 text-gray-600",
+};
+
 export const TASK_INCIDENT_STATUS_LABELS: Record<string, string> = {
   open: "Abierta",
   resolved: "Resuelta",

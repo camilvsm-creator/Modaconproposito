@@ -31,6 +31,8 @@ El build de producción debe ejecutarse como parte del proceso de entrega o desp
 - `/admin/solicitantes`: organizaciones solicitantes y accesos.
 - `/admin/solicitudes`: solicitudes de ayuda.
 - `/admin/mensajes`: conversaciones entre administración, aliados y solicitantes.
+- `/marketplace`: catálogo público de productos de aliados.
+- `/admin/marketplace`: productos, inventario, pedidos, pagos y entregas del marketplace.
 
 El administrador tiene alcance global. Los roles `aliado` y `solicitante` solo pueden consultar y modificar los recursos que les corresponden.
 

@@ -51,3 +51,11 @@ export async function requireRequestsUser() {
 export async function requireOperationsUser() {
   return requireUserRoles(["admin", "aliado", "solicitante"]);
 }
+
+export async function requireMarketplaceUser() {
+  return requireUserRoles(["admin", "aliado", "comprador"]);
+}
+
+export async function requireMarketplaceBuyer() {
+  return requireUserRoles(["comprador"]);
+}

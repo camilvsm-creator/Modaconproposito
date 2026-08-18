@@ -252,6 +252,92 @@ export type CartucheraDonation = {
   created_at: string;
 };
 
+export type MarketplaceCustomer = {
+  id: string;
+  user_id: string;
+  full_name: string;
+  email: string;
+  whatsapp: string;
+  address: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MarketplaceProductImage = {
+  id: string;
+  product_id: string;
+  storage_path: string;
+  sort_order: number;
+  created_at: string;
+};
+
+export type MarketplaceProduct = {
+  id: string;
+  ally_id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  price_usd: number;
+  stock_quantity: number;
+  status: string;
+  rejection_reason: string | null;
+  approved_by: string | null;
+  approved_at: string | null;
+  created_at: string;
+  updated_at: string;
+  ally?: Pick<Ally, "id" | "name" | "slug"> | null;
+  images?: MarketplaceProductImage[];
+};
+
+export type MarketplacePaymentSettings = {
+  id: boolean;
+  phone: string;
+  bank: string;
+  rif: string;
+  account_holder: string;
+  instructions: string | null;
+  updated_by: string | null;
+  updated_at: string;
+};
+
+export type MarketplaceOrder = {
+  id: string;
+  order_number: string;
+  customer_id: string;
+  customer_user_id: string;
+  product_id: string;
+  ally_id: string;
+  product_name_snapshot: string;
+  unit_price_usd: number;
+  quantity: number;
+  total_usd: number;
+  buyer_name: string;
+  buyer_email: string;
+  buyer_whatsapp: string;
+  delivery_address: string;
+  payment_phone_snapshot: string;
+  payment_bank_snapshot: string;
+  payment_rif_snapshot: string;
+  payment_holder_snapshot: string;
+  payment_instructions_snapshot: string | null;
+  payment_status: string;
+  order_status: string;
+  payment_proof_path: string | null;
+  payment_review_notes: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  shipped_at: string | null;
+  delivered_at: string | null;
+  delivery_notes: string | null;
+  stock_released_at: string | null;
+  created_at: string;
+  updated_at: string;
+  product?: Pick<MarketplaceProduct, "id" | "slug" | "name" | "price_usd"> | null;
+  ally?: Pick<Ally, "id" | "name" | "slug"> | null;
+  customer?: Pick<MarketplaceCustomer, "id" | "full_name" | "email" | "whatsapp"> | null;
+};
+
 export type AllyActivationToken = {
   id: string;
   ally_id: string;
