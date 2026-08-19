@@ -97,7 +97,7 @@ export function UploadPatternForm() {
     <div>
       <h2 className="mb-1 text-lg font-semibold text-ink">Subir nuevo patrón</h2>
       <p className="mb-4 text-sm text-gray-500">
-        Subí un patrón estandarizado en formato PDF o imagen. Opcionalmente podés incluir una imagen de previsualización.
+        Sube un patrón estandarizado en formato PDF o imagen. Opcionalmente puedes incluir una imagen de previsualización.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <InputShell label="Título *">

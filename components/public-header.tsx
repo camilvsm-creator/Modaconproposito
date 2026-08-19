@@ -10,7 +10,7 @@ const NAV_LINKS = [
   { href: "/marketplace", label: "Marketplace" },
   { href: "/necesidades", label: "Necesidades" },
   { href: "/patrones", label: "Patrones" },
-  { href: "/adopta-una-cartuchera", label: "Adopta una cartuchera" },
+  { href: "/iniciativas", label: "Iniciativas" },
 ];
 
 export function PublicHeader() {

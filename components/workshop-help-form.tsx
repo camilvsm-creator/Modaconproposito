@@ -123,7 +123,7 @@ export function WorkshopHelpForm({
             name="description"
             rows={4}
             required
-            placeholder="Contanos en detalle qué podés aportar..."
+            placeholder="Cuéntanos en detalle qué puedes aportar..."
           />
         </InputShell>
         <InputShell label="Ubicación *">

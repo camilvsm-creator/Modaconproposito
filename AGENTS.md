@@ -88,7 +88,8 @@ Despues de tocar DB:
 | `/patrones` | Catalogo de patrones de costura | ISR 300s |
 | `/registro` | Formulario publico de registro de aliado | Estatico |
 | `/voluntarios` | Registro publico de voluntarios | Client/Server action |
-| `/adopta-una-cartuchera` | Formulario de donacion Cartuchera | Client/Server action |
+| `/iniciativas` | Iniciativas de ayuda: Adopta una cartuchera, Hilos Conectados, etc. Config en `lib/iniciativas.ts` | Estatico |
+| `/adopta-una-cartuchera` | Redirect a `/iniciativas#adopta-una-cartuchera` | Redirect |
 
 Ruta temporal mantenida por compatibilidad:
 

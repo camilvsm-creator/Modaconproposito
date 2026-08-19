@@ -9,7 +9,7 @@ import { formatDate } from "@/lib/utils";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Necesidades — Promoda",
+  title: "Necesidades — Moda con Propósito",
 };
 
 const NEEDS_PER_PAGE = 20;
@@ -41,14 +41,11 @@ export default async function TallerNecesidadesPage({
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-6">
           <div className="space-y-2">
-            <p className="text-sm font-black uppercase tracking-[0.18em] text-[#F6026B]">
-              RED DE ALIADOS VERIFICADOS
-            </p>
             <h1 className="text-3xl font-black tracking-[-0.03em] text-ink sm:text-4xl">
               Tareas y necesidades publicadas
             </h1>
             <p className="max-w-3xl text-sm leading-6 text-stone-600">
-              Insumos, materiales y apoyo que Promoda publica para coordinar con aliados y colaboradores.
+              Insumos, materiales y apoyo que Moda con Propósito publica para coordinar con aliados y colaboradores.
             </p>
           </div>
 

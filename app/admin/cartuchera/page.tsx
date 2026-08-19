@@ -13,7 +13,15 @@ const HELP_TYPE_LABELS: Record<string, string> = {
   economica: "Aporte económico",
   voluntario: "Voluntario en confección",
   higiene: "Higiene y cuidado personal",
+  pulsera: "Adquirir pulsera gemela",
+  materiales: "Donación de materiales",
+  tejido: "Tardes de tejido",
   otro: "Otro",
+};
+
+const INITIATIVE_LABELS: Record<string, string> = {
+  "adopta-una-cartuchera": "Cartuchera",
+  "hilos-conectados": "Hilos Conectados",
 };
 
 function getPageParam(params: Record<string, string | string[] | undefined>) {
@@ -59,6 +67,7 @@ export default async function AdminCartucheraPage({
                 <tr>
                   <th className="px-4 py-3">Donante</th>
                   <th className="px-4 py-3">Contacto</th>
+                  <th className="px-4 py-3">Iniciativa</th>
                   <th className="px-4 py-3">Tipo</th>
                   <th className="px-4 py-3">Cantidad</th>
                   <th className="px-4 py-3">Descripción</th>
@@ -76,6 +85,15 @@ export default async function AdminCartucheraPage({
                       {donation.donor_phone ? (
                         <p className="text-sm text-gray-500">{donation.donor_phone}</p>
                       ) : null}
+                    </td>
+                    <td data-mobile-label="Iniciativa" className="px-4 py-3 align-top text-gray-700 leading-tight">
+                      <span className={`rounded-md px-2.5 py-1 text-sm font-semibold ${
+                        donation.initiative === "hilos-conectados"
+                          ? "bg-[#FFE6F0] text-[#C00253]"
+                          : "bg-gray-100 text-gray-600"
+                      }`}>
+                        {INITIATIVE_LABELS[donation.initiative ?? ""] ?? donation.initiative ?? "Cartuchera"}
+                      </span>
                     </td>
                     <td data-mobile-label="Tipo" className="px-4 py-3 align-top text-gray-700 leading-tight">
                       <span className="rounded-md bg-gray-100 px-2.5 py-1 text-sm font-semibold text-gray-600">
