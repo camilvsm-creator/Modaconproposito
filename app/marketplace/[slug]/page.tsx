@@ -43,11 +43,10 @@ export default async function MarketplaceProductPage({
               </p>
             </div>
 
-            {product.description ? (
-              <p className="whitespace-pre-wrap text-sm leading-7 text-stone-600">
-                {product.description}
-              </p>
-            ) : null}
+            <div className="rounded-2xl border border-stone-200 bg-white p-5">
+              <h2 className="text-sm font-black uppercase tracking-[0.12em] text-[#C00253]">Sobre este producto</h2>
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-stone-600">{product.description || "Este aliado todavía está completando la descripción del producto."}</p>
+            </div>
 
             <div className="space-y-3 rounded-2xl border border-stone-200 bg-stone-50 p-5">
               <div className="flex items-center gap-3 text-sm text-stone-600">
@@ -84,6 +83,15 @@ export default async function MarketplaceProductPage({
                   )}
                 </span>
               </div>
+            </div>
+
+            <div className="rounded-2xl border border-[#F6026B]/20 bg-[#FFF8FA] p-5">
+              <h2 className="text-sm font-black uppercase tracking-[0.12em] text-[#C00253]">Cómo comprar</h2>
+              <ol className="mt-3 grid gap-2 text-sm leading-6 text-stone-600">
+                <li><strong className="text-ink">1.</strong> Haz clic en “Comprar producto” y completa tus datos.</li>
+                <li><strong className="text-ink">2.</strong> Elige PayPal u otro método disponible y realiza el pago.</li>
+                <li><strong className="text-ink">3.</strong> El equipo de Moda con Propósito confirmará el pago y coordinará contigo la entrega.</li>
+              </ol>
             </div>
 
             {inStock ? (

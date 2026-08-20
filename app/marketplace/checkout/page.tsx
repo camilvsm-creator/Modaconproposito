@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { ShieldCheck } from "lucide-react";
 
 import { EmptyState } from "@/components/empty-state";
 import { MarketplaceCheckoutForm } from "@/components/marketplace-checkout-form";
-import { LinkButton, SectionCard } from "@/components/ui";
-import { getCurrentUser } from "@/lib/auth";
-import { getMarketplaceCustomerByUserId, getMarketplacePaymentSettings, getPublicMarketplaceProductBySlug } from "@/lib/marketplace";
+import { SectionCard } from "@/components/ui";
+import { getMarketplacePaymentMethods, getPublicMarketplaceProductBySlug, releaseExpiredMarketplaceReservations } from "@/lib/marketplace";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { formatUsd } from "@/lib/utils";
 
@@ -16,28 +15,13 @@ export default async function MarketplaceCheckoutPage({
 }) {
   const params = await searchParams;
   const productId = typeof params.product === "string" ? params.product : "";
-  const user = await getCurrentUser();
-  const redirectTo = `/marketplace/checkout?product=${encodeURIComponent(productId)}`;
-  if (!user) redirect(`/marketplace/ingresar?redirectTo=${encodeURIComponent(redirectTo)}`);
-  if (user.app_metadata?.role !== "comprador") {
-    return (
-      <div className="full-bleed bg-[#FFF8FA] px-4 py-10 sm:px-6">
-        <SectionCard className="mx-auto max-w-xl p-8 text-center ring-1 ring-stone-200">
-          <h1 className="text-2xl font-black text-ink">Necesitas una cuenta de comprador</h1>
-          <p className="mt-3 text-sm leading-6 text-stone-600">Tu sesión actual corresponde a otro tipo de usuario. Crea o inicia una cuenta de comprador para completar esta compra.</p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3"><LinkButton href={`/marketplace/registro?redirectTo=${encodeURIComponent(redirectTo)}`}>Crear cuenta</LinkButton><LinkButton href={`/marketplace/ingresar?redirectTo=${encodeURIComponent(redirectTo)}`} variant="secondary">Ingresar</LinkButton></div>
-        </SectionCard>
-      </div>
-    );
-  }
-
+  await releaseExpiredMarketplaceReservations();
   const supabase = createSupabasePublicClient();
   const { data: productRow } = await supabase.from("marketplace_products").select("slug").eq("id", productId).eq("status", "aprobado").maybeSingle();
   if (!productRow) return <div className="mx-auto max-w-3xl px-4 py-10"><EmptyState title="Producto no disponible" description="Regresa al marketplace para elegir otro producto." action={<Link href="/marketplace" className="font-bold text-[#F6026B]">Ver marketplace</Link>} /></div>;
   const product = await getPublicMarketplaceProductBySlug(productRow.slug);
-  const customer = await getMarketplaceCustomerByUserId(user.id);
-  const settings = await getMarketplacePaymentSettings();
-  if (!product || !customer || !settings) return <div className="mx-auto max-w-3xl px-4 py-10"><EmptyState title="No pudimos preparar la compra" description="Intenta nuevamente en unos minutos." /></div>;
+  const paymentMethods = await getMarketplacePaymentMethods();
+  if (!product || !paymentMethods.length) return <div className="mx-auto max-w-3xl px-4 py-10"><EmptyState title="No pudimos preparar la compra" description="El equipo todavía no ha configurado métodos de pago." /></div>;
 
   return (
     <div className="full-bleed bg-[#FFF8FA] px-4 py-10 sm:px-6">
@@ -48,18 +32,19 @@ export default async function MarketplaceCheckoutPage({
           <p className="mt-2 text-2xl font-black text-[#C00253]">{formatUsd(product.price_usd)}</p>
           <p className="mt-3 text-sm text-stone-600">Disponible: {product.stock_quantity} unidades</p>
           <div className="mt-6 border-t border-stone-200 pt-5 text-sm text-stone-600">
-            <p className="font-bold text-ink">Pago Móvil</p>
-            <p className="mt-2">Teléfono: <span className="font-semibold text-ink">{settings.phone}</span></p>
-            <p className="mt-1">Banco: <span className="font-semibold text-ink">{settings.bank}</span></p>
-            <p className="mt-1">RIF: <span className="font-semibold text-ink">{settings.rif}</span></p>
-            <p className="mt-1">Titular: <span className="font-semibold text-ink">{settings.account_holder}</span></p>
-            {settings.instructions ? <p className="mt-3 whitespace-pre-wrap leading-6">{settings.instructions}</p> : null}
+            <p className="font-bold text-ink">Cómo completar tu compra</p>
+            <ol className="mt-3 grid gap-3 leading-6">
+              <li><strong className="text-ink">1.</strong> Déjanos tus datos y elige cómo quieres pagar.</li>
+              <li><strong className="text-ink">2.</strong> Realiza el pago o sigue las instrucciones del método elegido.</li>
+              <li><strong className="text-ink">3.</strong> El equipo de Moda con Propósito verificará el pago y coordinará la entrega contigo.</li>
+            </ol>
+            <p className="mt-4 flex items-start gap-2 rounded-xl bg-stone-100 p-3 text-sm leading-6"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#F6026B]" />El pedido queda pendiente de confirmación hasta que el equipo valide el pago.</p>
           </div>
         </SectionCard>
         <SectionCard className="p-6 ring-1 ring-stone-200 sm:p-8">
           <h2 className="text-2xl font-black text-ink">Completar pedido</h2>
-          <p className="mt-2 text-sm leading-6 text-stone-600">Realiza el pago y adjunta el comprobante. El equipo revisará el pago antes de enviarlo al aliado.</p>
-          <div className="mt-6"><MarketplaceCheckoutForm product={product} customer={customer} /></div>
+          <p className="mt-2 text-sm leading-6 text-stone-600">No necesitas crear una cuenta. Completa tus datos, elige un método de pago y sigue las instrucciones. Podrás cargar el comprobante después de pagar.</p>
+          <div className="mt-6"><MarketplaceCheckoutForm product={product} paymentMethods={paymentMethods} /></div>
         </SectionCard>
       </div>
     </div>

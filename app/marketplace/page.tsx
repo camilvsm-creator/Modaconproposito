@@ -1,10 +1,10 @@
 import Link from "next/link";
+import { HeartHandshake, PackageCheck, WalletCards } from "lucide-react";
 import type { Metadata } from "next";
 
 import { EmptyState } from "@/components/empty-state";
-import { compactInputClassName } from "@/components/ui";
 import { MarketplaceProductCard } from "@/components/marketplace-product-card";
-import { getPublicMarketplaceProductsPage } from "@/lib/marketplace";
+import { getPublicMarketplaceProductsPage, releaseExpiredMarketplaceReservations } from "@/lib/marketplace";
 
 export const revalidate = 300;
 
@@ -17,9 +17,8 @@ function getParam(params: Record<string, string | string[] | undefined>, key: st
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
-function pageHref(q: string | undefined, page: number) {
+function pageHref(page: number) {
   const params = new URLSearchParams();
-  if (q) params.set("q", q);
   if (page > 1) params.set("page", String(page));
   const query = params.toString();
   return query ? `/marketplace?${query}` : "/marketplace";
@@ -31,50 +30,26 @@ export default async function MarketplacePage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const q = getParam(params, "q");
   const pageValue = Number(getParam(params, "page"));
   const page = Number.isFinite(pageValue) && pageValue > 0 ? Math.floor(pageValue) : 1;
-  const result = await getPublicMarketplaceProductsPage({ page, limit: 12, q });
+  await releaseExpiredMarketplaceReservations();
+  const result = await getPublicMarketplaceProductsPage({ page, limit: 12 });
   const hasPrevious = result.page > 1;
   const hasNext = result.page < result.pageCount;
 
   return (
     <div>
-      <section className="full-bleed border-t border-stone-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-end px-4 py-5 sm:px-6 lg:px-8">
-          <Link
-            href="/marketplace/ingresar"
-            className="text-sm font-bold text-[#F6026B] hover:underline"
-          >
-            Consultar mis pedidos
-          </Link>
-        </div>
-      </section>
-
       <section className="full-bleed bg-stone-50">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="space-y-6">
-            <div className="rounded-2xl border border-stone-200 bg-white p-4">
-              <form
-                action="/marketplace"
-                method="get"
-                className="flex flex-col gap-3 sm:flex-row"
-              >
-                <input
-                  className={`${compactInputClassName} sm:max-w-md`}
-                  name="q"
-                  defaultValue={q ?? ""}
-                  placeholder="Buscar productos"
-                />
-                <button
-                  className="min-h-11 rounded-md bg-[#F6026B] px-5 text-sm font-bold text-white hover:bg-[#C00253]"
-                  type="submit"
-                >
-                  Buscar
-                </button>
-              </form>
+            <div className="rounded-3xl bg-[#FFFFFF] p-6 sm:p-8">
+              <h1 className="max-w-3xl text-3xl font-black leading-tight tracking-[-0.03em] text-ink sm:text-4xl">Productos de nuestra red de aliados</h1>
+              {/* <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                <div className="flex items-start gap-3 rounded-2xl bg-white p-4"><WalletCards className="mt-0.5 h-5 w-5 shrink-0 text-[#F6026B]" /><span className="text-sm leading-6 text-stone-600"><strong className="block text-ink">Pago sencillo</strong>Usamos PayPal para recibir tu pago.</span></div>
+                <div className="flex items-start gap-3 rounded-2xl bg-white p-4"><PackageCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#F6026B]" /><span className="text-sm leading-6 text-stone-600"><strong className="block text-ink">Confirmación humana</strong>Revisamos cada pedido antes de prepararlo.</span></div>
+                <div className="flex items-start gap-3 rounded-2xl bg-white p-4"><HeartHandshake className="mt-0.5 h-5 w-5 shrink-0 text-[#F6026B]" /><span className="text-sm leading-6 text-stone-600"><strong className="block text-ink">Impacto real</strong>Tu compra fortalece a un aliado local.</span></div>
+              </div> */}
             </div>
-
             {result.items.length ? (
               <>
                 <p className="text-sm text-stone-500">
@@ -104,7 +79,7 @@ export default async function MarketplacePage({
                 <div className="flex gap-2">
                   {hasPrevious ? (
                     <Link
-                      href={pageHref(q, result.page - 1)}
+                      href={pageHref(result.page - 1)}
                       className="rounded-full bg-white px-4 py-3 text-[#F6026B] ring-1 ring-stone-200 hover:bg-[#FFE6F0]"
                     >
                       Anterior
@@ -116,7 +91,7 @@ export default async function MarketplacePage({
                   )}
                   {hasNext ? (
                     <Link
-                      href={pageHref(q, result.page + 1)}
+                      href={pageHref(result.page + 1)}
                       className="rounded-full bg-[#F6026B] px-4 py-3 text-white ring-1 ring-stone-200 hover:bg-[#C00253]"
                     >
                       Siguiente

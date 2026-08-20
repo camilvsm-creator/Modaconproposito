@@ -2,15 +2,18 @@ import crypto from "crypto";
 import { cache } from "react";
 
 import type {
-  MarketplaceCustomer,
   MarketplaceOrder,
+  MarketplacePaymentMethod,
   MarketplacePaymentSettings,
   MarketplaceProduct,
+  MarketplaceProductImage,
   PagedResult,
 } from "@/lib/types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+export const MARKETPLACE_PAYPAL_URL = "https://www.paypal.com/paypalme/fundacionjp2santos?country.x=VE&locale.x=es_XC&utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAcGRvZgJleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA85MzY2MTk3NDMzOTI0NTkAAafHoMNfUYtrPj4eJrV4M90Gz1t_PnGgqUVQFd60W9wMrxLItgYN-0-rperpvw_aem_4M4ltjmydzeaFiFXFiOxaQ";
 
 const PRODUCT_FIELDS = `
   id, ally_id, slug, name, description, price_usd, stock_quantity, status,
@@ -24,16 +27,48 @@ const ORDER_FIELDS = `
   product_name_snapshot, unit_price_usd, quantity, total_usd, buyer_name,
   buyer_email, buyer_whatsapp, delivery_address, payment_phone_snapshot,
   payment_bank_snapshot, payment_rif_snapshot, payment_holder_snapshot,
-  payment_instructions_snapshot, payment_status, order_status, payment_proof_path,
+  payment_instructions_snapshot, paypal_url_snapshot, paypal_reference, payment_status, order_status, payment_proof_path,
   payment_review_notes, reviewed_by, reviewed_at, shipped_at, delivered_at,
-  delivery_notes, stock_released_at, created_at, updated_at,
+  delivery_notes, stock_released_at, stock_reserved_at, payment_method_id,
+  payment_method_code_snapshot, payment_method_name_snapshot, payment_method_type_snapshot,
+  payment_method_url_snapshot, payment_method_details_snapshot, payment_reference,
+  payment_submitted_at, stock_reservation_expires_at, guest_access_token_hash, created_at, updated_at,
   product:marketplace_products(id, slug, name, price_usd),
   ally:allies(id, name, slug),
-  customer:marketplace_customers(id, full_name, email, whatsapp)
+  customer:marketplace_customers(id, full_name, email, whatsapp),
+  payment_method:marketplace_payment_methods(id, code, name, method_type),
+  proofs:marketplace_order_payment_proofs(id, order_id, storage_path, original_name, content_type, file_size_bytes, created_at)
 `;
 
 function assertQueryOk(error: { message: string } | null, context: string) {
   if (error) throw new Error(`${context}: ${error.message}`);
+}
+
+export async function releaseExpiredMarketplaceReservations() {
+  const admin = createSupabaseAdminClient();
+  const now = new Date().toISOString();
+  const { data: expiredOrders, error } = await admin
+    .from("marketplace_orders")
+    .select("id, product_id, quantity")
+    .eq("order_status", "pendiente_pago")
+    .not("stock_reserved_at", "is", null)
+    .is("stock_released_at", null)
+    .not("stock_reservation_expires_at", "is", null)
+    .lte("stock_reservation_expires_at", now);
+  assertQueryOk(error, "No se pudieron liberar reservas vencidas");
+
+  for (const order of expiredOrders ?? []) {
+    const { data: product } = await admin.from("marketplace_products").select("stock_quantity").eq("id", order.product_id).maybeSingle();
+    if (!product) continue;
+    await admin.from("marketplace_products").update({ stock_quantity: Number(product.stock_quantity ?? 0) + Number(order.quantity ?? 0), updated_at: now }).eq("id", order.product_id);
+    await admin.from("marketplace_orders").update({
+      order_status: "cancelado",
+      stock_released_at: now,
+      stock_reservation_expires_at: null,
+      payment_review_notes: "Reserva vencida automáticamente.",
+      updated_at: now,
+    }).eq("id", order.id).is("stock_released_at", null);
+  }
 }
 
 function normalizeRelation<T>(value: T | T[] | null | undefined): T | null {
@@ -46,7 +81,9 @@ function normalizeProduct(product: Record<string, unknown>): MarketplaceProduct 
     price_usd: Number(product.price_usd ?? 0),
     stock_quantity: Number(product.stock_quantity ?? 0),
     ally: normalizeRelation(product.ally) as MarketplaceProduct["ally"],
-    images: Array.isArray(product.images) ? product.images as MarketplaceProduct["images"] : [],
+    images: Array.isArray(product.images)
+      ? [...product.images as MarketplaceProductImage[]].sort((a, b) => a.sort_order - b.sort_order)
+      : [],
   };
 }
 
@@ -59,6 +96,8 @@ function normalizeOrder(order: Record<string, unknown>): MarketplaceOrder {
     product: normalizeRelation(order.product) as MarketplaceOrder["product"],
     ally: normalizeRelation(order.ally) as MarketplaceOrder["ally"],
     customer: normalizeRelation(order.customer) as MarketplaceOrder["customer"],
+    payment_method: normalizeRelation(order.payment_method) as MarketplaceOrder["payment_method"],
+    proofs: Array.isArray(order.proofs) ? order.proofs as MarketplaceOrder["proofs"] : [],
   };
 }
 
@@ -197,33 +236,45 @@ export async function getMarketplaceProductById(productId: string) {
   return data ? normalizeProduct(data as Record<string, unknown>) : null;
 }
 
-export async function getMarketplaceCustomerByUserId(userId: string) {
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("marketplace_customers")
-    .select("id, user_id, full_name, email, whatsapp, address, status, created_at, updated_at")
-    .eq("user_id", userId)
-    .maybeSingle();
-  assertQueryOk(error, "No se pudo cargar tu cuenta de comprador");
-  return (data ?? null) as MarketplaceCustomer | null;
-}
-
 export async function getMarketplacePaymentSettings() {
   const supabase = createSupabasePublicClient();
   const { data, error } = await supabase
     .from("marketplace_payment_settings")
-    .select("id, phone, bank, rif, account_holder, instructions, updated_by, updated_at")
+    .select("id, paypal_url, contact_whatsapp, phone, bank, rif, account_holder, instructions, updated_by, updated_at")
     .eq("id", true)
     .maybeSingle();
   assertQueryOk(error, "No se pudieron cargar los datos de pago");
   return (data ?? null) as MarketplacePaymentSettings | null;
 }
 
+export async function getMarketplacePaymentMethods() {
+  const supabase = createSupabasePublicClient();
+  const { data, error } = await supabase
+    .from("marketplace_payment_methods")
+    .select("id, code, name, method_type, payment_url, payment_details, instructions, supports_amount, is_active, sort_order, updated_by, created_at, updated_at")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+  assertQueryOk(error, "No se pudieron cargar los métodos de pago");
+  return (data ?? []) as MarketplacePaymentMethod[];
+}
+
+export async function getAdminMarketplacePaymentMethods() {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("marketplace_payment_methods")
+    .select("id, code, name, method_type, payment_url, payment_details, instructions, supports_amount, is_active, sort_order, updated_by, created_at, updated_at")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+  assertQueryOk(error, "No se pudieron cargar los métodos de pago");
+  return (data ?? []) as MarketplacePaymentMethod[];
+}
+
 export async function getAdminMarketplacePaymentSettings() {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("marketplace_payment_settings")
-    .select("id, phone, bank, rif, account_holder, instructions, updated_by, updated_at")
+    .select("id, paypal_url, contact_whatsapp, phone, bank, rif, account_holder, instructions, updated_by, updated_at")
     .eq("id", true)
     .maybeSingle();
   assertQueryOk(error, "No se pudieron cargar los datos de pago");
@@ -308,9 +359,4 @@ export async function createMarketplaceOrderNumber() {
 export async function createMarketplaceProductStoragePath(productId: string, fileName: string) {
   const extension = fileName.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
   return `products/${productId}/${crypto.randomUUID()}.${extension}`;
-}
-
-export async function createMarketplaceProofStoragePath(orderId: string, fileName: string) {
-  const extension = fileName.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-  return `orders/${orderId}/${crypto.randomUUID()}.${extension}`;
 }

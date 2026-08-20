@@ -19,8 +19,8 @@ import {
 import { requireAdminUser, requireMarketplaceUser } from "@/lib/auth";
 import {
   getAdminMarketplacePaymentSettings,
+  getAdminMarketplacePaymentMethods,
   getMarketplaceAllies,
-  getMarketplaceCustomerByUserId,
   getMarketplaceOrdersPage,
   getAdminMarketplaceProductsPage,
 } from "@/lib/marketplace";
@@ -28,9 +28,9 @@ import { cn, formatDate, formatUsd } from "@/lib/utils";
 import { requireCurrentAlly } from "../ally-scope";
 import {
   createMarketplaceProductAction,
-  updateMarketplaceCustomerAction,
   updateMarketplaceOrderDeliveryAction,
   updateMarketplacePaymentSettingsAction,
+  saveMarketplacePaymentMethodAction,
   updateMarketplaceProductAction,
   updateMarketplaceProductStatusAction,
 } from "./actions";
@@ -78,9 +78,28 @@ function ProductForm({
       <label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Nombre del producto</span><input className={compactInputClassName} name="name" defaultValue={product?.name ?? ""} required /></label>
       <label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Precio en USD</span><input className={compactInputClassName} name="priceUsd" type="number" min="0.01" step="0.01" defaultValue={product?.price_usd ?? ""} required /></label>
       <label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Inventario disponible</span><input className={compactInputClassName} name="stockQuantity" type="number" min="0" step="1" defaultValue={product?.stock_quantity ?? 0} required /></label>
-      <label className="grid gap-1.5 md:col-span-2"><span className="text-sm font-medium text-gray-800">Descripción</span><textarea className={`${compactInputClassName} min-h-[110px]`} name="description" defaultValue={product?.description ?? ""} /></label>
+      <label className="grid gap-1.5 md:col-span-2"><span className="text-sm font-medium text-gray-800">Descripción del producto</span><textarea className={`${compactInputClassName} min-h-[130px]`} name="description" defaultValue={product?.description ?? ""} required placeholder="Cuenta qué es, qué materiales usa, sus medidas, cuidados y cualquier detalle importante para quien compra." /><span className="text-sm text-gray-500">Esta descripción aparecerá en la ficha pública del producto.</span></label>
       <label className="grid gap-1.5 md:col-span-2"><span className="text-sm font-medium text-gray-800">Imágenes</span><input className={compactInputClassName} name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple /><span className="text-sm text-gray-500">Hasta 6 imágenes JPG, PNG o WEBP de máximo 5 MB cada una.</span></label>
       <div className="md:col-span-2"><Button type="submit">{product ? "Guardar producto" : "Enviar a revisión"}</Button></div>
+    </form>
+  );
+}
+
+function PaymentMethodForm({ method }: { method?: Awaited<ReturnType<typeof getAdminMarketplacePaymentMethods>>[number] }) {
+  return (
+    <form action={saveMarketplacePaymentMethodAction} className="grid gap-4">
+      {method ? <input type="hidden" name="methodId" value={method.id} /> : null}
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Nombre</span><input className={compactInputClassName} name="name" defaultValue={method?.name ?? ""} required placeholder="PayPal, Zelle, Pago Móvil..." /></label>
+        <label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Código interno</span><input className={compactInputClassName} name="code" defaultValue={method?.code ?? ""} required placeholder="paypal" /><span className="text-sm text-gray-500">No se muestra al comprador.</span></label>
+        <label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Tipo</span><select className={compactInputClassName} name="methodType" defaultValue={method?.method_type ?? "manual"}><option value="link">Enlace de pago</option><option value="manual">Datos e instrucciones</option></select></label>
+        <label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Orden</span><input className={compactInputClassName} name="sortOrder" type="number" step="1" defaultValue={method?.sort_order ?? 0} /></label>
+      </div>
+      <label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Enlace de pago</span><input className={compactInputClassName} name="paymentUrl" type="url" defaultValue={method?.payment_url ?? ""} placeholder="https://..." /><span className="text-sm text-gray-500">Déjalo vacío para métodos manuales.</span></label>
+      <label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Datos para pagar</span><textarea className={`${compactInputClassName} min-h-[100px]`} name="paymentDetails" defaultValue={method?.payment_details ?? ""} placeholder="Correo, teléfono, banco, titular u otros datos." /></label>
+      <label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Instrucciones</span><textarea className={`${compactInputClassName} min-h-[90px]`} name="instructions" defaultValue={method?.instructions ?? ""} placeholder="Indica qué debe hacer el comprador y cómo enviar el comprobante." /></label>
+      <div className="flex flex-wrap gap-5 text-sm text-gray-700"><label className="inline-flex items-center gap-2"><input type="checkbox" name="supportsAmount" defaultChecked={method?.supports_amount ?? false} /> El enlace admite agregar el monto</label><label className="inline-flex items-center gap-2"><input type="checkbox" name="isActive" defaultChecked={method?.is_active ?? true} /> Mostrar en checkout</label></div>
+      <div><Button type="submit">{method ? "Guardar método" : "Agregar método"}</Button></div>
     </form>
   );
 }
@@ -146,12 +165,6 @@ export default async function AdminMarketplacePage({ searchParams }: { searchPar
   const status = getParam(params, "status") ?? "all";
   const q = getParam(params, "q");
 
-  if (role === "comprador") {
-    const customer = await getMarketplaceCustomerByUserId(user.id);
-    const orders = await getMarketplaceOrdersPage({ customerUserId: user.id, page, limit: 20, status });
-    return <BuyerMarketplacePage customer={customer} orders={orders} status={status} params={params} />;
-  }
-
   const isAdmin = role === "admin";
   let allyId: string | undefined;
   if (!isAdmin) {
@@ -163,27 +176,16 @@ export default async function AdminMarketplacePage({ searchParams }: { searchPar
   const orders = tab === "pedidos" ? await getMarketplaceOrdersPage({ page, limit: 20, status, allyId }) : null;
   const allies = isAdmin ? await getMarketplaceAllies() : [];
   const paymentSettings = isAdmin && tab === "pago" ? await getAdminMarketplacePaymentSettings() : null;
-  const tabs = <AdminTabs tabs={[{ href: "/admin/marketplace?tab=productos", label: "Productos", active: tab === "productos" }, { href: "/admin/marketplace?tab=pedidos", label: "Pedidos", active: tab === "pedidos" }, ...(isAdmin ? [{ href: "/admin/marketplace?tab=pago", label: "Pago Móvil", active: tab === "pago" }] : [])]} />;
+  const paymentMethods = isAdmin && tab === "pago" ? await getAdminMarketplacePaymentMethods() : [];
+  const tabs = <AdminTabs tabs={[{ href: "/admin/marketplace?tab=productos", label: "Productos", active: tab === "productos" }, { href: "/admin/marketplace?tab=pedidos", label: "Pedidos", active: tab === "pedidos" }, ...(isAdmin ? [{ href: "/admin/marketplace?tab=pago", label: "PayPal", active: tab === "pago" }] : [])]} />;
 
   return (
     <div className="space-y-6">
       <AdminPageHeader eyebrow={isAdmin ? "Promoda" : "Aliado"} title="Marketplace" description={isAdmin ? "Aprueba productos, revisa pagos y coordina pedidos." : "Gestiona tus productos, inventario y entregas del marketplace."} />
       {tabs}
-      {tab === "pago" && isAdmin ? <SectionCard className="max-w-3xl p-6 ring-1 ring-gray-200"><h2 className="text-xl font-bold text-ink">Datos globales de Pago Móvil</h2><p className="mt-2 text-sm text-gray-600">Estos datos se mostrarán en todos los pedidos y serán los mismos para toda la plataforma.</p><form action={updateMarketplacePaymentSettingsAction} className="mt-5 grid gap-4 md:grid-cols-2"><label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Teléfono</span><input className={compactInputClassName} name="phone" defaultValue={paymentSettings?.phone ?? ""} required /></label><label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Banco</span><input className={compactInputClassName} name="bank" defaultValue={paymentSettings?.bank ?? ""} required /></label><label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">RIF</span><input className={compactInputClassName} name="rif" defaultValue={paymentSettings?.rif ?? ""} required /></label><label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Titular</span><input className={compactInputClassName} name="accountHolder" defaultValue={paymentSettings?.account_holder ?? "Moda con Propósito"} required /></label><label className="grid gap-1.5 md:col-span-2"><span className="text-sm font-medium text-gray-800">Instrucciones adicionales</span><textarea className={`${compactInputClassName} min-h-[100px]`} name="instructions" defaultValue={paymentSettings?.instructions ?? ""} /></label><div className="md:col-span-2"><Button type="submit">Guardar datos de pago</Button></div></form></SectionCard> : null}
+      {tab === "pago" && isAdmin ? <div className="grid gap-5"><SectionCard className="max-w-3xl p-6 ring-1 ring-gray-200"><h2 className="text-xl font-bold text-ink">Métodos de pago</h2><p className="mt-2 text-sm leading-6 text-gray-600">Agrega los métodos que verá el comprador. PayPal puede abrirse con el monto exacto; los métodos manuales muestran los datos que coloques aquí.</p><div className="mt-5 grid gap-3">{paymentMethods.map((method) => <div key={method.id} className="flex flex-col justify-between gap-3 rounded-xl bg-gray-50 p-4 sm:flex-row sm:items-center"><div><p className="font-bold text-ink">{method.name} {!method.is_active ? <span className="text-sm font-normal text-gray-500">(oculto)</span> : null}</p><p className="mt-1 text-sm text-gray-600">{method.method_type === "link" ? "Enlace de pago" : "Datos e instrucciones"}</p></div><Modal triggerLabel="Editar" triggerVariant="secondary" title={`Editar ${method.name}`} description="Actualiza los datos que verá el comprador."><PaymentMethodForm method={method} /></Modal></div>)}</div><div className="mt-5"><Modal triggerLabel="Agregar método de pago" triggerVariant="primary" title="Nuevo método de pago" description="Configura PayPal, Zelle, Pago Móvil u otra opción."><PaymentMethodForm /></Modal></div></SectionCard><SectionCard className="max-w-3xl p-6 ring-1 ring-gray-200"><h2 className="text-xl font-bold text-ink">Contacto por WhatsApp</h2><p className="mt-2 text-sm leading-6 text-gray-600">Se mostrará únicamente después de crear el pedido, para enviar comprobantes y coordinar la entrega.</p><form action={updateMarketplacePaymentSettingsAction} className="mt-5 grid gap-4"><input type="hidden" name="paypalUrl" value={paymentSettings?.paypal_url ?? ""} /><label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">WhatsApp de contacto</span><input className={compactInputClassName} name="contactWhatsapp" type="tel" defaultValue={paymentSettings?.contact_whatsapp ?? "584222600032"} placeholder="+58 422 2600032" required /></label><label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Mensaje general</span><textarea className={`${compactInputClassName} min-h-[100px]`} name="instructions" defaultValue={paymentSettings?.instructions ?? "Después de crear tu pedido, puedes enviar el comprobante por WhatsApp."} /></label><div><Button type="submit">Guardar contacto</Button></div></form></SectionCard></div> : null}
       {tab === "productos" ? <><AdminToolbar filters={<form action="/admin/marketplace" method="get" className="grid flex-1 gap-3 md:grid-cols-[minmax(180px,1fr)_200px]"><input type="hidden" name="tab" value="productos" /><input className={compactInputClassName} name="q" defaultValue={q ?? ""} placeholder="Buscar producto" /><select className={compactInputClassName} name="status" defaultValue={status}><option value="all">Todos los estados</option>{MARKETPLACE_PRODUCT_STATUSES.map((item) => <option key={item} value={item}>{MARKETPLACE_PRODUCT_STATUS_LABELS[item]}</option>)}</select></form>} actions={<Modal triggerLabel="Nuevo producto" triggerVariant="primary" title="Nuevo producto" description="Registra un producto para enviarlo a aprobación."><ProductForm allyId={allyId} allies={allies} /></Modal>} /><AdminRecordsSummary total={products.total} />{products.items.length ? <><ProductTable products={products.items} isAdmin={isAdmin} /><AdminPagination page={products.page} pageCount={products.pageCount} total={products.total} limit={products.limit} hrefForPage={(nextPage) => pageHref("productos", params, nextPage)} /></> : <EmptyState title="No hay productos registrados." description="Crea el primer producto para comenzar a vender en el marketplace." />}</> : null}
-      {tab === "pedidos" ? <><AdminToolbar filters={<form action="/admin/marketplace" method="get" className="flex flex-1 gap-3"><input type="hidden" name="tab" value="pedidos" /><select className={`${compactInputClassName} max-w-xs`} name="status" defaultValue={status}><option value="all">Todos los estados</option>{MARKETPLACE_ORDER_STATUSES.map((item) => <option key={item} value={item}>{MARKETPLACE_ORDER_STATUS_LABELS[item]}</option>)}</select></form>} /><AdminRecordsSummary total={orders?.total ?? 0} />{orders?.items.length ? <><OrderTable orders={orders.items} /><AdminPagination page={orders.page} pageCount={orders.pageCount} total={orders.total} limit={orders.limit} hrefForPage={(nextPage) => pageHref("pedidos", params, nextPage)} /></> : <EmptyState title="No hay pedidos registrados." description="Los pedidos pagados aparecerán aquí para ser gestionados." />}</> : null}
-    </div>
-  );
-}
-
-async function BuyerMarketplacePage({ customer, orders, status, params }: { customer: Awaited<ReturnType<typeof getMarketplaceCustomerByUserId>>; orders: Awaited<ReturnType<typeof getMarketplaceOrdersPage>>; status: string; params: Record<string, string | string[] | undefined> }) {
-  return (
-    <div className="space-y-6">
-      <AdminPageHeader eyebrow="Mi cuenta" title="Mis pedidos" description="Consulta tus pedidos y mantén actualizados tus datos de entrega." />
-      <SectionCard className="max-w-3xl p-6 ring-1 ring-gray-200"><h2 className="text-xl font-bold text-ink">Datos de comprador</h2><form action={updateMarketplaceCustomerAction} className="mt-5 grid gap-4 md:grid-cols-2"><label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Nombre completo</span><input className={compactInputClassName} name="fullName" defaultValue={customer?.full_name ?? ""} required /></label><label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Correo</span><input className={compactInputClassName} name="email" type="email" defaultValue={customer?.email ?? ""} required /></label><label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">WhatsApp</span><input className={compactInputClassName} name="whatsapp" defaultValue={customer?.whatsapp ?? ""} required /></label><label className="grid gap-1.5 md:col-span-2"><span className="text-sm font-medium text-gray-800">Dirección</span><textarea className={`${compactInputClassName} min-h-[80px]`} name="address" defaultValue={customer?.address ?? ""} required /></label><div className="md:col-span-2"><Button type="submit" variant="secondary">Guardar datos</Button></div></form></SectionCard>
-      <div className="flex items-end justify-between gap-3"><div><p className="text-sm font-semibold uppercase tracking-[0.12em] text-primary">Historial</p><h2 className="mt-1 text-xl font-bold text-ink">Pedidos realizados</h2></div><Link href="/marketplace" className="text-sm font-semibold text-primary hover:underline">Ver productos</Link></div>
-      <AdminRecordsSummary total={orders.total} />
-      {orders.items.length ? <><OrderTable orders={orders.items} /><AdminPagination page={orders.page} pageCount={orders.pageCount} total={orders.total} limit={orders.limit} hrefForPage={(nextPage) => `/admin/marketplace?page=${nextPage}${status !== "all" ? `&status=${encodeURIComponent(status)}` : ""}`} /></> : <EmptyState title="Todavía no tienes pedidos." description="Cuando realices una compra podrás consultar su estado aquí." />}
+      {tab === "pedidos" ? <><AdminToolbar filters={<form action="/admin/marketplace" method="get" className="flex flex-1 gap-3"><input type="hidden" name="tab" value="pedidos" /><select className={`${compactInputClassName} max-w-xs`} name="status" defaultValue={status}><option value="all">Todos los estados</option>{MARKETPLACE_ORDER_STATUSES.map((item) => <option key={item} value={item}>{MARKETPLACE_ORDER_STATUS_LABELS[item]}</option>)}</select></form>} /><AdminRecordsSummary total={orders?.total ?? 0} />{orders?.items.length ? <><OrderTable orders={orders.items} /><AdminPagination page={orders.page} pageCount={orders.pageCount} total={orders.total} limit={orders.limit} hrefForPage={(nextPage) => pageHref("pedidos", params, nextPage)} /></> : <EmptyState title="No hay pedidos registrados." description="Los pedidos recibidos aparecerán aquí para ser gestionados." />}</> : null}
     </div>
   );
 }

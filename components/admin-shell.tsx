@@ -57,15 +57,10 @@ const requesterNavItems: NavItem[] = [
   { href: "/admin/mensajes", label: "Mensajes", icon: MessageCircle },
 ];
 
-const buyerNavItems: NavItem[] = [
-  { href: "/admin/marketplace", label: "Mis pedidos", icon: PackageCheck },
-];
-
 const navByRole: Record<string, NavItem[]> = {
   admin: sharedAdminItems,
   aliado: aliadoNavItems,
   solicitante: requesterNavItems,
-  comprador: buyerNavItems,
 };
 
 function ContextSwitcher({

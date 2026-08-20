@@ -18,8 +18,6 @@ export default async function AdminPage() {
 
   if (user.app_metadata?.role === "aliado") redirect("/admin/tareas");
   if (user.app_metadata?.role === "solicitante") redirect("/admin/solicitudes");
-  if (user.app_metadata?.role === "comprador") redirect("/admin/marketplace");
-
   if (user.app_metadata?.role === "admin") {
     const dashboard = await getAdminDashboardData();
     const stats = [

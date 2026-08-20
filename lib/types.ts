@@ -293,6 +293,8 @@ export type MarketplaceProduct = {
 
 export type MarketplacePaymentSettings = {
   id: boolean;
+  paypal_url: string;
+  contact_whatsapp: string;
   phone: string;
   bank: string;
   rif: string;
@@ -302,11 +304,37 @@ export type MarketplacePaymentSettings = {
   updated_at: string;
 };
 
+export type MarketplacePaymentMethod = {
+  id: string;
+  code: string;
+  name: string;
+  method_type: "link" | "manual" | string;
+  payment_url: string | null;
+  payment_details: string | null;
+  instructions: string | null;
+  supports_amount: boolean;
+  is_active: boolean;
+  sort_order: number;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MarketplacePaymentProof = {
+  id: string;
+  order_id: string;
+  storage_path: string;
+  original_name: string;
+  content_type: string;
+  file_size_bytes: number;
+  created_at: string;
+};
+
 export type MarketplaceOrder = {
   id: string;
   order_number: string;
-  customer_id: string;
-  customer_user_id: string;
+  customer_id: string | null;
+  customer_user_id: string | null;
   product_id: string;
   ally_id: string;
   product_name_snapshot: string;
@@ -322,6 +350,8 @@ export type MarketplaceOrder = {
   payment_rif_snapshot: string;
   payment_holder_snapshot: string;
   payment_instructions_snapshot: string | null;
+  paypal_url_snapshot: string;
+  paypal_reference: string | null;
   payment_status: string;
   order_status: string;
   payment_proof_path: string | null;
@@ -332,11 +362,24 @@ export type MarketplaceOrder = {
   delivered_at: string | null;
   delivery_notes: string | null;
   stock_released_at: string | null;
+  stock_reserved_at: string | null;
+  payment_method_id: string | null;
+  payment_method_code_snapshot: string | null;
+  payment_method_name_snapshot: string | null;
+  payment_method_type_snapshot: string | null;
+  payment_method_url_snapshot: string | null;
+  payment_method_details_snapshot: string | null;
+  payment_reference: string | null;
+  payment_submitted_at: string | null;
+  stock_reservation_expires_at: string | null;
+  guest_access_token_hash: string | null;
   created_at: string;
   updated_at: string;
   product?: Pick<MarketplaceProduct, "id" | "slug" | "name" | "price_usd"> | null;
   ally?: Pick<Ally, "id" | "name" | "slug"> | null;
   customer?: Pick<MarketplaceCustomer, "id" | "full_name" | "email" | "whatsapp"> | null;
+  payment_method?: Pick<MarketplacePaymentMethod, "id" | "code" | "name" | "method_type"> | null;
+  proofs?: MarketplacePaymentProof[];
 };
 
 export type AllyActivationToken = {
