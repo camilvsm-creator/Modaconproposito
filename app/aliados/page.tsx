@@ -86,7 +86,7 @@ export default async function AlliesPage({
               Cada aliado es revisado por el equipo Moda con Propósito antes de publicarse.
             </p>
             <div className="flex flex-wrap gap-3 pt-2">
-              <LinkButton href="/registro" className="bg-[#F6026B] text-white hover:bg-[#C00253]">
+              <LinkButton href="/registro" className="rounded-full bg-[#F6026B] text-white hover:bg-[#C00253]">
                 Registrar aliado
               </LinkButton>
               <Link href="/voluntarios" className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#F6026B] ring-1 ring-stone-300 transition hover:bg-[#FFE6F0]">
@@ -119,7 +119,7 @@ export default async function AlliesPage({
                   <EmptyState
                     title="Aún no hay aliados registrados."
                     description="Sé el primero en registrar una academia, taller, escuela u otro aliado."
-                    action={<LinkButton href="/registro">Registrar aliado</LinkButton>}
+                    action={<LinkButton href="/registro" className="rounded-full">Registrar aliado</LinkButton>}
                   />
                 </div>
               )}
