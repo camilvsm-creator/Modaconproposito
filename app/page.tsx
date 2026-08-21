@@ -5,6 +5,7 @@ import { ArrowUpRight, HeartHandshake, PackageCheck, Scissors } from "lucide-rea
 
 import { ALLY_CATEGORY_LABELS } from "@/lib/constants";
 import { ACTIVE_INITIATIVES } from "@/lib/iniciativas";
+import { Illustration } from "@/components/illustration";
 
 export const metadata: Metadata = {
   title: "Moda con Propósito — Red de Aliados Verificados",
@@ -79,22 +80,31 @@ function PhotoFrame({
 export default function NuestraMisionPage() {
   return (
     <div className="full-bleed overflow-hidden bg-[#F7F2EF] text-ink">
-      <section className="relative isolate overflow-hidden bg-[#201923] text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_25%,rgba(247,72,151,0.24),transparent_34%)]" aria-hidden="true" />
-        <div className="absolute -right-28 top-16 h-72 w-72 rounded-full border border-[#F6026B]/30" aria-hidden="true" />
-        <div className="absolute -bottom-40 left-1/3 h-96 w-96 rounded-full border border-white/10" aria-hidden="true" />
+      <section className="relative isolate overflow-hidden bg-white text-ink">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid min-h-[540px] items-center gap-10 py-11 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 lg:py-14">
             <div className="relative z-10 max-w-2xl">
               <h1 className="text-4xl font-black leading-[0.98] tracking-[-0.06em] sm:text-5xl lg:text-6xl">
                 Nuestra misión
               </h1>
-              <h2 className="mt-5 max-w-xl text-xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-2xl">
-                Una red solidaria para impulsar la recuperación del sector textil venezolano
+              <h2 className="mt-5 max-w-xl text-xl font-semibold leading-tight tracking-[-0.03em] text-[#C00253] sm:text-2xl">
+                Una red donde cada talento, recurso y aporte puede convertirse en ayuda.
               </h2>
-              <p className="mt-5 max-w-xl text-sm leading-6 text-white/75 sm:text-base sm:leading-7">
-                Nuestro propósito central es conectar a la industria de la moda, escuelas de confección, costureros, diseñadores, patronistas, docentes y voluntarios en una red colaborativa nacional. Buscamos transformar conocimientos, mano de obra e insumos en artículos textiles esenciales para apoyar a las comunidades afectadas por el terremoto ocurrido el 24 de junio de 2026, mediante jornadas de voluntariado a largo plazo que no afecten la operatividad comercial habitual de los aliados.
-              </p>
+              <div className="mt-5 max-w-xl space-y-4 text-sm leading-6 text-stone-600 sm:text-base sm:leading-7">
+                <p>
+                  Conectamos talleres, escuelas de moda, costureros, diseñadores, patronistas, empresas, voluntarios y
+                  colaboradores para poner sus capacidades al servicio de quienes más lo necesitan.
+                </p>
+                <p>
+                  Moda con Propósito articula esta red para transformar conocimientos, materiales, tiempo y recursos en
+                  artículos textiles y acciones de ayuda concretas, coordinando cada etapa desde la necesidad hasta la
+                  entrega.
+                </p>
+                <p>
+                  Así, cada persona y organización puede aportar desde lo que tiene y sabe hacer, formando parte de una
+                  red solidaria organizada, transparente y capaz de responder donde se necesita.
+                </p>
+              </div>
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link
                   href="/registro"
@@ -105,53 +115,21 @@ export default function NuestraMisionPage() {
                 </Link>
                 <Link
                   href="/voluntarios"
-                  className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-bold text-white transition hover:border-white hover:bg-white/10"
+                  className="inline-flex min-h-12 items-center justify-center rounded-full border border-stone-300 px-6 py-3 text-sm font-bold text-[#F6026B] transition hover:border-[#F6026B]/40 hover:bg-[#FFE6F0]"
                 >
                   Postularme como voluntario
                 </Link>
               </div>
             </div>
 
-            <div className="relative mx-auto grid h-[360px] w-full max-w-[560px] grid-cols-12 grid-rows-6 gap-3 sm:h-[440px]">
-              <PhotoFrame
-                image={galleryImages[0]}
-                priority
-                className="col-span-7 row-span-6 !rounded-[1.5rem]"
-              />
-              <PhotoFrame
-                image={galleryImages[1]}
-                className="col-span-5 row-span-3 !rounded-[1.5rem]"
-              />
-              <PhotoFrame
-                image={galleryImages[2]}
-                className="col-span-5 row-span-3 !rounded-[1.5rem]"
-              />
-              <PhotoFrame
-                image={galleryImages[4]}
-                className="absolute bottom-5 left-[40%] h-24 w-24 border-4 border-[#201923] !rounded-[1.25rem] shadow-2xl sm:h-32 sm:w-32"
-              />
-              <div className="absolute left-3 top-3 rounded-full bg-white px-3 py-1.5 text-sm font-bold text-[#201923] shadow-xl sm:left-5 sm:top-5 sm:px-4 sm:py-2">
-                Hecho con cariño
+            <div className="relative z-10 flex items-center justify-center">
+              <div className="w-full max-w-[440px] overflow-hidden rounded-[2rem] ring-1 ring-stone-200">
+                <Illustration
+                  src="/ilustraciones/maquina-coser-rosa.png"
+                  alt="Ilustración de máquina de coser rosada de Moda con Propósito"
+                  className="h-auto w-full object-contain"
+                />
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[#F7F2EF] px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
-        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:gap-20">
-          <div className="grid grid-cols-2 gap-3 sm:gap-5">
-            <PhotoFrame image={galleryImages[1]} className="h-64 sm:h-80" />
-            <PhotoFrame image={galleryImages[4]} className="mt-12 h-64 sm:mt-20 sm:h-80" />
-          </div>
-          <div className="max-w-3xl">
-            <div className="space-y-5 text-base leading-8 text-stone-700 sm:text-lg">
-              <p>
-                Desde nuestra experiencia dentro del sector moda, identificamos una necesidad crítica: la escasez de insumos textiles de primera necesidad (ropa interior, sábanas, toallas, bolsos de traslado e indumentaria básica) que frecuentemente quedan fuera de las donaciones tradicionales.
-              </p>
-              <p>
-                A través de esta plataforma creamos una red colaborativa que conecta aliados y voluntarios para transformar materia prima y talento en soluciones concretas y dignas. Los productos elaborados serán entregados mediante las entidades correspondientes para garantizar que lleguen directamente a quienes más los necesitan.
-              </p>
             </div>
           </div>
         </div>
@@ -183,7 +161,11 @@ export default function NuestraMisionPage() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
-              <article className="rounded-[2rem] border border-[#F6026B]/20 bg-[#FFE6F0] p-6 sm:p-7">
+              <article className="relative rounded-[2rem] border border-[#F6026B]/20 bg-[#FFE6F0] p-6 sm:p-7">
+                <Illustration
+                  src="/ilustraciones/boton-verde.png"
+                  className="pointer-events-none absolute right-5 top-5 hidden h-10 w-auto object-contain sm:block"
+                />
                 <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F6026B] text-white">
                   <HeartHandshake className="h-5 w-5" />
                 </div>
@@ -192,7 +174,11 @@ export default function NuestraMisionPage() {
                   Las academias, talleres, escuelas y otros aliados pueden registrarse para formar parte de la red, compartir su capacidad de producción y participar en la confección de productos textiles destinados a apoyar a las comunidades afectadas.
                 </p>
               </article>
-              <article className="rounded-[2rem] border border-stone-200 bg-[#F7F2EF] p-6 sm:p-7">
+              <article className="relative rounded-[2rem] border border-stone-200 bg-[#F7F2EF] p-6 sm:p-7">
+                <Illustration
+                  src="/ilustraciones/flor-naranja.png"
+                  className="pointer-events-none absolute bottom-5 right-6 hidden h-9 w-auto object-contain sm:block"
+                />
                 <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#201923] text-white">
                   <Scissors className="h-5 w-5" />
                 </div>
@@ -201,7 +187,11 @@ export default function NuestraMisionPage() {
                   Personas con conocimientos en confección, patronaje, diseño, corte, costura, logística u otras áreas pueden sumarse para apoyar los procesos que requieran colaboración.
                 </p>
               </article>
-              <article className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_-42px_rgba(31,26,23,0.55)] sm:p-7">
+              <article className="relative rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_-42px_rgba(31,26,23,0.55)] sm:p-7">
+                <Illustration
+                  src="/ilustraciones/corazon-rosa.png"
+                  className="pointer-events-none absolute right-6 top-6 hidden h-8 w-auto object-contain sm:block"
+                />
                 <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#FF91BA] text-[#201923]">
                   <PackageCheck className="h-5 w-5" />
                 </div>
@@ -312,28 +302,6 @@ export default function NuestraMisionPage() {
         </div>
       </section>
 
-      <section className="bg-[#F7F2EF] px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-center lg:gap-20">
-            <div>
-              <h2 className="mt-4 text-3xl font-black tracking-[-0.04em] text-ink sm:text-5xl">Nuestro objetivo</h2>
-              <div className="mt-6 space-y-4 text-base leading-8 text-stone-700">
-                <p>
-                  Crear una red organizada que permita activar el talento y la capacidad del sector textil venezolano para responder ante situaciones de emergencia y fortalecer los aliados participantes y generar un impacto real en las comunidades.
-                </p>
-                <p>Cada registro suma una nueva oportunidad para ayudar.</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-12 gap-3 sm:gap-5">
-              <PhotoFrame image={galleryImages[3]} className="col-span-5 h-64 sm:h-80" />
-              <PhotoFrame image={galleryImages[9]} className="col-span-7 mt-10 h-64 sm:mt-16 sm:h-80" />
-              <PhotoFrame image={galleryImages[6]} className="col-span-7 h-48 sm:h-64" />
-              <PhotoFrame image={galleryImages[4]} className="col-span-5 -mt-10 h-48 sm:-mt-16 sm:h-64" />
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className="bg-[#201923] px-4 py-20 text-white sm:px-6 lg:px-8 lg:py-28">
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
@@ -379,7 +347,12 @@ export default function NuestraMisionPage() {
 
       <section className="bg-[#FFE6F0] px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
         <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-          <p className="max-w-2xl text-base leading-8 text-stone-700 sm:text-lg">
+          <Illustration
+            src="/ilustraciones/ratoncitos-cosiendo.png"
+            alt="Ilustración de ratoncitos cosiendo juntos"
+            className="h-24 w-auto object-contain sm:h-28"
+          />
+          <p className="mt-6 max-w-2xl text-base leading-8 text-stone-700 sm:text-lg">
             Si eres aliado, voluntario, empresa o profesional del sector moda, puedes formar parte de esta iniciativa.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">

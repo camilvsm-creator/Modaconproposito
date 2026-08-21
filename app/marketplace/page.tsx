@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import type { Metadata } from "next";
 
 import { EmptyState } from "@/components/empty-state";
+import { Illustration } from "@/components/illustration";
 import { MarketplaceProductCard } from "@/components/marketplace-product-card";
 import { getPublicMarketplaceProductsPage, releaseExpiredMarketplaceReservations } from "@/lib/marketplace";
 
@@ -43,28 +44,37 @@ export default async function MarketplacePage({
     <div>
       <section className="full-bleed bg-white">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-          <div className="max-w-3xl space-y-4">
-            <h1 className="text-3xl font-black leading-[1.05] tracking-[-0.03em] text-ink sm:text-4xl lg:text-5xl">
-              Tu compra se convierte en ayuda directa.
-            </h1>
-            <p className="text-base leading-7 text-stone-700">
-              El 100% de lo recaudado en nuestra Tienda Solidaria es destinado íntegramente a la Fundación Juan
-              Pablo 2 Santos, apoyando su labor con personas y familias que necesitan asistencia.
-            </p>
-            <p className="text-base font-bold text-[#C00253]">Cada compra suma. Cada aporte llega a una causa real.</p>
-            <div className="flex flex-wrap gap-3 pt-2">
-              <a
-                href="#catalogo"
-                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#F6026B] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#C00253]"
-              >
-                Ver productos
-              </a>
-              <a
-                href="#destino-aporte"
-                className="inline-flex min-h-12 items-center justify-center rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-bold text-[#F6026B] transition hover:border-[#F6026B]/40 hover:bg-[#FFE6F0]"
-              >
-                Conoce a dónde va tu aporte
-              </a>
+          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+            <div className="max-w-3xl space-y-4">
+              <h1 className="text-3xl font-black leading-[1.05] tracking-[-0.03em] text-ink sm:text-4xl lg:text-5xl">
+                Tu compra se convierte en ayuda directa.
+              </h1>
+              <p className="text-base leading-7 text-stone-700">
+                El 100% de lo recaudado en nuestra Tienda Solidaria es destinado íntegramente a la Fundación Juan
+                Pablo 2 Santos, apoyando su labor con personas y familias que necesitan asistencia.
+              </p>
+              <p className="text-base font-bold text-[#C00253]">Cada compra suma. Cada aporte llega a una causa real.</p>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <a
+                  href="#catalogo"
+                  className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#F6026B] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#C00253]"
+                >
+                  Ver productos
+                </a>
+                <a
+                  href="#destino-aporte"
+                  className="inline-flex min-h-12 items-center justify-center rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-bold text-[#F6026B] transition hover:border-[#F6026B]/40 hover:bg-[#FFE6F0]"
+                >
+                  Conoce a dónde va tu aporte
+                </a>
+              </div>
+            </div>
+            <div className="flex items-center justify-center">
+              <Illustration
+                src="/ilustraciones/ratoncitos-cosiendo.png"
+                alt="Ilustración de ratoncitos cosiendo juntos"
+                className="h-auto w-full max-w-[380px] object-contain"
+              />
             </div>
           </div>
         </div>

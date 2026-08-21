@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { getSiteUrl } from "@/lib/site-url";
+import { Illustration } from "@/components/illustration";
 import { PublicHeader } from "@/components/public-header";
 
 import "./globals.css";
@@ -47,7 +48,11 @@ export default async function RootLayout({
             {children}
           </main>
           {isAdminRoute ? null : (
-            <footer className="border-t border-stone-200 bg-white">
+            <footer className="relative overflow-hidden border-t border-stone-200 bg-white">
+              <Illustration
+                src="/ilustraciones/puntadas-botones.png"
+                className="pointer-events-none absolute -left-14 bottom-1 hidden h-14 w-auto select-none object-contain opacity-90 lg:block"
+              />
               <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-8 sm:flex-row sm:px-6 lg:px-8">
                 <div className="flex items-center justify-center">
                   <img src="/promoda-logo.png" alt="Moda con Propósito" className="h-7 w-auto" />

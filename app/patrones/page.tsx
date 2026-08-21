@@ -6,6 +6,7 @@ import {
   getPublicPatternsGrouped,
 } from "@/lib/patterns";
 import { EmptyState } from "@/components/empty-state";
+import { Illustration } from "@/components/illustration";
 import { SectionCard } from "@/components/ui";
 import { Download, Scissors } from "lucide-react";
 
@@ -43,9 +44,15 @@ export default async function PatronesPage({
       <section className="full-bleed border-t border-stone-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="max-w-3xl space-y-4">
-            <h1 className="text-3xl font-black leading-[1.05] tracking-[-0.03em] text-ink sm:text-4xl">
-              Patrones estandarizados
-            </h1>
+            <div className="flex items-start gap-3">
+              <h1 className="text-3xl font-black leading-[1.05] tracking-[-0.03em] text-ink sm:text-4xl">
+                Patrones estandarizados
+              </h1>
+              <Illustration
+                src="/ilustraciones/boton-verde.png"
+                className="mt-1 hidden h-10 w-auto shrink-0 object-contain sm:block"
+              />
+            </div>
             <p className="text-base leading-7 text-stone-700">
               Descarga patrones de costura estandarizados para confeccionar
               prendas y artículos útiles para personas afectadas por el
@@ -115,6 +122,7 @@ function CategoryView({
       <EmptyState
         title="No hay patrones en esta categoría."
         description="Prueba seleccionar otra categoría."
+        illustration="/ilustraciones/boton-verde.png"
       />
     );
   }
