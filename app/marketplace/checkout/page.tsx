@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import { HeartHandshake, ShieldCheck } from "lucide-react";
 
 import { EmptyState } from "@/components/empty-state";
 import { MarketplaceCheckoutForm } from "@/components/marketplace-checkout-form";
@@ -31,6 +31,13 @@ export default async function MarketplaceCheckoutPage({
           <h1 className="mt-4 text-2xl font-black text-ink">{product.name}</h1>
           <p className="mt-2 text-2xl font-black text-[#C00253]">{formatUsd(product.price_usd)}</p>
           <p className="mt-3 text-sm text-stone-600">Disponible: {product.stock_quantity} unidades</p>
+          <p className="mt-3 flex items-start gap-2 rounded-xl border border-[#F6026B]/15 bg-[#FFF8FA] p-3 text-sm leading-6 text-stone-600">
+            <HeartHandshake className="mt-0.5 h-4 w-4 shrink-0 text-[#F6026B]" />
+            <span>
+              <strong className="text-ink">Compra solidaria:</strong> el 100% de lo recaudado a través de este pedido se
+              destina directamente al fondo de la Fundación Juan Pablo 2 Santos.
+            </span>
+          </p>
           <div className="mt-6 border-t border-stone-200 pt-5 text-sm text-stone-600">
             <p className="font-bold text-ink">Cómo completar tu compra</p>
             <ol className="mt-3 grid gap-3 leading-6">

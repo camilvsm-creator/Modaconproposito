@@ -118,13 +118,6 @@ function InitiativeSection({
           <div className={flip ? "lg:order-1" : undefined}>
             <div className="space-y-8">
               <div className="space-y-3">
-                <p
-                  className={`text-sm font-black uppercase tracking-[0.2em] ${
-                    dark ? "text-[#FF91BA]" : "text-[#C00253]"
-                  }`}
-                >
-                  {initiative.tagline}
-                </p>
                 <h2 className="text-3xl font-black tracking-[-0.03em] sm:text-4xl">
                   <span className="mr-2">{initiative.emoji}</span>
                   {initiative.name}

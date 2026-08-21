@@ -145,8 +145,7 @@ export default function NuestraMisionPage() {
             <PhotoFrame image={galleryImages[4]} className="mt-12 h-64 sm:mt-20 sm:h-80" />
           </div>
           <div className="max-w-3xl">
-            <p className="text-sm font-black uppercase tracking-[0.2em] text-[#C00253]">Nuestra misión</p>
-            <div className="mt-5 space-y-5 text-base leading-8 text-stone-700 sm:text-lg">
+            <div className="space-y-5 text-base leading-8 text-stone-700 sm:text-lg">
               <p>
                 Desde nuestra experiencia dentro del sector moda, identificamos una necesidad crítica: la escasez de insumos textiles de primera necesidad (ropa interior, sábanas, toallas, bolsos de traslado e indumentaria básica) que frecuentemente quedan fuera de las donaciones tradicionales.
               </p>
@@ -161,8 +160,7 @@ export default function NuestraMisionPage() {
       <section className="bg-white px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-2xl">
-            <p className="text-sm font-black uppercase tracking-[0.2em] text-[#F6026B]">Así se construye la red</p>
-            <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] text-ink sm:text-5xl">
+            <h2 className="text-3xl font-black tracking-[-0.04em] text-ink sm:text-5xl">
               ¿Cómo funciona?
             </h2>
           </div>
@@ -221,8 +219,7 @@ export default function NuestraMisionPage() {
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-end lg:gap-20">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.2em] text-[#C00253]">Voluntariado</p>
-              <h2 className="mt-4 text-3xl font-black tracking-[-0.04em] text-ink sm:text-5xl">
+              <h2 className="text-3xl font-black tracking-[-0.04em] text-ink sm:text-5xl">
                 ¿A quiénes buscamos como voluntarios?
               </h2>
             </div>
@@ -294,8 +291,7 @@ export default function NuestraMisionPage() {
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.2em] text-[#F6026B]">La red crece contigo</p>
-              <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] text-ink sm:text-5xl">
+              <h2 className="text-3xl font-black tracking-[-0.04em] text-ink sm:text-5xl">
                 Categorías de aliados
               </h2>
             </div>
@@ -342,8 +338,7 @@ export default function NuestraMisionPage() {
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.2em] text-[#FF91BA]">Iniciativas</p>
-              <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] text-white sm:text-5xl">
+              <h2 className="text-3xl font-black tracking-[-0.04em] text-white sm:text-5xl">
                 Súmate a una iniciativa
               </h2>
             </div>
@@ -384,8 +379,7 @@ export default function NuestraMisionPage() {
 
       <section className="bg-[#FFE6F0] px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
         <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-          <p className="text-sm font-black uppercase tracking-[0.2em] text-[#F6026B]">Únete</p>
-          <p className="mt-5 max-w-2xl text-base leading-8 text-stone-700 sm:text-lg">
+          <p className="max-w-2xl text-base leading-8 text-stone-700 sm:text-lg">
             Si eres aliado, voluntario, empresa o profesional del sector moda, puedes formar parte de esta iniciativa.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">

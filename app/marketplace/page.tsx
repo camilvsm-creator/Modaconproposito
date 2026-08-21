@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { HeartHandshake, PackageCheck, WalletCards } from "lucide-react";
+import { Search } from "lucide-react";
 import type { Metadata } from "next";
 
 import { EmptyState } from "@/components/empty-state";
@@ -9,7 +9,7 @@ import { getPublicMarketplaceProductsPage, releaseExpiredMarketplaceReservations
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Marketplace — Moda con Propósito",
+  title: "Tienda Solidaria — Moda con Propósito",
 };
 
 function getParam(params: Record<string, string | string[] | undefined>, key: string) {
@@ -17,8 +17,9 @@ function getParam(params: Record<string, string | string[] | undefined>, key: st
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
-function pageHref(page: number) {
+function pageHref(page: number, q?: string) {
   const params = new URLSearchParams();
+  if (q) params.set("q", q);
   if (page > 1) params.set("page", String(page));
   const query = params.toString();
   return query ? `/marketplace?${query}` : "/marketplace";
@@ -32,24 +33,68 @@ export default async function MarketplacePage({
   const params = await searchParams;
   const pageValue = Number(getParam(params, "page"));
   const page = Number.isFinite(pageValue) && pageValue > 0 ? Math.floor(pageValue) : 1;
+  const q = getParam(params, "q");
   await releaseExpiredMarketplaceReservations();
-  const result = await getPublicMarketplaceProductsPage({ page, limit: 12 });
+  const result = await getPublicMarketplaceProductsPage({ page, limit: 12, q });
   const hasPrevious = result.page > 1;
   const hasNext = result.page < result.pageCount;
 
   return (
     <div>
-      <section className="full-bleed bg-stone-50">
+      <section className="full-bleed bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+          <div className="max-w-3xl space-y-4">
+            <h1 className="text-3xl font-black leading-[1.05] tracking-[-0.03em] text-ink sm:text-4xl lg:text-5xl">
+              Tu compra se convierte en ayuda directa.
+            </h1>
+            <p className="text-base leading-7 text-stone-700">
+              El 100% de lo recaudado en nuestra Tienda Solidaria es destinado íntegramente a la Fundación Juan
+              Pablo 2 Santos, apoyando su labor con personas y familias que necesitan asistencia.
+            </p>
+            <p className="text-base font-bold text-[#C00253]">Cada compra suma. Cada aporte llega a una causa real.</p>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <a
+                href="#catalogo"
+                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#F6026B] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#C00253]"
+              >
+                Ver productos
+              </a>
+              <a
+                href="#destino-aporte"
+                className="inline-flex min-h-12 items-center justify-center rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-bold text-[#F6026B] transition hover:border-[#F6026B]/40 hover:bg-[#FFE6F0]"
+              >
+                Conoce a dónde va tu aporte
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="catalogo" className="full-bleed scroll-mt-16 bg-stone-50">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="space-y-6">
-            <div className="rounded-3xl bg-[#FFFFFF] p-6 sm:p-8">
-              <h1 className="max-w-3xl text-3xl font-black leading-tight tracking-[-0.03em] text-ink sm:text-4xl">Productos de nuestra red de aliados</h1>
-              {/* <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                <div className="flex items-start gap-3 rounded-2xl bg-white p-4"><WalletCards className="mt-0.5 h-5 w-5 shrink-0 text-[#F6026B]" /><span className="text-sm leading-6 text-stone-600"><strong className="block text-ink">Pago sencillo</strong>Usamos PayPal para recibir tu pago.</span></div>
-                <div className="flex items-start gap-3 rounded-2xl bg-white p-4"><PackageCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#F6026B]" /><span className="text-sm leading-6 text-stone-600"><strong className="block text-ink">Confirmación humana</strong>Revisamos cada pedido antes de prepararlo.</span></div>
-                <div className="flex items-start gap-3 rounded-2xl bg-white p-4"><HeartHandshake className="mt-0.5 h-5 w-5 shrink-0 text-[#F6026B]" /><span className="text-sm leading-6 text-stone-600"><strong className="block text-ink">Impacto real</strong>Tu compra fortalece a un aliado local.</span></div>
-              </div> */}
-            </div>
+            <form action="/marketplace" method="get" className="rounded-2xl border border-stone-200 bg-white p-4">
+              <label htmlFor="marketplace-search" className="sr-only">
+                Buscar productos
+              </label>
+              <div className="grid gap-3 md:grid-cols-[1fr_auto]">
+                <input
+                  id="marketplace-search"
+                  name="q"
+                  defaultValue={q ?? ""}
+                  placeholder="Buscar productos por nombre o descripción"
+                  className="min-h-11 rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm text-ink placeholder:text-stone-400 focus:border-[#F6026B]/40 focus:outline-none focus:ring-4 focus:ring-[#F6026B]/10"
+                />
+                <button
+                  type="submit"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#F6026B] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#C00253]"
+                >
+                  <Search className="h-4 w-4" />
+                  Buscar
+                </button>
+              </div>
+            </form>
+
             {result.items.length ? (
               <>
                 <p className="text-sm text-stone-500">
@@ -66,8 +111,15 @@ export default async function MarketplacePage({
               </>
             ) : (
               <EmptyState
-                title="No hay productos disponibles."
-                description="Prueba otra búsqueda o vuelve más adelante."
+                title={q ? "No encontramos productos para tu búsqueda." : "No hay productos disponibles."}
+                description={q ? "Prueba con otra palabra o revisa el catálogo completo." : "Vuelve más adelante."}
+                action={
+                  q ? (
+                    <Link href="/marketplace" className="font-bold text-[#F6026B] hover:underline">
+                      Ver todo el catálogo
+                    </Link>
+                  ) : undefined
+                }
               />
             )}
 
@@ -79,7 +131,7 @@ export default async function MarketplacePage({
                 <div className="flex gap-2">
                   {hasPrevious ? (
                     <Link
-                      href={pageHref(result.page - 1)}
+                      href={pageHref(result.page - 1, q)}
                       className="rounded-full bg-white px-4 py-3 text-[#F6026B] ring-1 ring-stone-200 hover:bg-[#FFE6F0]"
                     >
                       Anterior
@@ -91,7 +143,7 @@ export default async function MarketplacePage({
                   )}
                   {hasNext ? (
                     <Link
-                      href={pageHref(result.page + 1)}
+                      href={pageHref(result.page + 1, q)}
                       className="rounded-full bg-[#F6026B] px-4 py-3 text-white ring-1 ring-stone-200 hover:bg-[#C00253]"
                     >
                       Siguiente
@@ -104,6 +156,38 @@ export default async function MarketplacePage({
                 </div>
               </nav>
             ) : null}
+          </div>
+        </div>
+      </section>
+
+      <section id="destino-aporte" className="full-bleed scroll-mt-16 border-t border-stone-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+          <div className="mx-auto max-w-3xl space-y-5">
+            <h2 className="text-3xl font-black leading-[1.05] tracking-[-0.03em] text-ink sm:text-4xl">
+              Una tienda que nace de una necesidad real
+            </h2>
+            <div className="space-y-4 text-base leading-7 text-stone-700">
+              <p>
+                Tras conocer de cerca la labor de la <strong className="text-ink">Fundación Juan Pablo 2 Santos</strong> y
+                las necesidades que enfrenta para continuar desarrollando sus proyectos sociales, decidimos crear la
+                Tienda Solidaria de Moda con Propósito.
+              </p>
+              <p>
+                Las consecuencias del terremoto han dejado a muchas personas y familias enfrentando procesos de
+                recuperación complejos, entre ellas sobrevivientes que sufrieron amputaciones y requieren apoyo para
+                reconstruir su día a día.
+              </p>
+              <p>
+                Por eso, esta tienda tiene un propósito muy concreto:{" "}
+                <strong className="text-ink">convertir cada compra en una forma de contribuir.</strong>
+              </p>
+            </div>
+            <div className="rounded-2xl border border-[#F6026B]/20 bg-[#FFF8FA] p-6 sm:p-8">
+              <p className="text-lg font-black leading-7 text-[#C00253] sm:text-xl sm:leading-8">
+                El 100% de los fondos recaudados a través del Marketplace se destina directamente a la Fundación Juan
+                Pablo 2 Santos.
+              </p>
+            </div>
           </div>
         </div>
       </section>

@@ -1,4 +1,4 @@
-import { Images } from "lucide-react";
+import { HeartHandshake, Images } from "lucide-react";
 import Link from "next/link";
 
 import { getMarketplaceImageUrl } from "@/lib/marketplace";
@@ -62,6 +62,13 @@ export function MarketplaceProductCard({
               {inStock ? `${product.stock_quantity} disp.` : "Agotado"}
             </span>
           </div>
+          <p className="mt-3 flex items-start gap-1.5 border-t border-stone-100 pt-3 text-sm leading-5 text-stone-500">
+            <HeartHandshake className="mt-0.5 h-4 w-4 shrink-0 text-[#F6026B]" />
+            <span>
+              <strong className="font-bold text-stone-600">Producto solidario:</strong> tu compra contribuye al fondo
+              de la Fundación Juan Pablo 2 Santos.
+            </span>
+          </p>
         </div>
       </Link>
     </div>
