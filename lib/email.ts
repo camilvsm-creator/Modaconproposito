@@ -1,5 +1,7 @@
 import { Resend } from "resend";
 
+// Temporarily disable outbound email while access links continue to be generated.
+const emailDeliveryEnabled = false;
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 const fromEmail = process.env.RESEND_FROM_EMAIL ?? "Moda con Propósito <no-reply@modaconproposito.com>";
@@ -26,6 +28,7 @@ export async function sendAccessEmail({
   activationLink: string;
   accessType: "aliado" | "solicitante";
 }) {
+  if (!emailDeliveryEnabled) return { error: null };
   if (!resend) return { error: "Falta configurar RESEND_API_KEY." };
 
   const safeRecipientName = escapeHtml(recipientName);
@@ -76,6 +79,8 @@ export async function sendMensajeNotification(
   tallerEmail?: string,
   tallerNombre?: string,
 ) {
+  if (!emailDeliveryEnabled) return { error: null };
+
   const destino = emisor === "aliado"
     ? process.env.PROMODA_EMAIL!
     : tallerEmail!;
