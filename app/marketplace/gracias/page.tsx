@@ -18,6 +18,7 @@ export default async function MarketplaceThankYouPage({
 }) {
   const params = await searchParams;
   const orderNumber = typeof params.pedido === "string" && params.pedido.trim() ? params.pedido.trim() : "tu pedido";
+  const mobilePayment = params.metodo === "pago-movil";
   const settings = await getMarketplacePaymentSettings();
   const whatsappUrl = settings ? whatsappHref(settings.contact_whatsapp, orderNumber) : null;
 
@@ -25,9 +26,9 @@ export default async function MarketplaceThankYouPage({
     <div className="full-bleed bg-[#FFF8FA] px-4 py-12 sm:px-6">
       <SectionCard className="mx-auto max-w-2xl p-7 text-center ring-1 ring-stone-200 sm:p-10">
         <CheckCircle2 className="mx-auto h-14 w-14 text-success" />
-        <p className="mt-5 text-sm font-black uppercase tracking-[0.16em] text-[#C00253]">Solicitud recibida</p>
-        <h1 className="mt-2 text-3xl font-black text-ink">Gracias, recibimos tu pedido</h1>
-        <p className="mt-4 text-sm leading-7 text-stone-600">Recibimos tus datos y el pedido <strong className="text-ink">{orderNumber}</strong>. El equipo de Moda con Propósito verificará el pago y te contactará para coordinar la entrega de lo que compraste.</p>
+         <h1 className="mt-5 text-3xl font-black text-ink">¡Hemos recibido tu pedido!</h1>
+         <p className="mt-4 text-sm leading-7 text-stone-600">{mobilePayment ? <>Gracias por comprar con propósito. Recibimos tu comprobante de Pago Móvil y nuestro equipo verificará el pago para coordinar la entrega de tu producto.</> : <>Recibimos tus datos y el pedido. El equipo de Moda con Propósito verificará el pago y te contactará para coordinar la entrega de lo que compraste.</>}</p>
+         <p className="mt-3 text-sm font-semibold text-ink">Número de pedido: {orderNumber}</p>
 
         <div className="mt-7 rounded-2xl bg-stone-50 p-5 text-left">
           <h2 className="text-base font-black text-ink">¿Tienes la referencia o el comprobante?</h2>

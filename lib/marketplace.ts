@@ -15,8 +15,22 @@ import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const MARKETPLACE_PAYPAL_URL = "https://www.paypal.com/paypalme/fundacionjp2santos?country.x=VE&locale.x=es_XC&utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAcGRvZgJleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA85MzY2MTk3NDMzOTI0NTkAAafHoMNfUYtrPj4eJrV4M90Gz1t_PnGgqUVQFd60W9wMrxLItgYN-0-rperpvw_aem_4M4ltjmydzeaFiFXFiOxaQ";
+const MARKETPLACE_OFFICIAL_DOLLAR_API = "https://ve.dolarapi.com/v1/dolares/oficial";
 
 export const MARKETPLACE_EVENT_BANNER_ENABLED = true;
+
+export async function getOfficialMarketplaceDollarRate() {
+  try {
+    const response = await fetch(MARKETPLACE_OFFICIAL_DOLLAR_API, { cache: "no-store" });
+    if (!response.ok) return null;
+    const payload = await response.json() as { promedio?: number; fechaActualizacion?: string };
+    const rate = Number(payload.promedio);
+    if (!Number.isFinite(rate) || rate <= 0) return null;
+    return { rate, updatedAt: payload.fechaActualizacion ?? null };
+  } catch {
+    return null;
+  }
+}
 
 const PRODUCT_FIELDS = `
   id, ally_id, slug, name, description, price_usd, stock_quantity, status,
@@ -35,7 +49,8 @@ const ORDER_FIELDS = `
   delivery_notes, stock_released_at, stock_reserved_at, payment_method_id,
   payment_method_code_snapshot, payment_method_name_snapshot, payment_method_type_snapshot,
   payment_method_url_snapshot, payment_method_details_snapshot, payment_reference,
-  payment_submitted_at, stock_reservation_expires_at, guest_access_token_hash, created_at, updated_at,
+  payment_submitted_at, payment_amount_bs, payment_exchange_rate, payment_date, payment_submission_key,
+  stock_reservation_expires_at, guest_access_token_hash, created_at, updated_at,
   product:marketplace_products(id, slug, name, price_usd),
   ally:allies(id, name, slug),
   customer:marketplace_customers(id, full_name, email, whatsapp),
@@ -96,6 +111,8 @@ function normalizeOrder(order: Record<string, unknown>): MarketplaceOrder {
     unit_price_usd: Number(order.unit_price_usd ?? 0),
     quantity: Number(order.quantity ?? 0),
     total_usd: Number(order.total_usd ?? 0),
+    payment_amount_bs: order.payment_amount_bs == null ? null : Number(order.payment_amount_bs),
+    payment_exchange_rate: order.payment_exchange_rate == null ? null : Number(order.payment_exchange_rate),
     product: normalizeRelation(order.product) as MarketplaceOrder["product"],
     ally: normalizeRelation(order.ally) as MarketplaceOrder["ally"],
     customer: normalizeRelation(order.customer) as MarketplaceOrder["customer"],
@@ -243,11 +260,11 @@ export async function getMarketplacePaymentSettings() {
   const supabase = createSupabasePublicClient();
   const { data, error } = await supabase
     .from("marketplace_payment_settings")
-    .select("id, paypal_url, contact_whatsapp, phone, bank, rif, account_holder, instructions, updated_by, updated_at")
+    .select("id, paypal_url, contact_whatsapp, phone, bank, rif, account_holder, instructions, pago_movil_exchange_rate, updated_by, updated_at")
     .eq("id", true)
     .maybeSingle();
   assertQueryOk(error, "No se pudieron cargar los datos de pago");
-  return (data ?? null) as MarketplacePaymentSettings | null;
+  return data ? { ...data, pago_movil_exchange_rate: data.pago_movil_exchange_rate === null ? null : Number(data.pago_movil_exchange_rate) } as MarketplacePaymentSettings : null;
 }
 
 export async function getMarketplacePaymentMethods() {
@@ -277,11 +294,11 @@ export async function getAdminMarketplacePaymentSettings() {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("marketplace_payment_settings")
-    .select("id, paypal_url, contact_whatsapp, phone, bank, rif, account_holder, instructions, updated_by, updated_at")
+    .select("id, paypal_url, contact_whatsapp, phone, bank, rif, account_holder, instructions, pago_movil_exchange_rate, updated_by, updated_at")
     .eq("id", true)
     .maybeSingle();
   assertQueryOk(error, "No se pudieron cargar los datos de pago");
-  return (data ?? null) as MarketplacePaymentSettings | null;
+  return data ? { ...data, pago_movil_exchange_rate: data.pago_movil_exchange_rate === null ? null : Number(data.pago_movil_exchange_rate) } as MarketplacePaymentSettings : null;
 }
 
 export async function getMarketplaceAllies() {
@@ -300,6 +317,7 @@ export async function getMarketplaceOrdersPage({
   limit = 20,
   status,
   paymentStatus,
+  paymentMethod,
   customerUserId,
   allyId,
 }: {
@@ -307,6 +325,7 @@ export async function getMarketplaceOrdersPage({
   limit?: number;
   status?: string;
   paymentStatus?: string;
+  paymentMethod?: string;
   customerUserId?: string;
   allyId?: string;
 } = {}): Promise<PagedResult<MarketplaceOrder>> {
@@ -323,6 +342,7 @@ export async function getMarketplaceOrdersPage({
 
   if (status && status !== "all") query = query.eq("order_status", status);
   if (paymentStatus && paymentStatus !== "all") query = query.eq("payment_status", paymentStatus);
+  if (paymentMethod && paymentMethod !== "all") query = query.eq("payment_method_code_snapshot", paymentMethod);
   if (customerUserId) query = query.eq("customer_user_id", customerUserId);
   if (allyId) query = query.eq("ally_id", allyId);
 

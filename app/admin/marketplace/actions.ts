@@ -15,6 +15,7 @@ import {
   createMarketplaceProductStoragePath,
   generateMarketplaceProductSlug,
   getMarketplaceProductById,
+  getOfficialMarketplaceDollarRate,
   releaseExpiredMarketplaceReservations,
   MARKETPLACE_PAYPAL_URL,
 } from "@/lib/marketplace";
@@ -30,16 +31,20 @@ type Result = {
   paymentUrl?: string | null;
   paymentMethodName?: string;
   paymentMethodType?: string;
+  paymentMethodCode?: string;
   paymentInstructions?: string | null;
   paymentDetails?: string | null;
   paymentSupportsAmount?: boolean;
   totalUsd?: number;
+  paymentAmountBs?: number | null;
+  paymentExchangeRate?: number | null;
 };
 
 const MAX_PRODUCT_IMAGE_BYTES = 5 * 1024 * 1024;
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_PAYMENT_PROOF_BYTES = 8 * 1024 * 1024;
 const PAYMENT_PROOF_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
+const PAGO_MOVIL_CODE = "pago-movil";
 const MAX_CONTRIBUTION_PROOF_BYTES = 8 * 1024 * 1024;
 
 function value(formData: FormData, name: string) {
@@ -57,6 +62,10 @@ function validEmail(email: string) {
 
 function validPaymentDate(value: string) {
   return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
+}
+
+function isPagoMovil(code: string | null | undefined) {
+  return code === PAGO_MOVIL_CODE || code === "pago_movil";
 }
 
 function hashGuestAccessToken(token: string) {
@@ -177,14 +186,23 @@ export async function updateMarketplacePaymentSettingsAction(formData: FormData)
   const paypalUrl = value(formData, "paypalUrl") || MARKETPLACE_PAYPAL_URL;
   const contactWhatsapp = value(formData, "contactWhatsapp");
   const instructions = value(formData, "instructions");
+  const submittedPagoMovilExchangeRate = numberValue(formData, "pagoMovilExchangeRate");
   if (!paypalUrl.startsWith("https://www.paypal.com/paypalme/")) throw new Error("El enlace debe ser un enlace válido de PayPal.Me.");
 
   const admin = createSupabaseAdminClient();
+  let pagoMovilExchangeRate = submittedPagoMovilExchangeRate;
+  if (pagoMovilExchangeRate === null) {
+    const { data: currentSettings, error: settingsError } = await admin.from("marketplace_payment_settings").select("pago_movil_exchange_rate").eq("id", true).maybeSingle();
+    if (settingsError) throw new Error(settingsError.message);
+    pagoMovilExchangeRate = Number(currentSettings?.pago_movil_exchange_rate ?? 0);
+  }
+  if (!Number.isFinite(pagoMovilExchangeRate) || pagoMovilExchangeRate <= 0) throw new Error("La tasa de Pago Móvil debe ser mayor que cero.");
   const { error } = await admin.from("marketplace_payment_settings").upsert({
     id: true,
     paypal_url: paypalUrl,
     contact_whatsapp: contactWhatsapp,
     instructions: instructions || null,
+    pago_movil_exchange_rate: pagoMovilExchangeRate,
     updated_by: user.id,
     updated_at: new Date().toISOString(),
   });
@@ -262,6 +280,16 @@ export async function createMarketplaceOrderAction(formData: FormData): Promise<
   if (!paymentMethod) return { error: "Selecciona un método de pago válido." };
   if (paymentMethod.method_type === "link" && !paymentMethod.payment_url) return { error: "Este método de pago no tiene un enlace configurado." };
 
+  const totalUsd = Number(product.price_usd) * quantity;
+  let paymentAmountBs: number | null = null;
+  let paymentExchangeRate: number | null = null;
+  if (isPagoMovil(paymentMethod.code)) {
+    const officialRate = await getOfficialMarketplaceDollarRate();
+    paymentExchangeRate = officialRate?.rate ?? null;
+    if (!paymentExchangeRate) return { error: "No pudimos consultar la tasa oficial del dólar. Inténtalo nuevamente." };
+    paymentAmountBs = Math.round((totalUsd * paymentExchangeRate + Number.EPSILON) * 100) / 100;
+  }
+
   const currentStock = Number(product.stock_quantity ?? 0);
   if (currentStock < quantity) return { error: "No hay inventario suficiente para este pedido." };
   const now = new Date();
@@ -278,7 +306,6 @@ export async function createMarketplaceOrderAction(formData: FormData): Promise<
   if (!reservedProduct) return { error: "El inventario cambió mientras preparábamos el pedido. Inténtalo nuevamente." };
 
   const orderNumber = await createMarketplaceOrderNumber();
-  const totalUsd = Number(product.price_usd) * quantity;
   const guestAccessToken = crypto.randomBytes(24).toString("hex");
   const { data: order, error: orderError } = await admin.from("marketplace_orders").insert({
     order_number: orderNumber,
@@ -306,6 +333,8 @@ export async function createMarketplaceOrderAction(formData: FormData): Promise<
     payment_method_type_snapshot: paymentMethod.method_type,
     payment_method_url_snapshot: paymentMethod.payment_url,
     payment_method_details_snapshot: paymentMethod.payment_details,
+    payment_amount_bs: paymentAmountBs,
+    payment_exchange_rate: paymentExchangeRate,
     payment_status: "pendiente_comprobante",
     order_status: "pendiente_pago",
     stock_reserved_at: now.toISOString(),
@@ -326,10 +355,13 @@ export async function createMarketplaceOrderAction(formData: FormData): Promise<
     paymentUrl: paymentMethod.payment_url,
     paymentMethodName: paymentMethod.name,
     paymentMethodType: paymentMethod.method_type,
+    paymentMethodCode: paymentMethod.code,
     paymentInstructions: paymentMethod.instructions,
     paymentDetails: paymentMethod.payment_details,
     paymentSupportsAmount: paymentMethod.supports_amount,
     totalUsd,
+    paymentAmountBs,
+    paymentExchangeRate,
   };
 }
 
@@ -337,18 +369,30 @@ export async function submitMarketplacePaymentAction(formData: FormData): Promis
   const orderId = value(formData, "orderId");
   const guestAccessToken = value(formData, "guestAccessToken");
   const paymentReference = value(formData, "paymentReference").slice(0, 120);
+  const paymentDate = value(formData, "paymentDate");
+  const paymentSubmissionKey = value(formData, "paymentSubmissionKey").slice(0, 100);
   const proof = formData.get("paymentProof");
   if (!orderId || !guestAccessToken) return { error: "No se pudo validar el pedido." };
 
   const admin = createSupabaseAdminClient();
   const { data: order, error: orderError } = await admin
     .from("marketplace_orders")
-    .select("id, order_number, guest_access_token_hash, order_status, payment_status, stock_reserved_at, stock_released_at")
+    .select("id, order_number, guest_access_token_hash, order_status, payment_status, payment_method_code_snapshot, stock_reserved_at, stock_released_at")
     .eq("id", orderId)
     .maybeSingle();
   if (orderError) return { error: orderError.message };
   if (!order || order.guest_access_token_hash !== hashGuestAccessToken(guestAccessToken)) return { error: "El pedido no pudo validarse." };
   if (order.order_status === "cancelado" || order.stock_released_at) return { error: "La reserva de este pedido ya venció. Crea un nuevo pedido." };
+
+  const pagoMovil = isPagoMovil(order.payment_method_code_snapshot);
+  if (pagoMovil) {
+    if (order.payment_status === "en_revision" || order.payment_status === "aprobado") return { success: true, orderNumber: order.order_number };
+    if (!paymentReference || !validPaymentDate(paymentDate) || new Date(`${paymentDate}T00:00:00Z`) > new Date()) return { error: "Completa una referencia y una fecha de pago válida." };
+    if (!paymentSubmissionKey) return { error: "No se pudo validar el envío del comprobante." };
+    const { data: duplicate } = await admin.from("marketplace_orders").select("order_number").eq("payment_submission_key", paymentSubmissionKey).maybeSingle();
+    if (duplicate) return { success: true, orderNumber: duplicate.order_number };
+    if (!(proof instanceof File) || proof.size === 0) return { error: "Adjunta el comprobante de Pago Móvil." };
+  }
 
   let uploadedProofPath: string | null = null;
   if (proof instanceof File && proof.size > 0) {
@@ -378,6 +422,7 @@ export async function submitMarketplacePaymentAction(formData: FormData): Promis
     order_status: "pago_en_revision",
     ...(uploadedProofPath ? { payment_proof_path: uploadedProofPath } : {}),
     payment_submitted_at: now,
+    ...(pagoMovil ? { payment_date: paymentDate, payment_submission_key: paymentSubmissionKey } : {}),
     stock_reservation_expires_at: null,
     updated_at: now,
   }).eq("id", order.id);
@@ -460,6 +505,7 @@ export async function reviewMarketplacePaymentAction(formData: FormData): Promis
   const { data: order, error } = await admin.from("marketplace_orders").select("id, product_id, quantity, payment_status, order_status, stock_reserved_at, stock_released_at").eq("id", orderId).maybeSingle();
   if (error) throw new Error(error.message);
   if (!order) throw new Error("El pedido no existe.");
+  if (!["en_revision", "pendiente_comprobante", "rechazado"].includes(order.payment_status)) throw new Error("Este pago ya fue revisado y no puede actualizarse desde esta acción.");
 
   const now = new Date().toISOString();
   if (paymentStatus === "aprobado" && !order.stock_reserved_at) {

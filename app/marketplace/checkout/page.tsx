@@ -4,7 +4,7 @@ import { HeartHandshake, ShieldCheck } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { MarketplaceCheckoutForm } from "@/components/marketplace-checkout-form";
 import { SectionCard } from "@/components/ui";
-import { getMarketplacePaymentMethods, getPublicMarketplaceProductBySlug, releaseExpiredMarketplaceReservations } from "@/lib/marketplace";
+import { getMarketplacePaymentMethods, getOfficialMarketplaceDollarRate, getPublicMarketplaceProductBySlug, releaseExpiredMarketplaceReservations } from "@/lib/marketplace";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { formatUsd } from "@/lib/utils";
 
@@ -21,6 +21,7 @@ export default async function MarketplaceCheckoutPage({
   if (!productRow) return <div className="mx-auto max-w-3xl px-4 py-10"><EmptyState title="Producto no disponible" description="Regresa al marketplace para elegir otro producto." action={<Link href="/marketplace" className="font-bold text-[#F6026B]">Ver marketplace</Link>} /></div>;
   const product = await getPublicMarketplaceProductBySlug(productRow.slug);
   const paymentMethods = await getMarketplacePaymentMethods();
+  const officialDollarRate = await getOfficialMarketplaceDollarRate();
   if (!product || !paymentMethods.length) return <div className="mx-auto max-w-3xl px-4 py-10"><EmptyState title="No pudimos preparar la compra" description="El equipo todavía no ha configurado métodos de pago." /></div>;
 
   return (
@@ -51,7 +52,7 @@ export default async function MarketplaceCheckoutPage({
         <SectionCard className="p-6 ring-1 ring-stone-200 sm:p-8">
           <h2 className="text-2xl font-black text-ink">Completar pedido</h2>
           <p className="mt-2 text-sm leading-6 text-stone-600">No necesitas crear una cuenta. Completa tus datos, elige un método de pago y sigue las instrucciones. Podrás cargar el comprobante después de pagar.</p>
-          <div className="mt-6"><MarketplaceCheckoutForm product={product} paymentMethods={paymentMethods} /></div>
+           <div className="mt-6"><MarketplaceCheckoutForm product={product} paymentMethods={paymentMethods} officialDollarRate={officialDollarRate} /></div>
         </SectionCard>
       </div>
     </div>

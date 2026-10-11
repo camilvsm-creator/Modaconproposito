@@ -14,6 +14,7 @@ import {
   MARKETPLACE_CONTRIBUTION_STATUS_TONES,
   MARKETPLACE_CONTRIBUTION_STATUSES,
   MARKETPLACE_PAYMENT_STATUS_LABELS,
+  MARKETPLACE_PAYMENT_STATUSES,
   MARKETPLACE_PAYMENT_STATUS_TONES,
   MARKETPLACE_PRODUCT_STATUS_LABELS,
   MARKETPLACE_PRODUCT_STATUS_TONES,
@@ -57,8 +58,12 @@ function pageHref(tab: Tab, params: Record<string, string | string[] | undefined
   const query = new URLSearchParams({ tab });
   const q = getParam(params, "q");
   const status = getParam(params, "status");
+  const paymentStatus = getParam(params, "paymentStatus");
+  const paymentMethod = getParam(params, "paymentMethod");
   if (q) query.set("q", q);
   if (status && status !== "all") query.set("status", status);
+  if (paymentStatus && paymentStatus !== "all") query.set("paymentStatus", paymentStatus);
+  if (paymentMethod && paymentMethod !== "all") query.set("paymentMethod", paymentMethod);
   if (page > 1) query.set("page", String(page));
   return `/admin/marketplace?${query.toString()}`;
 }
@@ -139,27 +144,12 @@ function ProductTable({ products, isAdmin }: { products: Awaited<ReturnType<type
   );
 }
 
+function paymentMethodLabel(code: string | null) {
+  return code === "pago-movil" || code === "pago_movil" ? "Pago Móvil" : code === "paypal" ? "PayPal" : code ?? "No especificado";
+}
+
 function OrderTable({ orders }: { orders: Awaited<ReturnType<typeof getMarketplaceOrdersPage>>["items"] }) {
-  return (
-    <AdminTableFrame>
-      <table className="admin-mobile-cards min-w-[1050px] w-full text-left text-sm">
-        <thead className="border-b border-gray-200 bg-gray-50 text-sm font-semibold text-gray-600"><tr><th className="px-4 py-3">Pedido</th><th className="px-4 py-3">Producto</th><th className="px-4 py-3">Cliente</th><th className="px-4 py-3">Total</th><th className="px-4 py-3">Pago</th><th className="px-4 py-3">Entrega</th><th className="px-4 py-3 text-right">Acciones</th></tr></thead>
-        <tbody className="divide-y divide-gray-200">
-          {orders.map((order) => (
-            <tr key={order.id} className="align-top hover:bg-gray-50">
-              <td data-mobile="primary" data-mobile-label="Pedido" className="px-4 py-4"><Link href={`/admin/marketplace/${order.id}`} className="font-semibold text-primary hover:underline">{order.order_number}</Link><p className="mt-1 text-sm text-gray-500">{formatDate(order.created_at)}</p></td>
-              <td data-mobile-label="Producto" className="px-4 py-4 text-gray-600">{order.product_name_snapshot}<p className="mt-1 text-sm text-gray-500">Cantidad: {order.quantity}</p></td>
-              <td data-mobile-label="Cliente" className="px-4 py-4 text-gray-600">{order.buyer_name}<p className="mt-1 text-sm text-gray-500">{order.buyer_email}</p></td>
-              <td data-mobile-label="Total" className="px-4 py-4 font-semibold text-ink">{formatUsd(order.total_usd)}</td>
-              <td data-mobile-label="Pago" className="px-4 py-4"><Badge label={MARKETPLACE_PAYMENT_STATUS_LABELS[order.payment_status] ?? order.payment_status} tone={MARKETPLACE_PAYMENT_STATUS_TONES[order.payment_status] ?? "bg-gray-100 text-gray-700"} /></td>
-              <td data-mobile-label="Entrega" className="px-4 py-4"><Badge label={MARKETPLACE_ORDER_STATUS_LABELS[order.order_status] ?? order.order_status} tone={MARKETPLACE_ORDER_STATUS_TONES[order.order_status] ?? "bg-gray-100 text-gray-700"} /></td>
-              <td data-mobile="actions" data-mobile-label="Acciones" className="px-4 py-4 text-right"><Link href={`/admin/marketplace/${order.id}`} className="text-sm font-semibold text-primary hover:underline">Ver detalle</Link></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </AdminTableFrame>
-  );
+  return <AdminTableFrame><table className="admin-mobile-cards min-w-[1220px] w-full text-left text-sm"><thead className="border-b border-gray-200 bg-gray-50 text-sm font-semibold text-gray-600"><tr><th className="px-4 py-3">Pedido</th><th className="px-4 py-3">Producto</th><th className="px-4 py-3">Cliente</th><th className="px-4 py-3">Total</th><th className="px-4 py-3">Método de pago</th><th className="px-4 py-3">Verificación</th><th className="px-4 py-3">Entrega</th><th className="px-4 py-3 text-right">Acciones</th></tr></thead><tbody className="divide-y divide-gray-200">{orders.map((order) => <tr key={order.id} className="align-top hover:bg-gray-50"><td data-mobile="primary" data-mobile-label="Pedido" className="px-4 py-4"><Link href={`/admin/marketplace/${order.id}`} className="font-semibold text-primary hover:underline">{order.order_number}</Link><p className="mt-1 text-sm text-gray-500">{formatDate(order.created_at)}</p></td><td data-mobile-label="Producto" className="px-4 py-4 text-gray-600">{order.product_name_snapshot}<p className="mt-1 text-sm text-gray-500">Cantidad: {order.quantity}</p></td><td data-mobile-label="Cliente" className="px-4 py-4 text-gray-600">{order.buyer_name}<p className="mt-1 text-sm text-gray-500">{order.buyer_email}</p></td><td data-mobile-label="Total" className="px-4 py-4 font-semibold text-ink">{formatUsd(order.total_usd)}{order.payment_amount_bs !== null ? <p className="mt-1 text-sm font-normal text-gray-500">Bs. {order.payment_amount_bs.toFixed(2)}</p> : null}</td><td data-mobile-label="Método de pago" className="px-4 py-4 font-medium text-ink">{paymentMethodLabel(order.payment_method_code_snapshot)}</td><td data-mobile-label="Verificación" className="px-4 py-4"><Badge label={MARKETPLACE_PAYMENT_STATUS_LABELS[order.payment_status] ?? order.payment_status} tone={MARKETPLACE_PAYMENT_STATUS_TONES[order.payment_status] ?? "bg-gray-100 text-gray-700"} />{order.payment_status === "en_revision" ? <p className="mt-2 font-semibold text-[#C00253]">Pendiente de verificación</p> : null}{order.payment_proof_path || order.proofs?.length ? <p className="mt-1 text-sm text-gray-500">Comprobante adjunto</p> : null}</td><td data-mobile-label="Entrega" className="px-4 py-4"><Badge label={MARKETPLACE_ORDER_STATUS_LABELS[order.order_status] ?? order.order_status} tone={MARKETPLACE_ORDER_STATUS_TONES[order.order_status] ?? "bg-gray-100 text-gray-700"} /></td><td data-mobile="actions" data-mobile-label="Acciones" className="px-4 py-4 text-right"><Link href={`/admin/marketplace/${order.id}`} className="text-sm font-semibold text-primary hover:underline">Ver detalle</Link></td></tr>)}</tbody></table></AdminTableFrame>;
 }
 
 async function ContributionTable({ contributions }: { contributions: Awaited<ReturnType<typeof getMarketplaceContributionsPage>>["items"] }) {
@@ -179,6 +169,8 @@ export default async function AdminMarketplacePage({ searchParams }: { searchPar
   const tab: Tab = tabValue === "pedidos" ? "pedidos" : tabValue === "pago" ? "pago" : tabValue === "aportes" ? "aportes" : "productos";
   const page = pageParam(params);
   const status = getParam(params, "status") ?? "all";
+  const paymentStatus = getParam(params, "paymentStatus") ?? "all";
+  const paymentMethod = getParam(params, "paymentMethod") ?? "all";
   const q = getParam(params, "q");
 
   const isAdmin = role === "admin";
@@ -189,7 +181,7 @@ export default async function AdminMarketplacePage({ searchParams }: { searchPar
   }
 
   const products = await getAdminMarketplaceProductsPage({ page, limit: 20, q, status, allyId });
-  const orders = tab === "pedidos" ? await getMarketplaceOrdersPage({ page, limit: 20, status, allyId }) : null;
+  const orders = tab === "pedidos" ? await getMarketplaceOrdersPage({ page, limit: 20, status, paymentStatus, paymentMethod, allyId }) : null;
   const contributions = tab === "aportes" && isAdmin ? await getMarketplaceContributionsPage({ page, limit: 20, status }) : null;
   const allies = isAdmin ? await getMarketplaceAllies() : [];
   const paymentSettings = isAdmin && tab === "pago" ? await getAdminMarketplacePaymentSettings() : null;
@@ -202,7 +194,7 @@ export default async function AdminMarketplacePage({ searchParams }: { searchPar
       {tabs}
       {tab === "pago" && isAdmin ? <div className="grid gap-5"><SectionCard className="max-w-3xl p-6 ring-1 ring-gray-200"><h2 className="text-xl font-bold text-ink">Métodos de pago</h2><p className="mt-2 text-sm leading-6 text-gray-600">Agrega los métodos que verá el comprador. PayPal puede abrirse con el monto exacto; los métodos manuales muestran los datos que coloques aquí.</p><div className="mt-5 grid gap-3">{paymentMethods.map((method) => <div key={method.id} className="flex flex-col justify-between gap-3 rounded-xl bg-gray-50 p-4 sm:flex-row sm:items-center"><div><p className="font-bold text-ink">{method.name} {!method.is_active ? <span className="text-sm font-normal text-gray-500">(oculto)</span> : null}</p><p className="mt-1 text-sm text-gray-600">{method.method_type === "link" ? "Enlace de pago" : "Datos e instrucciones"}</p></div><Modal triggerLabel="Editar" triggerVariant="secondary" title={`Editar ${method.name}`} description="Actualiza los datos que verá el comprador."><PaymentMethodForm method={method} /></Modal></div>)}</div><div className="mt-5"><Modal triggerLabel="Agregar método de pago" triggerVariant="primary" title="Nuevo método de pago" description="Configura PayPal, Zelle, Pago Móvil u otra opción."><PaymentMethodForm /></Modal></div></SectionCard><SectionCard className="max-w-3xl p-6 ring-1 ring-gray-200"><h2 className="text-xl font-bold text-ink">Contacto por WhatsApp</h2><p className="mt-2 text-sm leading-6 text-gray-600">Se mostrará únicamente después de crear el pedido, para enviar comprobantes y coordinar la entrega.</p><form action={updateMarketplacePaymentSettingsAction} className="mt-5 grid gap-4"><input type="hidden" name="paypalUrl" value={paymentSettings?.paypal_url ?? ""} /><label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">WhatsApp de contacto</span><input className={compactInputClassName} name="contactWhatsapp" type="tel" defaultValue={paymentSettings?.contact_whatsapp ?? "584222600032"} placeholder="+58 422 2600032" required /></label><label className="grid gap-1.5"><span className="text-sm font-medium text-gray-800">Mensaje general</span><textarea className={`${compactInputClassName} min-h-[100px]`} name="instructions" defaultValue={paymentSettings?.instructions ?? "Después de crear tu pedido, puedes enviar el comprobante por WhatsApp."} /></label><div><Button type="submit">Guardar contacto</Button></div></form></SectionCard></div> : null}
       {tab === "productos" ? <><AdminToolbar filters={<form action="/admin/marketplace" method="get" className="grid flex-1 gap-3 md:grid-cols-[minmax(180px,1fr)_200px]"><input type="hidden" name="tab" value="productos" /><input className={compactInputClassName} name="q" defaultValue={q ?? ""} placeholder="Buscar producto" /><select className={compactInputClassName} name="status" defaultValue={status}><option value="all">Todos los estados</option>{MARKETPLACE_PRODUCT_STATUSES.map((item) => <option key={item} value={item}>{MARKETPLACE_PRODUCT_STATUS_LABELS[item]}</option>)}</select></form>} actions={<Modal triggerLabel="Nuevo producto" triggerVariant="primary" title="Nuevo producto" description="Registra un producto para enviarlo a aprobación."><ProductForm allyId={allyId} allies={allies} /></Modal>} /><AdminRecordsSummary total={products.total} />{products.items.length ? <><ProductTable products={products.items} isAdmin={isAdmin} /><AdminPagination page={products.page} pageCount={products.pageCount} total={products.total} limit={products.limit} hrefForPage={(nextPage) => pageHref("productos", params, nextPage)} /></> : <EmptyState title="No hay productos registrados." description="Crea el primer producto para comenzar a vender en el marketplace." />}</> : null}
-      {tab === "pedidos" ? <><AdminToolbar filters={<form action="/admin/marketplace" method="get" className="flex flex-1 gap-3"><input type="hidden" name="tab" value="pedidos" /><select className={`${compactInputClassName} max-w-xs`} name="status" defaultValue={status}><option value="all">Todos los estados</option>{MARKETPLACE_ORDER_STATUSES.map((item) => <option key={item} value={item}>{MARKETPLACE_ORDER_STATUS_LABELS[item]}</option>)}</select></form>} /><AdminRecordsSummary total={orders?.total ?? 0} />{orders?.items.length ? <><OrderTable orders={orders.items} /><AdminPagination page={orders.page} pageCount={orders.pageCount} total={orders.total} limit={orders.limit} hrefForPage={(nextPage) => pageHref("pedidos", params, nextPage)} /></> : <EmptyState title="No hay pedidos registrados." description="Los pedidos recibidos aparecerán aquí para ser gestionados." />}</> : null}
+       {tab === "pedidos" ? <><AdminToolbar filters={<form action="/admin/marketplace" method="get" className="grid flex-1 gap-3 md:grid-cols-3"><input type="hidden" name="tab" value="pedidos" /><select className={compactInputClassName} name="status" defaultValue={status}><option value="all">Todas las entregas</option>{MARKETPLACE_ORDER_STATUSES.map((item) => <option key={item} value={item}>{MARKETPLACE_ORDER_STATUS_LABELS[item]}</option>)}</select><select className={compactInputClassName} name="paymentStatus" defaultValue={paymentStatus}><option value="all">Todos los pagos</option>{MARKETPLACE_PAYMENT_STATUSES.map((item) => <option key={item} value={item}>{MARKETPLACE_PAYMENT_STATUS_LABELS[item]}</option>)}</select><select className={compactInputClassName} name="paymentMethod" defaultValue={paymentMethod}><option value="all">Todos los métodos</option><option value="paypal">PayPal</option><option value="pago-movil">Pago Móvil</option></select></form>} /><AdminRecordsSummary total={orders?.total ?? 0} />{orders?.items.length ? <><OrderTable orders={orders.items} /><AdminPagination page={orders.page} pageCount={orders.pageCount} total={orders.total} limit={orders.limit} hrefForPage={(nextPage) => pageHref("pedidos", params, nextPage)} /></> : <EmptyState title="No hay pedidos registrados." description="Los pedidos recibidos aparecerán aquí para ser gestionados." />}</> : null}
       {tab === "aportes" && isAdmin ? <><AdminToolbar filters={<form action="/admin/marketplace" method="get" className="flex flex-1 gap-3"><input type="hidden" name="tab" value="aportes" /><select className={`${compactInputClassName} max-w-xs`} name="status" defaultValue={status}><option value="all">Todos los estados</option>{MARKETPLACE_CONTRIBUTION_STATUSES.map((item) => <option key={item} value={item}>{MARKETPLACE_CONTRIBUTION_STATUS_LABELS[item]}</option>)}</select></form>} /><AdminRecordsSummary total={contributions?.total ?? 0} />{contributions?.items.length ? <><ContributionTable contributions={contributions.items} /><AdminPagination page={contributions.page} pageCount={contributions.pageCount} total={contributions.total} limit={contributions.limit} hrefForPage={(nextPage) => pageHref("aportes", params, nextPage)} /></> : <EmptyState title="No hay aportes registrados." description="Los comprobantes enviados desde la card de aportes aparecerán aquí." />}</> : null}
     </div>
   );

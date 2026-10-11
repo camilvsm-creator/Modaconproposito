@@ -300,6 +300,7 @@ export type MarketplacePaymentSettings = {
   rif: string;
   account_holder: string;
   instructions: string | null;
+  pago_movil_exchange_rate: number | null;
   updated_by: string | null;
   updated_at: string;
 };
@@ -371,6 +372,10 @@ export type MarketplaceOrder = {
   payment_method_details_snapshot: string | null;
   payment_reference: string | null;
   payment_submitted_at: string | null;
+  payment_amount_bs: number | null;
+  payment_exchange_rate: number | null;
+  payment_date: string | null;
+  payment_submission_key: string | null;
   stock_reservation_expires_at: string | null;
   guest_access_token_hash: string | null;
   created_at: string;
