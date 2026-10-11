@@ -337,6 +337,24 @@ export const MARKETPLACE_PAYMENT_STATUS_TONES: Record<string, string> = {
   rechazado: "bg-danger-soft text-danger",
 };
 
+export const MARKETPLACE_CONTRIBUTION_STATUSES = [
+  "pendiente_verificacion",
+  "confirmado",
+  "rechazado",
+] as const;
+
+export const MARKETPLACE_CONTRIBUTION_STATUS_LABELS: Record<string, string> = {
+  pendiente_verificacion: "Pendiente de verificación",
+  confirmado: "Confirmado",
+  rechazado: "Rechazado",
+};
+
+export const MARKETPLACE_CONTRIBUTION_STATUS_TONES: Record<string, string> = {
+  pendiente_verificacion: "bg-warning-soft text-warning",
+  confirmado: "bg-success-soft text-success",
+  rechazado: "bg-danger-soft text-danger",
+};
+
 export const MARKETPLACE_ORDER_STATUSES = [
   "pendiente_pago",
   "pago_en_revision",

@@ -5,6 +5,7 @@ import type {
   MarketplaceOrder,
   MarketplacePaymentMethod,
   MarketplacePaymentSettings,
+  MarketplaceContribution,
   MarketplaceProduct,
   MarketplaceProductImage,
   PagedResult,
@@ -14,6 +15,8 @@ import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const MARKETPLACE_PAYPAL_URL = "https://www.paypal.com/paypalme/fundacionjp2santos?country.x=VE&locale.x=es_XC&utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAcGRvZgJleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA85MzY2MTk3NDMzOTI0NTkAAafHoMNfUYtrPj4eJrV4M90Gz1t_PnGgqUVQFd60W9wMrxLItgYN-0-rperpvw_aem_4M4ltjmydzeaFiFXFiOxaQ";
+
+export const MARKETPLACE_EVENT_BANNER_ENABLED = true;
 
 const PRODUCT_FIELDS = `
   id, ally_id, slug, name, description, price_usd, stock_quantity, status,
@@ -344,6 +347,52 @@ export async function getMarketplaceOrderById(orderId: string) {
     .maybeSingle();
   assertQueryOk(error, "No se pudo cargar el pedido");
   return data ? normalizeOrder(data as Record<string, unknown>) : null;
+}
+
+export async function getMarketplaceContributionsPage({
+  page = 1,
+  limit = 20,
+  status,
+}: {
+  page?: number;
+  limit?: number;
+  status?: string;
+} = {}): Promise<PagedResult<MarketplaceContribution>> {
+  const supabase = await createSupabaseServerClient();
+  page = Math.max(page, 1);
+  limit = Math.min(Math.max(limit, 1), 100);
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+  let query = supabase
+    .from("marketplace_contributions")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+  if (status && status !== "all") query = query.eq("status", status);
+  const { data, count, error } = await query;
+  assertQueryOk(error, "No se pudieron cargar los aportes");
+  const total = count ?? 0;
+  return {
+    items: (data ?? []).map((item) => ({
+      ...(item as MarketplaceContribution),
+      amount_bs: Number(item.amount_bs ?? 0),
+    })),
+    total,
+    page,
+    limit,
+    pageCount: Math.max(Math.ceil(total / limit), 1),
+  };
+}
+
+export async function getMarketplaceContributionById(contributionId: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("marketplace_contributions")
+    .select("*")
+    .eq("id", contributionId)
+    .maybeSingle();
+  assertQueryOk(error, "No se pudo cargar el aporte");
+  return data ? ({ ...data, amount_bs: Number(data.amount_bs ?? 0) } as MarketplaceContribution) : null;
 }
 
 export async function createMarketplaceOrderNumber() {

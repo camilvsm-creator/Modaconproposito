@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { revalidatePath } from "next/cache";
 
 import {
+  MARKETPLACE_CONTRIBUTION_STATUSES,
   MARKETPLACE_ORDER_STATUSES,
   MARKETPLACE_PAYMENT_STATUSES,
   MARKETPLACE_PRODUCT_STATUSES,
@@ -39,6 +40,7 @@ const MAX_PRODUCT_IMAGE_BYTES = 5 * 1024 * 1024;
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_PAYMENT_PROOF_BYTES = 8 * 1024 * 1024;
 const PAYMENT_PROOF_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
+const MAX_CONTRIBUTION_PROOF_BYTES = 8 * 1024 * 1024;
 
 function value(formData: FormData, name: string) {
   return String(formData.get(name) ?? "").trim();
@@ -51,6 +53,10 @@ function numberValue(formData: FormData, name: string) {
 
 function validEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validPaymentDate(value: string) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
 }
 
 function hashGuestAccessToken(token: string) {
@@ -383,6 +389,63 @@ export async function submitMarketplacePaymentAction(formData: FormData): Promis
 
   revalidateMarketplace();
   return { success: true, orderNumber: order.order_number };
+}
+
+export async function submitMarketplaceContributionAction(formData: FormData): Promise<{ error?: string; success?: boolean }> {
+  const donorName = value(formData, "donorName");
+  const donorEmail = value(formData, "donorEmail").toLowerCase();
+  const paymentMethod = value(formData, "paymentMethod");
+  const amount = numberValue(formData, "amountBs");
+  const paymentReference = value(formData, "paymentReference").slice(0, 120);
+  const paymentDate = value(formData, "paymentDate");
+  const idempotencyKey = value(formData, "idempotencyKey");
+  const proof = formData.get("proof");
+  if (!donorName || !validEmail(donorEmail) || !["pago_movil", "transferencia"].includes(paymentMethod)) return { error: "Completa los datos personales y selecciona un método de pago." };
+  if (amount === null || amount <= 0 || !paymentReference || !validPaymentDate(paymentDate) || !idempotencyKey) return { error: "Completa todos los datos del aporte." };
+  if (!(proof instanceof File) || proof.size === 0) return { error: "Sube el comprobante del aporte." };
+  if (!PAYMENT_PROOF_TYPES.has(proof.type) || proof.size > MAX_CONTRIBUTION_PROOF_BYTES) return { error: "El comprobante debe ser JPG, PNG o PDF de hasta 8 MB." };
+
+  const admin = createSupabaseAdminClient();
+  const { data: existing } = await admin.from("marketplace_contributions").select("id").eq("idempotency_key", idempotencyKey).maybeSingle();
+  if (existing) return { error: "Este comprobante ya fue enviado." };
+  const contributionId = crypto.randomUUID();
+  const path = `contributions/${contributionId}/${crypto.randomUUID()}-${safeFileName(proof.name)}`;
+  const { error: uploadError } = await admin.storage.from("marketplace-payment-proofs").upload(path, proof, { contentType: proof.type, upsert: false });
+  if (uploadError) return { error: `No se pudo cargar el comprobante: ${uploadError.message}` };
+  const { error } = await admin.from("marketplace_contributions").insert({
+    id: contributionId,
+    donor_name: donorName,
+    donor_email: donorEmail,
+    payment_method: paymentMethod,
+    amount_bs: amount,
+    payment_reference: paymentReference,
+    payment_date: paymentDate,
+    proof_storage_path: path,
+    proof_original_name: proof.name.slice(0, 180),
+    proof_content_type: proof.type,
+    proof_file_size_bytes: proof.size,
+    status: "pendiente_verificacion",
+    idempotency_key: idempotencyKey,
+  });
+  if (error) {
+    await admin.storage.from("marketplace-payment-proofs").remove([path]);
+    return { error: error.code === "23505" ? "Este comprobante ya fue enviado." : error.message };
+  }
+  revalidatePath("/admin/marketplace");
+  return { success: true };
+}
+
+export async function reviewMarketplaceContributionAction(formData: FormData): Promise<void> {
+  const user = await requireAdminUser();
+  const contributionId = value(formData, "contributionId");
+  const status = value(formData, "status");
+  const notes = value(formData, "notes");
+  if (!contributionId || !MARKETPLACE_CONTRIBUTION_STATUSES.includes(status as (typeof MARKETPLACE_CONTRIBUTION_STATUSES)[number])) throw new Error("Estado de aporte inválido.");
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin.from("marketplace_contributions").update({ status, review_notes: notes || null, reviewed_by: user.id, reviewed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", contributionId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/marketplace");
+  revalidatePath(`/admin/marketplace/aportes/${contributionId}`);
 }
 
 export async function reviewMarketplacePaymentAction(formData: FormData): Promise<void> {

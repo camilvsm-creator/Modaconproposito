@@ -382,6 +382,27 @@ export type MarketplaceOrder = {
   proofs?: MarketplacePaymentProof[];
 };
 
+export type MarketplaceContribution = {
+  id: string;
+  donor_name: string;
+  donor_email: string;
+  payment_method: "pago_movil" | "transferencia" | string;
+  amount_bs: number;
+  payment_reference: string;
+  payment_date: string;
+  proof_storage_path: string;
+  proof_original_name: string;
+  proof_content_type: string;
+  proof_file_size_bytes: number;
+  status: string;
+  review_notes: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  idempotency_key: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type AllyActivationToken = {
   id: string;
   ally_id: string;
